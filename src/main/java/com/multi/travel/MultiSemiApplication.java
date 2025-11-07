@@ -8,7 +8,6 @@ public class MultiSemiApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(MultiSemiApplication.class, args);
-        System.out.println("test222");
     }
 
 }
