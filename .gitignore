@@ -35,3 +35,7 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### Environment & Config files ###
+.env
+src/main/resources/*.yml
