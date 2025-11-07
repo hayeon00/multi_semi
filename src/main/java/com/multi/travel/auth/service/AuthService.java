@@ -4,7 +4,7 @@ package com.multi.travel.auth.service;
 import com.multi.travel.common.exception.DuplicateUsernameException;
 import com.multi.travel.common.jwt.dto.TokenDto;
 import com.multi.travel.common.jwt.service.TokenService;
-import com.multi.travel.member.dto.MemberDto;
+import com.multi.travel.member.entity.Member;
 import com.multi.travel.member.dto.MemberReqDto;
 import com.multi.travel.member.dto.MemberResDto;
 import com.multi.travel.member.repository.MemberRepository;
@@ -36,7 +36,7 @@ public class AuthService {
             throw new DuplicateUsernameException("이메일이 중복됩니다");
         }
 
-        MemberDto member = MemberDto.builder()
+        Member member = Member.builder()
                 .memberId(memberReqDto.getMemberId())
                 .memberEmail(memberReqDto.getMemberEmail())
                 .memberPassword(passwordEncoder.encode(memberReqDto.getMemberPassword()))
@@ -58,7 +58,7 @@ public class AuthService {
     /** 로그인 */
     public TokenDto login(MemberReqDto memberReqDto) {
         // 1️⃣ DB에서 회원 찾기
-        MemberDto member = memberRepository.findByMemberId(memberReqDto.getMemberId())
+        Member member = memberRepository.findByMemberId(memberReqDto.getMemberId())
                 .orElseThrow(() -> new BadCredentialsException("회원 정보를 찾을 수 없습니다."));
 
 

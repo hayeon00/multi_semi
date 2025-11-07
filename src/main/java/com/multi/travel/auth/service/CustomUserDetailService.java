@@ -2,7 +2,7 @@ package com.multi.travel.auth.service;
 
 
 import com.multi.travel.auth.dto.CustomUser;
-import com.multi.travel.member.dto.MemberDto;
+import com.multi.travel.member.entity.Member;
 import com.multi.travel.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -22,7 +22,7 @@ public class CustomUserDetailService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
 
-        MemberDto member = memberRepository.findByMemberEmail(email)
+        Member member = memberRepository.findByMemberEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + email));
 
         return CustomUser.builder()
