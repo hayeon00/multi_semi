@@ -11,13 +11,13 @@ import lombok.*;
  * @since : 2025-11-08 토요일
  */
 @Entity
-@Table(name = "tb_acc")
+@Table(name = "mock_tb_acc")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Accommodation {
+public class MockAccommodation {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

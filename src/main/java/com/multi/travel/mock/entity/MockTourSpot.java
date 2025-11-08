@@ -12,13 +12,13 @@ import lombok.*;
  */
 
 @Entity
-@Table(name = "tb_tsp")
+@Table(name = "mock_tb_tsp")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class TourSpot {
+public class MockTourSpot {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
