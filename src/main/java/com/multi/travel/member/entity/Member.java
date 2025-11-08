@@ -1,4 +1,4 @@
-package com.multi.travel.member.dto;
+package com.multi.travel.member.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -10,7 +10,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class MemberDto {
+public class Member {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,5 +26,6 @@ public class MemberDto {
     private String memberPassword;
 
     private String memberName;
+
     private String memberRole = "ROLE_USER";
 }

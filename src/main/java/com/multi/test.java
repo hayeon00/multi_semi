@@ -1,11 +1,10 @@
-package com.multi.travel;
+package com.multi;
 
 /*
  * Please explain the class!!!
  *
- * @filename    : env_test
+ * @filename    : test
  * @author      : Choi MinHyeok
  * @since       : 25. 11. 7. 금요일
- */public class env_test {
-     //123
+ */public class test {
 }
