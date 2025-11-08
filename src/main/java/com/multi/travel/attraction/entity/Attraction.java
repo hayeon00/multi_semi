@@ -20,4 +20,9 @@ public class Attraction {
     private String name;
     private String location;
     private String description;
+
+    // 여행 계획 생성시 출발위치 얻어옴
+    public String getLocation() {
+        return this.location;
+    }
 }
