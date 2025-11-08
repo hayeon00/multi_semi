@@ -5,8 +5,6 @@ import com.multi.travel.member.entity.Member;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Please explain the class!!!
