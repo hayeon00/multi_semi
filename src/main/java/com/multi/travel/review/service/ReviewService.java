@@ -11,6 +11,7 @@ import com.multi.travel.review.dto.ReviewResDto;
 import com.multi.travel.review.entity.Review;
 import com.multi.travel.review.entity.ReviewImage;
 import com.multi.travel.review.repository.ReviewRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -95,26 +96,7 @@ public class ReviewService {
     }
 
 
-    public List<ReviewDetailDto> getReviewsByTripPlan(Long tripPlanId) {
-        List<Review> reviews = reviewRepository.findByTripPlanId(tripPlanId);
-
-        return reviews.stream().map(review -> ReviewDetailDto.builder()
-                .reviewId(review.getId())
-                .title(review.getTitle())
-                .content(review.getContent())
-                .rating(review.getRating())
-                .writer(review.getMember().getMemberName()) // 또는 username, nickname 등
-                .createdAt(review.getCreatedAt())
-                .imageUrls(
-                        review.getImages().stream()
-                                .map(ReviewImage::getImageUrl)
-                                .toList()
-                )
-                .build()
-        ).toList();
-    }
-
-
+    @Transactional
     public List<ReviewDetailDto> getAllReviews() {
         return reviewRepository.findAll().stream()
                 .map(review -> ReviewDetailDto.builder()
@@ -134,6 +116,7 @@ public class ReviewService {
     }
 
 
+    @Transactional
     public ReviewDetailDto getReviewById(Long id) {
         Review review = reviewRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("리뷰를 찾을 수 없습니다."));
@@ -153,6 +136,45 @@ public class ReviewService {
                 .build();
     }
 
+
+    @Transactional
+    public void updateReview(Long id, ReviewReqDto dto) {
+        Review review = reviewRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("리뷰를 찾을 수 없습니다."));
+
+        review.setTitle(dto.getTitle());
+        review.setContent(dto.getContent());
+        review.setRating(dto.getRating());
+
+        // 기존 이미지 제거
+        review.getImages().clear();
+
+        // 새 이미지 업로드 처리
+        List<MultipartFile> images = dto.getReviewImages();
+        if (images != null && !images.isEmpty()) {
+            for (MultipartFile image : images) {
+                if (!image.isEmpty()) {
+                    try {
+                        String extension = image.getOriginalFilename()
+                                .substring(image.getOriginalFilename().lastIndexOf("."));
+                        String uniqueFileName = UUID.randomUUID().toString().replace("-", "") + extension;
+                        String savedFileName = FileUploadUtils.saveFile(IMAGE_DIR, uniqueFileName, image);
+                        String imageUrl = IMAGE_URL + savedFileName;
+
+                        ReviewImage reviewImage = ReviewImage.builder()
+                                .imageUrl(imageUrl)
+                                .review(review)
+                                .build();
+
+                        review.getImages().add(reviewImage);
+
+                    } catch (IOException e) {
+                        throw new RuntimeException("이미지 저장 실패", e);
+                    }
+                }
+            }
+        }
+    }
 
 }
 

@@ -13,5 +13,5 @@ import java.util.List;
  * @since : 2025. 11. 9. 일요일
  */
 public interface ReviewRepository extends JpaRepository<Review, Long> {
-    List<Review> findByTripPlanId(Long tripPlanId);
+
 }

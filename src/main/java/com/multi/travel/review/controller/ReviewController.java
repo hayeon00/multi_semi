@@ -37,11 +37,23 @@ public class ReviewController {
         return ResponseEntity.ok(reviews);
     }
 
+
+
     @GetMapping("/reviews/{id}")
     public ResponseEntity<ReviewDetailDto> getReviewById(@PathVariable Long id) {
         ReviewDetailDto review = reviewService.getReviewById(id);
         return ResponseEntity.ok(review);
     }
+
+
+    @PutMapping("/reviews/{id}")
+    public ResponseEntity<String> updateReview(@PathVariable Long id, @ModelAttribute ReviewReqDto dto) {
+        reviewService.updateReview(id, dto);
+        return ResponseEntity.ok("리뷰가 수정되었습니다.");
+    }
+
+
+
 
 
 
