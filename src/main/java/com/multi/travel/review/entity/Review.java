@@ -8,9 +8,9 @@ package com.multi.travel.review.entity;
  * @since : 2025. 11. 8. 토요일
  */
 
-import com.multi.travel.attraction.entity.Attraction;
 import com.multi.travel.plan.entity.TripPlan;
 import com.multi.travel.member.entity.Member;
+import com.multi.travel.tourspot.entity.TourSpot;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -35,8 +35,8 @@ public class Review {
 
     // 대상 관광지 (옵션: 여행계획에도 연결 가능)
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "attraction_id")
-    private Attraction attraction;
+    @JoinColumn(name = "tour_spot_id")
+    private TourSpot tourSpot;
 
     // (선택) 여행계획에 대한 리뷰라면 TripPlan 참조 가능
     @ManyToOne(fetch = FetchType.LAZY)
