@@ -1,13 +1,13 @@
 package com.multi.travel.review.controller;
 
+import com.multi.travel.review.dto.ReviewDetailDto;
 import com.multi.travel.review.dto.ReviewReqDto;
 import com.multi.travel.review.service.ReviewService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * Please explain the class!!!
@@ -30,4 +30,19 @@ public class ReviewController {
 
         return ResponseEntity.ok().body("리뷰가 성공적으로 등록되었습니다.");
     }
+
+    @GetMapping("/reviews")
+    public ResponseEntity<List<ReviewDetailDto>> getAllReviews() {
+        List<ReviewDetailDto> reviews = reviewService.getAllReviews();
+        return ResponseEntity.ok(reviews);
+    }
+
+    @GetMapping("/reviews/{id}")
+    public ResponseEntity<ReviewDetailDto> getReviewById(@PathVariable Long id) {
+        ReviewDetailDto review = reviewService.getReviewById(id);
+        return ResponseEntity.ok(review);
+    }
+
+
+
 }

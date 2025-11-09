@@ -5,6 +5,7 @@ import com.multi.travel.common.util.FileUploadUtils;
 import com.multi.travel.member.entity.Member;
 import com.multi.travel.plan.entity.TripPlan;
 import com.multi.travel.plan.repository.TripPlanRepository;
+import com.multi.travel.review.dto.ReviewDetailDto;
 import com.multi.travel.review.dto.ReviewReqDto;
 import com.multi.travel.review.dto.ReviewResDto;
 import com.multi.travel.review.entity.Review;
@@ -92,6 +93,66 @@ public class ReviewService {
                 .imageUrls(imageUrls)
                 .build();
     }
+
+
+    public List<ReviewDetailDto> getReviewsByTripPlan(Long tripPlanId) {
+        List<Review> reviews = reviewRepository.findByTripPlanId(tripPlanId);
+
+        return reviews.stream().map(review -> ReviewDetailDto.builder()
+                .reviewId(review.getId())
+                .title(review.getTitle())
+                .content(review.getContent())
+                .rating(review.getRating())
+                .writer(review.getMember().getMemberName()) // 또는 username, nickname 등
+                .createdAt(review.getCreatedAt())
+                .imageUrls(
+                        review.getImages().stream()
+                                .map(ReviewImage::getImageUrl)
+                                .toList()
+                )
+                .build()
+        ).toList();
+    }
+
+
+    public List<ReviewDetailDto> getAllReviews() {
+        return reviewRepository.findAll().stream()
+                .map(review -> ReviewDetailDto.builder()
+                        .reviewId(review.getId())
+                        .title(review.getTitle())
+                        .content(review.getContent())
+                        .rating(review.getRating())
+                        .writer(review.getMember().getMemberName()) // member.getUsername() 등도 가능
+                        .createdAt(review.getCreatedAt())
+                        .imageUrls(
+                                review.getImages().stream()
+                                        .map(ReviewImage::getImageUrl)
+                                        .toList()
+                        )
+                        .build())
+                .toList();
+    }
+
+
+    public ReviewDetailDto getReviewById(Long id) {
+        Review review = reviewRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("리뷰를 찾을 수 없습니다."));
+
+        return ReviewDetailDto.builder()
+                .reviewId(review.getId())
+                .title(review.getTitle())
+                .content(review.getContent())
+                .rating(review.getRating())
+                .writer(review.getMember().getMemberName())
+                .createdAt(review.getCreatedAt())
+                .imageUrls(
+                        review.getImages().stream()
+                                .map(ReviewImage::getImageUrl)
+                                .toList()
+                )
+                .build();
+    }
+
 
 }
 
