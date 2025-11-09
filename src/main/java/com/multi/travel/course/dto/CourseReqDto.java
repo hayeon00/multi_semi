@@ -3,6 +3,8 @@ package com.multi.travel.course.dto;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 /**
  * 코스 요청 dto
  *
@@ -12,6 +14,7 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-public class CoutseReqDto {
+public class CourseReqDto {
     private Long planId;
+    private List<CourseItemReqDto> items; // 초기 코스 아이템 리스트
 }

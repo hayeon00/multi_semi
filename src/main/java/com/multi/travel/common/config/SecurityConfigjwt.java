@@ -43,6 +43,8 @@ public class SecurityConfigjwt {
 
 
                 .authorizeHttpRequests(auth->auth
+                        .requestMatchers("/api/**").permitAll() // /api/plans, /api/courses 요청 시 로그인 없이도 테스트 가능하게 설정
+                                                                  // TODO: 전체 구현 완료 시 삭제 예정
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/api/v1/products/**").permitAll()
                         .requestMatchers("/api/v1/reviews/**").hasAnyRole("ADMIN","USER")
