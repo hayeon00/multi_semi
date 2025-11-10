@@ -187,8 +187,7 @@ public class ApiService {
                     Thread.sleep(300);
 
                 } catch (Exception e) {
-                    log.error("❌ API 호출 실패: areaCode={}, page={}, error={}",
-                            code, page, e.getMessage());
+                    log.error("❌ API 호출 실패: areaCode={}, page={}, error={}", code, page, e.getMessage());
                     hasNext = false;
                 }
             }
