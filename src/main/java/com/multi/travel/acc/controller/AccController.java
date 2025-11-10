@@ -40,4 +40,15 @@ public class AccController {
     public ResponseEntity<ResponseDto> getAccDetail(@RequestParam @Valid long id) {
         return ResponseEntity.ok(new ResponseDto(HttpStatus.OK, "숙소 상세 조회", accService.getAccDetail(id)));
     }
+
+    @GetMapping("/distance")
+    public ResponseEntity<ResponseDto> getAccSortByDistance(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "areacode") String sort,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam @Valid long id
+    ) {
+        return ResponseEntity.ok(new ResponseDto(HttpStatus.OK, "가까운 거리 순 정렬 성공", accService.getAccSortByDistance(page, size, sort, id)));
+    }
+
 }

@@ -87,4 +87,7 @@ public class Acc {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cat_code")
     private Category category;
+
+    @Transient
+    private Double distanceKm;
 }
