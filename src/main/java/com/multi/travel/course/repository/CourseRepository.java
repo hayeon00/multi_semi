@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 /**
  * Please explain the class!!!
  *
- * @author : lsa03
+ * @author : seunga03
  * @filename : CourseRepository
  * @since : 2025-11-08 토요일
  */

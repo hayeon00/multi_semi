@@ -1,5 +1,6 @@
 package com.multi.travel.course.entity;
 
+import com.multi.travel.member.entity.Member;
 import com.multi.travel.plan.entity.TripPlan;
 import jakarta.persistence.*;
 import lombok.*;
@@ -13,7 +14,7 @@ import java.util.List;
 /**
  * Please explain the class!!!
  *
- * @author : lsa03
+ * @author : seunga03
  * @filename : Course
  * @since : 2025-11-08 토요일
  */
@@ -35,8 +36,12 @@ public class Course {
     @OneToMany(mappedBy = "course", fetch = FetchType.LAZY)
     private List<TripPlan> plans = new ArrayList<>();
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id")   // 누가 만든 코스인지 저장
+    private Member creator;
+
     @Column(name = "status", length = 1, nullable = false)
-    private String status = "Y";  // Y=공개, N=비공개
+    private String status = "Y";  // Y=활성화, N=사용자 기준에서 삭제 (소프트 삭제)
 
     /** 추천 수 (추후 Recommend 테이블과 연동 예정) */
     @Column(name = "rec_count", columnDefinition = "INT DEFAULT 0")

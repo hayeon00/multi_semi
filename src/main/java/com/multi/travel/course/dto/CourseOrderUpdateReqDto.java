@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * Please explain the class!!!
  *
- * @author : lsa03
+ * @author : seunga03
  * @filename : CourseOrderUpdateReqDto
  * @since : 2025-11-08 토요일
  */

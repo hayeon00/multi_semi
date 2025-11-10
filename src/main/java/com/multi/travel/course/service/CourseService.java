@@ -5,6 +5,7 @@ import com.multi.travel.course.entity.Course;
 import com.multi.travel.course.entity.CourseItem;
 import com.multi.travel.course.repository.CourseItemRepository;
 import com.multi.travel.course.repository.CourseRepository;
+import com.multi.travel.member.entity.Member;
 import com.multi.travel.plan.entity.TripPlan;
 import com.multi.travel.plan.repository.TripPlanRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -21,7 +22,7 @@ import java.util.List;
 /**
  * Please explain the class!!!
  *
- * @author : lsa03
+ * @author : seunga03
  * @filename : CourseService
  * @since : 2025-11-08 토요일
  */
@@ -41,8 +42,13 @@ public class CourseService {
                 .orElseThrow(() -> new EntityNotFoundException("해당 ID(" + dto.getPlanId() + ")의 계획을 찾을 수 없습니다."));
 
 
-        Course course = Course.builder().status("Y").build();
+        // plan의 member 정보를 가져와 course에 주입
+        Member creator = plan.getMember();
 
+        Course course = Course.builder()
+                .status("Y")
+                .creator(creator)   // 작성자 설정
+                .build();
         plan.setCourse(course);
         tripPlanRepository.save(plan);
 
