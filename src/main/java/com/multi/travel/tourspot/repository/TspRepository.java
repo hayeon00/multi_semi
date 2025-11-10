@@ -17,4 +17,6 @@ import java.util.Optional;
 public interface TspRepository extends JpaRepository<TourSpot,Long> {
 
     Optional<TourSpot> findByIdAndStatus(Long id, String status);
+
+    Optional<TourSpot> findByContentId(Integer contentId);
 }
