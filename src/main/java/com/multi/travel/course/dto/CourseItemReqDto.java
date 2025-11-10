@@ -14,8 +14,8 @@ import lombok.Setter;
 @Getter
 @Setter
 public class CourseItemReqDto {
-    private Long courseId;
+//    private Long courseId;
     private String placeType; // TOUR_SPOT or ACCOMMODATION
-    private Long placeId;
-    private Integer orderNo;
+    private Long placeId; // 관광지/숙소의 ID
+    private Integer orderNo; // 순서
 }

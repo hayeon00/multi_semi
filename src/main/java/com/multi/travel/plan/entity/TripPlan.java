@@ -5,15 +5,19 @@ import com.multi.travel.member.entity.Member;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 /**
- * Please explain the class!!!
+ * 여행 기본 계획 엔티티
+ * - 출발 위치는 관광지(TourSpot)에서 가져옴
+ * - AI 추천 기반 계획 여부(isAiPlan)
+ * - Course(코스)와 다대일 관계
  *
  * @author : rlagkdus
- * @filename : TripPlan
- * @since : 2025. 11. 8. 토요일
+ * @since : 2025. 11. 8
  */
+
 @Entity
 @Getter
 @Setter
@@ -27,20 +31,30 @@ public class TripPlan {
     private Long id;
 
     private String title;
+
     private String startLocation;
+
+    @Column(name = "start_mapx", precision = 13, scale = 10)
+    private BigDecimal startMapX;
+
+    @Column(name = "start_mapy", precision = 13, scale = 10)
+    private BigDecimal startMapY;
+
+    private boolean isAiPlan;
+
+    private char status;
+
     private int numberOfPeople;
+
     private LocalDate startDate;
+
     private LocalDate endDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private Member member;
 
-    /** 여러 Plan이 하나의 Course를 참조 */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "course_id")
     private Course course;
-
-
-
 }

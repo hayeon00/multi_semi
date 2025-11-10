@@ -1,6 +1,9 @@
 package com.multi.travel.course.dto;
 
 import com.multi.travel.course.entity.CourseItem;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -12,10 +15,15 @@ import java.util.List;
  * @filename : CourseResponseDto
  * @since : 2025-11-08 토요일
  */
+
+@Getter
+@Setter
+@Builder
 public class CourseResDto {
     private Long courseId;
-    private Long planId;
+//    private Long planId; --> 코스(1):플랜(N) 관계이기 때문에 planId를 둘 필요가 없음
     private String status;
     private LocalDateTime createdAt;
-    private List<CourseItem> items;
+    private List<CourseItemResDto> items;
+    private Integer recCount;
 }
