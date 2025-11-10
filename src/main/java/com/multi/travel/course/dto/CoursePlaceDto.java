@@ -20,4 +20,5 @@ public class CoursePlaceDto {
     private String mapx;
     private String mapy;
     private Integer orderNo;
+    private Integer dayNo;
 }

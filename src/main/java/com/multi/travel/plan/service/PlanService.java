@@ -83,7 +83,8 @@ public class PlanService {
                 CoursePlaceDto.CoursePlaceDtoBuilder builder = CoursePlaceDto.builder()
                         .id(item.getPlaceId())
                         .type(item.getPlaceType())
-                        .orderNo(item.getOrderNo());
+                        .orderNo(item.getOrderNo())
+                        .dayNo(item.getDayNo());
 
                 if ("TOUR_SPOT".equals(item.getPlaceType())) {
                     tourSpotApiRepository.findById(item.getPlaceId())
