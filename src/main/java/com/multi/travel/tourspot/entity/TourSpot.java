@@ -25,7 +25,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@ToString
+@ToString(exclude = "category")
 public class TourSpot {
 
     @Id
@@ -87,4 +87,8 @@ public class TourSpot {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cat_code")
     private Category category;
+
+
+    @Transient
+    private Double distanceKm;
 }
