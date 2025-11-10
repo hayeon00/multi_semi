@@ -60,7 +60,7 @@
 <script>
     async function loadMembers() {
         try {
-            const response = await fetch("/api/members", {
+            const response = await fetch("/admin/members", {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json"
@@ -101,7 +101,7 @@
     async function deleteMember(id) {
         if (!confirm("정말 삭제하시겠습니까?")) return;
 
-        const response = await fetch(`/api/members/${id}`, {
+        const response = await fetch(`/admin/members/${id}`, {
             method: "DELETE",
             credentials: "include"
 
