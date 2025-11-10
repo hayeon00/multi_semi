@@ -1,4 +1,4 @@
-package com.multi.travel.member.controller;
+package com.multi.travel.admin.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
  * @since : 2025-11-09 일요일
  */
 @Controller
-@RequestMapping("/admin")
+@RequestMapping("/admin/view")
 public class AdminViewController {
 
 
@@ -20,5 +20,6 @@ public class AdminViewController {
     public String memberListPage() {
         return "admin/member-list";
     }
+
 
 }
