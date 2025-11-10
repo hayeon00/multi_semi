@@ -37,6 +37,10 @@ public class CourseItem {
     @Column(name = "place_id", nullable = false)
     private Long placeId;
 
+    /** n일차 정보 */
+    @Column(name = "day_no", nullable = false)
+    private Integer dayNo;
+
     /** 순서 (사용자 드래그 순서 기준) */
     @Column(name = "order_no", nullable = false)
     private Integer orderNo;

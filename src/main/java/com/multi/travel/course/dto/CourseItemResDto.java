@@ -19,4 +19,5 @@ public class CourseItemResDto {
     private String placeType;
     private Long placeId;
     private Integer orderNo;
+    private Integer dayNo;
 }

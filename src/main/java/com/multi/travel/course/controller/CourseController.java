@@ -9,6 +9,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 /**
  * Please explain the class!!!
  *
@@ -86,6 +88,26 @@ public class CourseController {
         courseService.updateItemsOrder(courseId, dto.getItems());
         return ResponseEntity.noContent().build();
     }
+
+    /** 하루별 코스 아이템 조회 */
+    @GetMapping("/{courseId}/items")
+    public ResponseEntity<ResponseDto> getCourseItemsByDay(
+            @PathVariable Long courseId,
+            @RequestParam("day") Integer dayNo
+    ) {
+        List<CourseItemResDto> items = courseService.getCourseItemsByDay(courseId, dayNo);
+
+        if (items.isEmpty()) {
+            return ResponseEntity.ok(
+                    new ResponseDto(HttpStatus.OK, dayNo + "일차 코스가 비어 있습니다.", items)
+            );
+        }
+
+        return ResponseEntity.ok(
+                new ResponseDto(HttpStatus.OK, dayNo + "일차 코스 조회 성공", items)
+        );
+    }
+
 
     /** TODO: 특정 코스의 아이템 삭제 구현 필요 */
 
