@@ -7,7 +7,7 @@ import lombok.Setter;
 /**
  * Please explain the class!!!
  *
- * @author : lsa03
+ * @author : seunga03
  * @filename : CourseItemResDto
  * @since : 2025-11-08 토요일
  */
