@@ -38,7 +38,7 @@ public interface TspRepository extends JpaRepository<TourSpot,Long> {
                        )) AS distance
                 FROM tb_tsp t
                 WHERE t.status = 'Y' AND t.id <> :id
-                ORDER BY distance ASC
+                ORDER BY distance
             """, nativeQuery = true)
     List<Object[]> findNearestWithDistance(@Param("mapx") BigDecimal mapx,
                                            @Param("mapy") BigDecimal mapy,

@@ -9,7 +9,6 @@ package com.multi.travel.tourspot.service;
  */
 
 
-import com.multi.travel.category.CategoryRepository;
 import com.multi.travel.common.exception.TourSpotNotFoundException;
 import com.multi.travel.tourspot.dto.TourSpotDTO;
 import com.multi.travel.tourspot.entity.TourSpot;
@@ -22,7 +21,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;

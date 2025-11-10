@@ -29,7 +29,7 @@ public interface AccRepository extends JpaRepository<Acc, Long> {
 
     @Query(value = """
                     /* language=SQL */
-            SELECT a.id, 
+            SELECT a.id,
                    (6371 * acos(
                        cos(radians(:mapy)) * cos(radians(a.mapy)) *
                        cos(radians(a.mapx) - radians(:mapx)) +
@@ -37,7 +37,7 @@ public interface AccRepository extends JpaRepository<Acc, Long> {
                    )) AS distance
             FROM tb_acc a
             WHERE a.status = 'Y' AND a.id <> :id
-            ORDER BY distance ASC
+            ORDER BY distance
             """, nativeQuery = true)
     List<Object[]> findNearestWithDistance(@Param("mapx") BigDecimal mapx,
                                            @Param("mapy") BigDecimal mapy,
