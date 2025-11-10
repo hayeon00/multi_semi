@@ -50,12 +50,6 @@ public class Review {
     @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ReviewImage> images = new ArrayList<>();
 
-    // 연관관계 편의 메서드
-    public void addImage(ReviewImage image) {
-        images.add(image);
-        image.setReview(this);
-    }
-
     @PrePersist
     public void prePersist() {
         this.createdAt = LocalDateTime.now();

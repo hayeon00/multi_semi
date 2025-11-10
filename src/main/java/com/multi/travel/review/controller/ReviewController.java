@@ -53,6 +53,16 @@ public class ReviewController {
     }
 
 
+    @DeleteMapping("/reviews/{id}")
+    public ResponseEntity<String> deleteReview(@PathVariable Long id) {
+        reviewService.deleteReview(id);
+        return ResponseEntity.ok("리뷰가 삭제되었습니다.");
+    }
+
+
+
+
+
 
 
 

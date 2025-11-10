@@ -176,5 +176,13 @@ public class ReviewService {
         }
     }
 
+    @Transactional
+    public void deleteReview(Long id) {
+        Review review = reviewRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("리뷰를 찾을 수 없습니다."));
+
+        reviewRepository.delete(review);
+    }
+
 }
 
