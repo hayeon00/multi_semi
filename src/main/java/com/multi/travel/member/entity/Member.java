@@ -1,31 +1,77 @@
 package com.multi.travel.member.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.time.LocalDateTime;
+
+/**
+ * Please explain the class!!!
+ *
+ * @author : chang
+ * @filename : Member
+ * @since : 2025-11-07 금요일
+ */
 
 @Entity
-@Table(name = "member")
-@Getter
-@Setter
+@Table(name = "tb_usr")
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
 @Builder
 public class Member {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long memberCode;
+    @Column(name = "user_id")
+    private Long id;
 
-    @Column(name = "id", unique = true)
-    private String memberId;
+    @Column(name = "login_id",nullable = false,unique = true,length = 100)
+    private String loginId;
 
-    @Column(nullable = false, unique = true)
-    private String memberEmail;
+    @Column(name = "username",nullable = false,length = 100)
+    private String username;
 
-    @Column(nullable = false)
-    private String memberPassword;
+    @Column(name = "password",nullable = false,length = 100)
+    private String password;
 
-    private String memberName;
+    @Column(name = "email",nullable = false,length = 100)
+    private String email;
 
-    private String memberRole = "ROLE_USER";
+    @Column(name = "role",columnDefinition = "ENUM('ROLE_USER','ROLE_ADMIN') DEFAULT 'ROLE_USER'")
+    private String role;
+
+    @Column (name = "status",columnDefinition = "CHAR(1) CHECK (status IN ('Y','N')) DEFAULT 'Y'")
+    private String status;
+
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false )
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "modified_at")
+    private LocalDateTime modifiedAt;
+
+    @Column(name = "tel", length = 100,nullable = false)
+    private String tel;
+
+    @Column(name = "image", length = 100, columnDefinition = "VARCHAR(100) DEFAULT 'default.img'")
+    private String image;
+
+    public void updateInfo(String username, String email, String tel, String image) {
+        this.username = username;
+        this.email = email;
+        this.tel = tel;
+        this.image = image;
+
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
 }

@@ -7,6 +7,8 @@ import com.multi.travel.common.jwt.TokenProvider;
 import com.multi.travel.common.jwt.dto.TokenDto;
 import com.multi.travel.common.jwt.repository.RefreshTokenRepository;
 import io.jsonwebtoken.Claims;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -29,34 +31,34 @@ public class TokenService {
 
     /** JWT 토큰 생성 (Access + Refresh) */
     public <T> TokenDto createToken(T t) {
-        String memberEmail;
+        String loginId;
         List<String> roles;
         String accessToken;
         String refreshToken;
 
-        // 1️⃣ JWT 문자열에서 claims 추출
+        //  JWT 문자열에서 claims 추출
         if (t instanceof String jwt) {
             String pureToken = resolveToken(jwt);
             Claims claims = tokenProvider.parseClaimes(pureToken);
-            memberEmail = claims.getSubject();
+            loginId = claims.getSubject();
             String role = (String) claims.get("auth");
             roles = Arrays.asList(role.split(","));
         }
-        // 2️⃣ Map 형태 (email + roles)일 때
+        //  Map 형태 (email + roles)일 때
         else if (t instanceof Map) {
             Map<String, Object> data = (Map<String, Object>) t;
-            memberEmail = (String) data.get("email");
+            loginId = (String) data.get("loginId");
             roles = (List<String>) data.get("roles");
         }
         else {
             throw new IllegalArgumentException("Invalid token type !!");
         }
 
-        // 3️⃣ RefreshToken 관리
-        refreshToken = handleRefreshToken(memberEmail);
+        //  RefreshToken 관리
+        refreshToken = handleRefreshToken(loginId);
 
-        // 4️⃣ AccessToken 생성
-        accessToken = createAccessToken(memberEmail, roles);
+        // AccessToken 생성
+        accessToken = createAccessToken(loginId, roles);
 
         return TokenDto.builder()
                 .accessToken(accessToken)
@@ -74,10 +76,10 @@ public class TokenService {
 
     /** RefreshToken 처리 (JPA 버전) */
     @Transactional(noRollbackFor = RefreshTokenException.class)
-    public String handleRefreshToken(String memberId) {
+    public String handleRefreshToken(String loginId) {
         log.info("🔍 handleRefreshToken() 실행 중, 트랜잭션 활성 상태: {}", TransactionSynchronizationManager.isActualTransactionActive());
 
-        Optional<RefreshToken> existingToken = refreshTokenRepository.findByUserId(memberId);
+        Optional<RefreshToken> existingToken = refreshTokenRepository.findByLoginId(loginId);
 
         if (existingToken.isPresent()) {
             RefreshToken token = existingToken.get();
@@ -85,17 +87,17 @@ public class TokenService {
 
             // 만료 여부 확인
             if (token.getExpiredAt().isBefore(now)) {
-                refreshTokenRepository.deleteByUserId(memberId);
+                refreshTokenRepository.deleteByLoginId(loginId);
                 throw new RefreshTokenException("Refresh token이 만료되었습니다. 다시 로그인해주세요");
             } else {
                 return token.getRefreshToken();
             }
         } else {
-            String reToken = createRefreshToken(memberId);
+            String reToken = createRefreshToken(loginId);
 
             if (tokenProvider.validateToken(reToken)) {
                 RefreshToken newToken = RefreshToken.builder()
-                        .userId(memberId)
+                        .loginId(loginId)
                         .refreshToken(reToken)
                         .expiredAt(tokenProvider.getRefreshTokenExpiry())
                         .issuedAt(LocalDateTime.now())
@@ -108,13 +110,13 @@ public class TokenService {
     }
 
     /** AccessToken 생성 */
-    private String createAccessToken(String memberEmail, List<String> roles) {
-        return tokenProvider.generateToken(memberEmail, roles, "A");
+    private String createAccessToken(String loginId, List<String> roles) {
+        return tokenProvider.generateToken(loginId, roles, "A");
     }
 
     /** RefreshToken 생성 */
-    private String createRefreshToken(String memberEmail) {
-        return tokenProvider.generateToken(memberEmail, null, "R");
+    private String createRefreshToken(String loginId) {
+        return tokenProvider.generateToken(loginId, null, "R");
     }
 
     /** 로그아웃 시 RefreshToken 삭제 */
@@ -122,7 +124,21 @@ public class TokenService {
     public void deleteRefreshToken(String accessToken) {
         String token = resolveToken(accessToken);
         String Id = tokenProvider.getUserId(token);
-        refreshTokenRepository.deleteByUserId(Id);
+        refreshTokenRepository.deleteByLoginId(Id);
         log.info("리프레쉬 토큰 삭제 완료: {}", Id);
+    }
+
+    public String resolveTokenFromCookies(HttpServletRequest request) {
+        if (request.getCookies() == null) {
+            return null;
+        }
+
+        for (Cookie cookie : request.getCookies()) {
+            if (cookie.getName().equals("access_token")) {
+                return cookie.getValue();
+            }
+        }
+
+        return null;
     }
 }
