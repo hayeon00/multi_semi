@@ -36,8 +36,8 @@ public class CustomUser implements UserDetails {
 //    }
     @Override
     public String getUsername() {
-        return email;
-    }// return email; // 이메일을 반환하여 Spring Security에서 로그인 ID로 사용
+        return memberId;
+    } // 아이디르 반환하여 Spring Security에서 로그인 ID로 사용
 
     @Override
     public boolean isAccountNonExpired() {

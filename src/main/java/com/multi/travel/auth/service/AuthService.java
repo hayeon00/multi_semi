@@ -4,9 +4,8 @@ package com.multi.travel.auth.service;
 import com.multi.travel.common.exception.DuplicateUsernameException;
 import com.multi.travel.common.jwt.dto.TokenDto;
 import com.multi.travel.common.jwt.service.TokenService;
-import com.multi.travel.member.entity.Member;
 import com.multi.travel.member.dto.MemberReqDto;
-import com.multi.travel.member.dto.MemberResDto;
+import com.multi.travel.member.entity.Member;
 import com.multi.travel.member.repository.MemberRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -31,53 +30,51 @@ public class AuthService {
 
     /** 회원가입 */
     @Transactional
-    public MemberResDto signup(MemberReqDto memberReqDto) {
-        if (memberRepository.findByMemberEmail(memberReqDto.getMemberEmail()).isPresent()) {
-            throw new DuplicateUsernameException("이메일이 중복됩니다");
+    public Member signup(MemberReqDto memberReqDto) {
+        if (memberRepository.findByLoginId(memberReqDto.getLoginId()).isPresent()) {
+            throw new DuplicateUsernameException("아이디가 중복됩니다");
         }
 
         Member member = Member.builder()
-                .memberId(memberReqDto.getMemberId())
-                .memberEmail(memberReqDto.getMemberEmail())
-                .memberPassword(passwordEncoder.encode(memberReqDto.getMemberPassword()))
-                .memberName(memberReqDto.getMemberName())
-                .memberRole("ROLE_USER")
+                .loginId(memberReqDto.getLoginId())
+                .email(memberReqDto.getEmail())
+                .password(passwordEncoder.encode(memberReqDto.getPassword()))
+                .username(memberReqDto.getUsername())
+                .role("ROLE_USER")
+                .tel(memberReqDto.getTel())
+                .status("Y")
                 .build();
 
         memberRepository.save(member);
 
-        return MemberResDto.builder()
-                .memberId(member.getMemberId())
-                .memberCode(member.getMemberCode())
-                .memberEmail(member.getMemberEmail())
-                .memberName(member.getMemberName())
-                .memberRole(member.getMemberRole())
-                .build();
+        return member;
     }
 
     /** 로그인 */
     public TokenDto login(MemberReqDto memberReqDto) {
-        // 1️⃣ DB에서 회원 찾기
-        Member member = memberRepository.findByMemberId(memberReqDto.getMemberId())
+        //  DB에서 회원 찾기
+        Member member = memberRepository.findByLoginId(memberReqDto.getLoginId())
                 .orElseThrow(() -> new BadCredentialsException("회원 정보를 찾을 수 없습니다."));
 
 
-        // 2️⃣ 비밀번호 검증
-        if (!passwordEncoder.matches(memberReqDto.getMemberPassword(), member.getMemberPassword())) {
+        // 비밀번호 검증
+        if (!passwordEncoder.matches(memberReqDto.getPassword(), member.getPassword())) {
             throw new BadCredentialsException("비밀번호가 일치하지 않습니다.");
         }
 
-        // 3️⃣ 인증 객체 생성
-        UserDetails userDetails = customUserDetailService.loadUserByUsername(memberReqDto.getMemberEmail());
+        // 인증 객체 생성
+        UserDetails userDetails = customUserDetailService.loadUserByUsername(memberReqDto.getLoginId());
         List<String> roles = userDetails.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .toList();
 
-        // 4️⃣ 토큰 발급
+        // 토큰 발급
         Map<String, Object> loginData = new HashMap<>();
-        loginData.put("email", memberReqDto.getMemberEmail());
+        loginData.put("loginId", memberReqDto.getLoginId());
         loginData.put("roles", roles);
 
         return tokenService.createToken(loginData);
     }
+
+
 }

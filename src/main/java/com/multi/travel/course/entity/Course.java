@@ -3,6 +3,8 @@ package com.multi.travel.course.entity;
 import com.multi.travel.plan.entity.TripPlan;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -30,20 +32,27 @@ public class Course {
     private Long courseId;
 
     /** 여러 Plan이 하나의 Course를 참조하므로, 역참조 가능하도록 설정 */
-    @OneToMany(mappedBy = "course")
+    @OneToMany(mappedBy = "course", fetch = FetchType.LAZY)
     private List<TripPlan> plans = new ArrayList<>();
 
-    @Column(name = "status", length = 1)
-    private String status = "Y";  // Y: 활성, N: 삭제
+    @Column(name = "status", length = 1, nullable = false)
+    private String status = "Y";  // Y=공개, N=비공개
 
-    @Column(name = "created_at")
-    private LocalDateTime createdAt = LocalDateTime.now();
+    /** 추천 수 (추후 Recommend 테이블과 연동 예정) */
+    @Column(name = "rec_count", columnDefinition = "INT DEFAULT 0")
+    private Integer recCount = 0;
 
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
     @Column(name = "modified_at")
-    private LocalDateTime modifiedAt = LocalDateTime.now();
+    private LocalDateTime modifiedAt;
 
     /** 코스 아이템 리스트 (1:N) */
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default //@Builder.Default를 붙이지 않으면 Lombok의 Builder가 null로 초기화해버림
     private List<CourseItem> items = new ArrayList<>();
 
     // cascade = CascadeType.ALL

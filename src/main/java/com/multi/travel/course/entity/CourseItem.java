@@ -30,15 +30,15 @@ public class CourseItem {
     private Course course;
 
     /** 장소 구분 (TOUR_SPOT / ACCOMMODATION) */
-    @Column(name = "place_type", length = 50)
+    @Column(name = "place_type", length = 50, nullable = false)
     private String placeType;
 
-    /** 장소 아이디 (관광지 or 숙소) */
-    @Column(name = "place_id")
+    /** 장소 ID (TourSpot.id 또는 Acc.id) */
+    @Column(name = "place_id", nullable = false)
     private Long placeId;
 
-    /** 순서 */
-    @Column(name = "order_no")
+    /** 순서 (사용자 드래그 순서 기준) */
+    @Column(name = "order_no", nullable = false)
     private Integer orderNo;
 
 }

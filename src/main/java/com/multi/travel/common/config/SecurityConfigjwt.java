@@ -8,6 +8,7 @@ import com.multi.travel.common.jwt.TokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -15,9 +16,17 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+
+import java.util.Arrays;
 
 @Configuration
 @RequiredArgsConstructor
+@EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfigjwt {
 
     private final TokenProvider tokenProvider;
@@ -35,7 +44,7 @@ public class SecurityConfigjwt {
     public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationEntrypoint jwtAuthenticationEntrypoint) throws Exception {
 
         http.csrf(AbstractHttpConfigurer::disable)
-              //  .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .sessionManagement(session ->
@@ -43,12 +52,14 @@ public class SecurityConfigjwt {
 
 
                 .authorizeHttpRequests(auth->auth
-                        .requestMatchers("/auth/**").permitAll()
-                        .requestMatchers("/api/v1/products/**").permitAll()
-                        .requestMatchers("/api/v1/reviews/**").hasAnyRole("ADMIN","USER")
-                        .requestMatchers("/api/v1/products-management/**").hasAnyRole("ADMIN")
-                        .requestMatchers("/api/**").hasAnyRole("ADMIN","USER")
-                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+
+                        .requestMatchers("/login", "/signup", "/css/**", "/images/**").permitAll()
+                        .requestMatchers("/auth/**", "/api/auth/**").permitAll()
+
+                        .requestMatchers("/api/**").permitAll() // /api/plans, /api/courses 요청 시 로그인 없이도 테스트 가능하게 설정
+                                                                  // TODO: 전체 구현 완료 시 삭제 예정
+
+
 
                         .anyRequest().authenticated())
 
@@ -64,19 +75,20 @@ public class SecurityConfigjwt {
         return http.build();
 
     }
-//    @Bean
-//    CorsConfigurationSource corsConfigurationSource() {
-//        CorsConfiguration configuration = new CorsConfiguration();
-//        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000")); // 모든포트허용 *
-//        configuration.setAllowedMethods(Arrays.asList("GET", "PUT", "POST", "DELETE")); // 허용할 메서드
-//        configuration.setAllowedHeaders(Arrays.asList("Content-Type", "Authorization")); // 허용할 헤더
-//        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();  //UrlBasedCorsConfigurationSource를 통해 특정 URL 패턴에 규칙을 등록
-//        source.registerCorsConfiguration("/**", configuration);
-//
-//        return source;
-//
-//    }
-//
+    // ✅ CORS 설정 추가 (쿠키 기반 통신 허용)
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:8090")); // 프론트 포트 (같으면 그대로)
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("Content-Type", "Authorization"));
+        configuration.setAllowCredentials(true); // ✅ 쿠키 전송 허용 (핵심)
+        configuration.setMaxAge(3600L);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
 
 
 }
