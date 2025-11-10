@@ -13,5 +13,4 @@ import java.util.List;
  * @since : 2025-11-08 토요일
  */
 public interface CourseItemRepository extends JpaRepository<CourseItem, Long> {
-    List<CourseItem> findByCourse_CourseIdOrderByOrderNo(Long courseId);
 }
