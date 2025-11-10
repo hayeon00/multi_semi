@@ -57,4 +57,14 @@ public class MemberService {
         member.setStatus("N");
         memberRepository.save(member);
     }
+
+
+
+    public MemberResDto findByLoginId(String loginIdFromToken) {
+
+        Member member = memberRepository.findByLoginId(loginIdFromToken)
+                .orElseThrow(() ->new IllegalArgumentException("해당회원이 존재하지 않습니다"));
+
+        return MemberResDto.fromEntity(member);
+    }
 }
