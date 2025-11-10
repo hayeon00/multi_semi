@@ -21,8 +21,9 @@ import lombok.*;
 public class Category {
 
     @Id
-    private String cat_code;
+    @Column(name = "cat_code")
+    private String catCode;
 
-    @Column(length = 100)
-    private String cat_name;
+    @Column(name = "cat_name", length = 100)
+    private String catName;
 }
