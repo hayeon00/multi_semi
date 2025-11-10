@@ -16,4 +16,5 @@ import java.util.Optional;
 
 public interface AccRepository extends JpaRepository<Acc,Long> {
     Optional<Acc> findByIdAndStatus(long id, String status);
+
 }
