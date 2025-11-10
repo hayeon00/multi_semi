@@ -104,7 +104,7 @@ public class ReviewService {
                         .title(review.getTitle())
                         .content(review.getContent())
                         .rating(review.getRating())
-                        .writer(review.getMember().getMemberName()) // member.getUsername() 등도 가능
+                        .writer(review.getMember().getUsername()) // member.getUsername() 등도 가능
                         .createdAt(review.getCreatedAt())
                         .imageUrls(
                                 review.getImages().stream()
@@ -126,7 +126,7 @@ public class ReviewService {
                 .title(review.getTitle())
                 .content(review.getContent())
                 .rating(review.getRating())
-                .writer(review.getMember().getMemberName())
+                .writer(review.getMember().getUsername())
                 .createdAt(review.getCreatedAt())
                 .imageUrls(
                         review.getImages().stream()

@@ -31,7 +31,7 @@ public class PlanService {
 
     public Long createTripPlan(PlanReqDto dto) {
 
-        Member member = memberRepository.findByMemberId(dto.getMemberId())
+        Member member = memberRepository.findByLoginId(dto.getMemberId())
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
         TourSpot attraction = tourSpotApiRepository.findById(dto.getTourSpotId())

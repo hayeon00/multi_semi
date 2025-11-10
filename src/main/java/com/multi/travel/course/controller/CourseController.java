@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
  * @since : 2025-11-08 토요일
  */
 @RestController
-@RequestMapping("/api/courses")
+@RequestMapping("/courses")
 @RequiredArgsConstructor
 public class CourseController {
 
