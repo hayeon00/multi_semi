@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -23,9 +24,9 @@ public class ApiController {
     private final ApiService apiService;
 
     @GetMapping("/tourlist")
-    public ResponseEntity<Object> collectAllTourSpots() {
+    public ResponseEntity<Object> collectAllTourSpots(@RequestParam int type) {
 
-        apiService.collectAllTourSpots();
+        apiService.collectAllTourSpots(type);
 
         return ResponseEntity.ok("All tour spots collected and inserted.");
     }
@@ -38,5 +39,11 @@ public class ApiController {
         return ResponseEntity.ok("All Acc collected and inserted.");
     }
 
+    @GetMapping("/detail")
+    public ResponseEntity<Object> collectAllDetails(@RequestParam int contentId, @RequestParam String type) {
+
+        apiService.insertDetail(contentId, "type");
+        return ResponseEntity.ok("All details collected and inserted.");
+    }
 }
 

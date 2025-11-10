@@ -8,6 +8,7 @@ package com.multi.travel.acc.serivce;
  * @since       : 25. 11. 9. 일요일
  */
 
+import com.multi.travel.acc.dto.AccDTO;
 import com.multi.travel.acc.entity.Acc;
 import com.multi.travel.acc.repository.AccRepository;
 import com.multi.travel.common.exception.AccommodationNotFound;
@@ -19,18 +20,75 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 public class AccService {
     private final AccRepository accRepository;
 
-    public Page<Acc> getAccListPaging(int page, int size, String sort) {
+    public List<AccDTO> getAccListPaging(int page, int size, String sort) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(sort).ascending());
-        return accRepository.findAll(pageable);
+        return TourSpotListEntityToDto(accRepository.findByStatus("Y", pageable));
     }
 
-    public Acc getAccDetail(@Valid long id) {
-        return accRepository.findByIdAndStatus(id, "Y")
-                .orElseThrow(()->new AccommodationNotFound(id));
+    public AccDTO getAccDetail(@Valid long id) {
+        Acc entity = accRepository.findByIdAndStatus(id, "Y")
+                .orElseThrow(() -> new AccommodationNotFound(id));
+        return AccEntityToDTO(entity, 0.0);
+
     }
+
+    private static List<AccDTO> TourSpotListEntityToDto(Page<Acc> accs) {
+        return accs.stream()
+                .map(acc -> AccEntityToDTO(acc, 0.0))
+                .collect(Collectors.toList());
+    }
+
+    public List<AccDTO> getAccSortByDistance(int page, int size, @Valid long id) {
+        Acc criteria = accRepository.findByIdAndStatus(id, "Y")
+                .orElseThrow(() -> new AccommodationNotFound(id));
+
+
+        Pageable pageable = PageRequest.of(page, size);
+
+
+        List<Object[]> results = accRepository.findNearestWithDistance(criteria.getMapx(), criteria.getMapy(), id, pageable);
+        return results.stream()
+                .map(obj -> {
+                    Long accId = (Long) obj[0];
+                    Double distance = (Double) obj[1];
+                    Acc acc = accRepository.findById(accId).orElseThrow(() -> new AccommodationNotFound(accId));
+                    acc.setDistanceKm(distance);
+                    return AccEntityToDTO(acc, distance);
+                })
+                .collect(Collectors.toList());
+
+    }
+
+    private static AccDTO AccEntityToDTO(Acc acc, Double distance) {
+        return AccDTO.builder()
+                .id(acc.getId())
+                .title(acc.getTitle())
+                .address(acc.getAddress())
+                .mapx(acc.getMapx())
+                .mapy(acc.getMapy())
+                .tel(acc.getTel())
+                .firstImage(acc.getFirstImage())
+                .firstImage2(acc.getFirstImage2())
+                .areacode(acc.getAreacode())
+                .recCount(acc.getRecCount() != null ? acc.getRecCount() : 0)
+                .sigungucode(acc.getSigungucode())
+                .lDongRegnCd(acc.getLDongRegnCd())
+                .contentId(acc.getContentId())
+                .status(acc.getStatus())
+                .distanceMeter(distance * 1000)
+                .cat_code("acc")
+                .createdAt(acc.getCreatedAt())
+                .modifiedAt(acc.getModifiedAt())
+                .build();
+    }
+
 }
