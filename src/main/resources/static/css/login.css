@@ -1,0 +1,149 @@
+/* ======================
+   공통 스타일
+====================== */
+* {
+    box-sizing: border-box;
+    font-family: 'Noto Sans KR', sans-serif;
+}
+
+body {
+    margin: 0;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* ======================
+   헤더 영역
+====================== */
+header {
+    width: 100%;
+    background: #e5e5e5;
+    padding: 20px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+header .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+header .logo img {
+    width: 50px;
+    height: 50px;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+header .title {
+    font-size: 22px;
+    font-weight: bold;
+}
+
+header nav a {
+    text-decoration: none;
+    color: #000;
+    font-size: 16px;
+}
+
+/* ======================
+   메인 콘텐츠
+====================== */
+main {
+    width: 80%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 100px;
+}
+
+.left-section {
+    flex: 1;
+    text-align: center;
+}
+
+.left-section h2 {
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.right-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    max-width: 400px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+label {
+    font-size: 13px;
+    font-weight: bold;
+    display: block;
+    margin-bottom: 5px;
+}
+
+input[type="text"],
+input[type="password"] {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #999;
+    border-radius: 3px;
+}
+
+.hint {
+    font-size: 11px;
+    color: #777;
+    margin-top: 3px;
+}
+
+.btn-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.btn {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #000;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.btn.login {
+    background: #000;
+    color: #fff;
+}
+
+.btn.signup {
+    background: #fff;
+    color: #000;
+}
+
+.msg {
+    margin-top: 15px;
+    font-size: 14px;
+    text-align: center;
+}
+
+/* ======================
+   푸터
+====================== */
+footer {
+    margin-top: 80px;
+    width: 100%;
+    text-align: center;
+    color: #aaa;
+    font-size: 13px;
+    padding: 20px 0;
+    border-top: 1px solid #eee;
+}

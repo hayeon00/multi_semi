@@ -2,7 +2,6 @@ package com.multi.travel.plan.service;
 
 import com.multi.travel.attraction.entity.Attraction;
 import com.multi.travel.attraction.repository.AttractionRepository;
-import com.multi.travel.member.entity.Member;
 import com.multi.travel.member.repository.MemberRepository;
 import com.multi.travel.plan.dto.PlanReqDto;
 import com.multi.travel.plan.entity.TripPlan;
