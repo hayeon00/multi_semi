@@ -10,7 +10,6 @@ package com.multi.travel.acc.repository;
 
 
 import com.multi.travel.acc.entity.Acc;
-import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

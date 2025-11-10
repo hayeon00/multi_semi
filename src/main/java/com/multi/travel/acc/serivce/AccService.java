@@ -12,8 +12,6 @@ import com.multi.travel.acc.dto.AccDTO;
 import com.multi.travel.acc.entity.Acc;
 import com.multi.travel.acc.repository.AccRepository;
 import com.multi.travel.common.exception.AccommodationNotFound;
-import com.multi.travel.tourspot.dto.TourSpotDTO;
-import com.multi.travel.tourspot.entity.TourSpot;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -24,7 +22,6 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -50,7 +47,7 @@ public class AccService {
                 .collect(Collectors.toList());
     }
 
-    public List<AccDTO> getAccSortByDistance(int page, int size, String sort, @Valid long id) {
+    public List<AccDTO> getAccSortByDistance(int page, int size, @Valid long id) {
         Acc criteria = accRepository.findByIdAndStatus(id, "Y")
                 .orElseThrow(() -> new AccommodationNotFound(id));
 
@@ -61,7 +58,7 @@ public class AccService {
 
 
         List<Object[]> results = accRepository.findNearestWithDistance(mapx, mapy, id, pageable);
-        List<AccDTO> dtos = results.stream()
+        return results.stream()
                 .map(obj -> {
                     Acc spot = (Acc) obj[0];
                     Double distance = (Double) obj[1];
@@ -70,7 +67,6 @@ public class AccService {
                 })
                 .collect(Collectors.toList());
 
-        return dtos;
     }
 
     private static AccDTO AccEntityToDTO(Acc acc, Double distance) {

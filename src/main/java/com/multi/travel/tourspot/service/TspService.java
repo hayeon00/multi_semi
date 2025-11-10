@@ -33,7 +33,6 @@ import java.util.stream.Collectors;
 public class TspService {
 
     private final TspRepository tspRepository;
-    private final CategoryRepository categoryRepository;
 
 
     public List<TourSpotDTO> getTourSpotList(int page, int size, String sort) {
@@ -55,7 +54,7 @@ public class TspService {
         return TourSpotListEntityToDto(tsps);
     }
 
-    public List<TourSpotDTO> getTspSortByDistance(int page, int size, String sort, Long id) {
+    public List<TourSpotDTO> getTspSortByDistance(int page, int size, Long id) {
         TourSpot criteria = tspRepository.findByIdAndStatus(id, "Y")
                 .orElseThrow(() -> new TourSpotNotFoundException(id));
 
@@ -66,7 +65,7 @@ public class TspService {
 
         List<Object[]> results = tspRepository.findNearestWithDistance(mapx, mapy, id, pageable);
 
-        List<TourSpotDTO> dtos = results.stream()
+        return results.stream()
                 .map(obj -> {
                     TourSpot spot = (TourSpot) obj[0];
                     Double distance = (Double) obj[1];
@@ -74,8 +73,6 @@ public class TspService {
                     return TourSpotEntityToDTO(spot, distance);
                 })
                 .collect(Collectors.toList());
-
-        return dtos;
     }
 
     private static List<TourSpotDTO> TourSpotListEntityToDto(Page<TourSpot> tsps) {

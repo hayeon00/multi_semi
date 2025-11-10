@@ -7,13 +7,9 @@ package com.multi.travel.category.entity;
  * @since       : 25. 11. 8. 토요일
  */
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.multi.travel.acc.entity.Acc;
-import com.multi.travel.tourspot.entity.TourSpot;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.List;
 
 @Entity
 @Table(name = "tb_cat")

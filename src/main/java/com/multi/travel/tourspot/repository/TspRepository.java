@@ -30,7 +30,7 @@ public interface TspRepository extends JpaRepository<TourSpot,Long> {
     Page<TourSpot> findByStatusAndTitleContainingIgnoreCase(String status, String keyword, Pageable pageable);
 
     @Query("""
-                SELECT t, 
+                SELECT t,
                        (6371 * acos(
                            cos(radians(:mapy)) * cos(radians(t.mapy)) *
                            cos(radians(t.mapx) - radians(:mapx)) +

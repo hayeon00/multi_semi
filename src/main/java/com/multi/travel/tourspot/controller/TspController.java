@@ -10,7 +10,6 @@ package com.multi.travel.tourspot.controller;
 
 import com.multi.travel.common.ResponseDto;
 import com.multi.travel.tourspot.dto.TourSpotDTO;
-import com.multi.travel.tourspot.entity.TourSpot;
 import com.multi.travel.tourspot.service.TspService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -63,11 +62,10 @@ public class TspController {
     @GetMapping("/distance")
     public ResponseEntity<ResponseDto> getTspSortByDistance(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "id") String sort,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam Long id)
     {
 
-        return ResponseEntity.ok(new ResponseDto(HttpStatus.OK, "success", tspService.getTspSortByDistance(page, size, sort, id)));
+        return ResponseEntity.ok(new ResponseDto(HttpStatus.OK, "success", tspService.getTspSortByDistance(page, size, id)));
     }
 }
