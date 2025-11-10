@@ -11,7 +11,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -22,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
  * @since : 2025. 11. 8. 토요일
  */
 @RestController
-@RequestMapping("/api/members")
+@RequestMapping("/members")
 @RequiredArgsConstructor
 @Slf4j
 public class MemberController {
@@ -32,14 +31,14 @@ public class MemberController {
     private final TokenService tokenService;
 
 
-    @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping
-    public ResponseEntity<ResponseDto> getMembers() {
-        return ResponseEntity.ok(
-                new ResponseDto(HttpStatus.OK,"전체회원조회 성공",memberService.findAll())
-
-        );
-    }
+//    @PreAuthorize("hasRole('ADMIN')")
+//    @GetMapping
+//    public ResponseEntity<ResponseDto> getMembers() {
+//        return ResponseEntity.ok(
+//                new ResponseDto(HttpStatus.OK,"전체회원조회 성공",memberService.findAll())
+//
+//        );
+//    }
 
     @GetMapping("/{loginId}")
     public ResponseEntity<ResponseDto> getOneMember(@PathVariable String loginId) {
@@ -74,14 +73,14 @@ public class MemberController {
         return ResponseEntity.ok(new ResponseDto(HttpStatus.OK, "회원정보 수정 성공", null));
 
     }
-    // 🔹 회원 삭제
-    @PreAuthorize("hasRole('ADMIN')")  // ✅ 관리자만 가능
-    @DeleteMapping("/{id}")
-    public ResponseEntity<ResponseDto> deleteMember(@PathVariable Long id) {
-        memberService.deleteMember(id);
-        return ResponseEntity.ok(
-                new ResponseDto(HttpStatus.OK, "회원 삭제 성공", null)
-        );
-    }
+//    // 🔹 회원 삭제
+//    @PreAuthorize("hasRole('ADMIN')")  // ✅ 관리자만 가능
+//    @DeleteMapping("/{id}")
+//    public ResponseEntity<ResponseDto> deleteMember(@PathVariable Long id) {
+//        memberService.deleteMember(id);
+//        return ResponseEntity.ok(
+//                new ResponseDto(HttpStatus.OK, "회원 삭제 성공", null)
+//        );
+//    }
 
 }

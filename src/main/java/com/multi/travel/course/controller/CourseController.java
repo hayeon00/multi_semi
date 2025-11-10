@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 /**
  * Please explain the class!!!
  *
- * @author : lsa03
+ * @author : seunga03
  * @filename : CourseController
  * @since : 2025-11-08 토요일
  */
@@ -67,11 +67,15 @@ public class CourseController {
 
     /** 아이템 추가 */
     @PostMapping("/{courseId}/items")
-    public ResponseEntity<CourseItemResDto> addCourseItem(
+    public ResponseEntity<ResponseDto> addCourseItem(
             @PathVariable Long courseId,
             @RequestBody CourseItemReqDto dto) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(courseService.addCourseItem(courseId, dto));
+//        return ResponseEntity.status(HttpStatus.CREATED)
+//                .body(courseService.addCourseItem(courseId, dto));
+        CourseItemResDto response = courseService.addCourseItem(courseId, dto);
+        return ResponseEntity.ok(
+                new ResponseDto(HttpStatus.CREATED, "코스 아이템 추가 성공", response)
+        );
     }
 
     /** 아이템 순서 일괄 수정 */

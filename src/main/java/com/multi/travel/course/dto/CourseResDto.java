@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * 코스 응답 dto
  *
- * @author : lsa03
+ * @author : seunga03
  * @filename : CourseResponseDto
  * @since : 2025-11-08 토요일
  */
