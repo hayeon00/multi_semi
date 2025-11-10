@@ -29,17 +29,17 @@ public interface TspRepository extends JpaRepository<TourSpot,Long> {
 
     Page<TourSpot> findByStatusAndTitleContainingIgnoreCase(String status, String keyword, Pageable pageable);
 
-    @Query("""
-                SELECT t,
+    @Query(value = """
+                SELECT t.id,
                        (6371 * acos(
                            cos(radians(:mapy)) * cos(radians(t.mapy)) *
                            cos(radians(t.mapx) - radians(:mapx)) +
                            sin(radians(:mapy)) * sin(radians(t.mapy))
                        )) AS distance
-                FROM TourSpot t
+                FROM tb_tsp t
                 WHERE t.status = 'Y' AND t.id <> :id
                 ORDER BY distance ASC
-            """)
+            """, nativeQuery = true)
     List<Object[]> findNearestWithDistance(@Param("mapx") BigDecimal mapx,
                                            @Param("mapy") BigDecimal mapy,
                                            @Param("id") Long id,

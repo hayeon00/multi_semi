@@ -51,19 +51,18 @@ public class AccService {
         Acc criteria = accRepository.findByIdAndStatus(id, "Y")
                 .orElseThrow(() -> new AccommodationNotFound(id));
 
-        BigDecimal mapx = criteria.getMapx();
-        BigDecimal mapy = criteria.getMapy();
 
         Pageable pageable = PageRequest.of(page, size);
 
 
-        List<Object[]> results = accRepository.findNearestWithDistance(mapx, mapy, id, pageable);
+        List<Object[]> results = accRepository.findNearestWithDistance(criteria.getMapx(), criteria.getMapy(), id, pageable);
         return results.stream()
                 .map(obj -> {
-                    Acc spot = (Acc) obj[0];
+                    Long accId = (Long) obj[0];
                     Double distance = (Double) obj[1];
-                    spot.setDistanceKm(distance);
-                    return AccEntityToDTO(spot, distance);
+                    Acc acc = accRepository.findById(accId).orElseThrow(() -> new AccommodationNotFound(accId));
+                    acc.setDistanceKm(distance);
+                    return AccEntityToDTO(acc, distance);
                 })
                 .collect(Collectors.toList());
 

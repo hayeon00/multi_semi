@@ -58,17 +58,16 @@ public class TspService {
         TourSpot criteria = tspRepository.findByIdAndStatus(id, "Y")
                 .orElseThrow(() -> new TourSpotNotFoundException(id));
 
-        BigDecimal mapx = criteria.getMapx();
-        BigDecimal mapy = criteria.getMapy();
 
         Pageable pageable = PageRequest.of(page, size);
 
-        List<Object[]> results = tspRepository.findNearestWithDistance(mapx, mapy, id, pageable);
+        List<Object[]> results = tspRepository.findNearestWithDistance(criteria.getMapx(), criteria.getMapy(), id, pageable);
 
         return results.stream()
                 .map(obj -> {
-                    TourSpot spot = (TourSpot) obj[0];
+                    Long tspId = (Long)obj[0];
                     Double distance = (Double) obj[1];
+                    TourSpot spot = tspRepository.findById(tspId).orElseThrow(() -> new TourSpotNotFoundException(id));
                     spot.setDistanceKm(distance);
                     return TourSpotEntityToDTO(spot, distance);
                 })
