@@ -27,7 +27,7 @@ public class CustomUserDetailService implements UserDetailsService {
 
         return CustomUser.builder()
                 .email(member.getEmail())
-                .memberPassword(member.getPassword())
+                .password(member.getPassword())
                 .authorities(Collections.singletonList(
                         new SimpleGrantedAuthority(member.getRole())
                 ))
