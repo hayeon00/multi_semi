@@ -130,4 +130,16 @@ public class CourseController {
         );
     }
 
+    /** 추천순 코스 목록 조회 */
+    @GetMapping("/popular")
+    public ResponseEntity<ResponseDto> getPopularCourses(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "6") int size
+    ) {
+        return ResponseEntity.ok(
+                new ResponseDto(HttpStatus.OK, "추천순 코스 목록 조회 성공",
+                        courseService.getPopularCourses(page, size))
+        );
+    }
+
 }

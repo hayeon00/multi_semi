@@ -14,4 +14,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
  */
 public interface CourseRepository extends JpaRepository<Course, Long> {
     Page<Course> findByStatus(String status, Pageable pageable);
+
+    // 추천순 정렬 조회
+    Page<Course> findByStatusOrderByRecCountDesc(String status, Pageable pageable);
 }
