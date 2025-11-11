@@ -57,7 +57,7 @@ public class ApiService {
                     + "&MobileApp=test"
                     + "&_type=json";
 
-    private static final int MAX_AREA = 100;
+    private static final int MAX_AREA = 45;
     private static final int[] codes = {
             11, 26, 27, 28, 29, 30, 31, 36_110, 41, 43, 44, 46, 47, 48, 50, 51, 52
     };

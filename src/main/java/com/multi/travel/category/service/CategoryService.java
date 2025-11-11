@@ -26,8 +26,8 @@ public class CategoryService {
         Category category = categoryRepository.findById(cateCode)
                 .orElseThrow(() -> new EntityNotFoundException("카테고리를 찾을 수 없습니다. cateCode=" + cateCode));
         return CategoryDTO.builder()
-                .cateCode(category.getCat_code())
-                .cateName(category.getCat_name())
+                .cateCode(category.getCatCode())
+                .cateName(category.getCatName())
                 .build();
     }
 
