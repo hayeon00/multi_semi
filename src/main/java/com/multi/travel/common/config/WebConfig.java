@@ -24,6 +24,12 @@ public class WebConfig implements WebMvcConfigurer {
     @Value("${image.review.add-resource-handler}")
     private String reviewHandler;
 
+    @Value("${image.acc.add-resource-locations}")
+    private String accLocations;
+
+    @Value("${image.acc.add-resource-handler}")
+    private String accHandler;
+
     @Bean
     public RestTemplate restTemplate() {
         return new RestTemplate();
@@ -33,6 +39,8 @@ public class WebConfig implements WebMvcConfigurer {
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler(reviewHandler)
                 .addResourceLocations(reviewLocation);
+        registry.addResourceHandler(accHandler)
+                .addResourceLocations(accLocations);
     }
 }
 
