@@ -48,6 +48,7 @@ public class Review {
 
     // 이미지 연관관계
     @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default // 추가 이유: Builder로 생성할 때도 초기값이 반영되도록
     private List<ReviewImage> images = new ArrayList<>();
 
     @PrePersist

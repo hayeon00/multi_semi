@@ -1,5 +1,7 @@
 package com.multi.travel.course.service;
 
+import com.multi.travel.category.CategoryRepository;
+import com.multi.travel.category.entity.Category;
 import com.multi.travel.course.dto.*;
 import com.multi.travel.course.entity.Course;
 import com.multi.travel.course.entity.CourseItem;
@@ -9,11 +11,11 @@ import com.multi.travel.member.entity.Member;
 import com.multi.travel.plan.entity.TripPlan;
 import com.multi.travel.plan.repository.TripPlanRepository;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.persistence.ManyToOne;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,6 +36,7 @@ public class CourseService {
     private final CourseRepository courseRepository;
     private final CourseItemRepository itemRepository;
     private final TripPlanRepository tripPlanRepository;
+    private final CategoryRepository categoryRepository;
 
     /** 코스 생성 */
     public CourseResDto createCourse(CourseReqDto dto) {
@@ -61,13 +64,17 @@ public class CourseService {
 
         // 아이템 추가
         dto.getItems().forEach(itemDto -> {
+            Category category = categoryRepository.findById(itemDto.getCategoryCode())
+                    .orElseThrow(() -> new EntityNotFoundException("카테고리를 찾을 수 없습니다. code=" + itemDto.getCategoryCode()));
+
             CourseItem item = CourseItem.builder()
                     .course(course)
-                    .placeType(itemDto.getPlaceType())
+                    .category(category)
                     .placeId(itemDto.getPlaceId())
                     .orderNo(itemDto.getOrderNo())
                     .dayNo(itemDto.getDayNo())
                     .build();
+
             course.addItem(item);
         });
 
@@ -94,11 +101,14 @@ public class CourseService {
     /** 아이템 추가 */
     public CourseItemResDto addCourseItem(Long courseId, CourseItemReqDto dto) {
         Course course = courseRepository.findById(courseId)
-                .orElseThrow(() -> new EntityNotFoundException("해당 ID(" + courseId + ")의 코스를 찾을 수 없습니다."));
+                .orElseThrow(() -> new EntityNotFoundException("코스를 찾을 수 없습니다. id=" + courseId));
+
+        Category category = categoryRepository.findById(dto.getCategoryCode())
+                .orElseThrow(() -> new EntityNotFoundException("카테고리를 찾을 수 없습니다. code=" + dto.getCategoryCode()));
 
         CourseItem item = CourseItem.builder()
                 .course(course)
-                .placeType(dto.getPlaceType())
+                .category(category)
                 .placeId(dto.getPlaceId())
                 .orderNo(dto.getOrderNo())
                 .dayNo(dto.getDayNo())
@@ -106,17 +116,35 @@ public class CourseService {
 
         itemRepository.save(item);
         return mapToItemResDto(item);
+
     }
 
     /** 아이템 순서 일괄 수정 */
+    @Transactional
     public void updateItemsOrder(Long courseId, List<CourseOrderUpdateReqDto.OrderUpdateItem> items) {
-        for (CourseOrderUpdateReqDto.OrderUpdateItem order : items) {
-            CourseItem item = itemRepository.findById(order.getItemId())
-                    .orElseThrow(() -> new EntityNotFoundException("해당 ID(" + order.getItemId() + ")의 장소를 찾을 수 없습니다."));
 
-            item.setOrderNo(order.getOrderNo());
-            itemRepository.save(item);
+        if (items == null || items.isEmpty()) {
+            throw new IllegalArgumentException("수정할 아이템 목록이 비어 있습니다.");
         }
+
+        // 프론트가 같은 dayNo의 아이템들만 보내므로, 대표 dayNo를 한 번 가져옴
+        Integer dayNo = items.get(0).getDayNo();
+
+        // 해당 코스, 해당 일차의 기존 아이템들 조회
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new EntityNotFoundException("코스를 찾을 수 없습니다. id=" + courseId));
+
+        List<CourseItem> courseItems = itemRepository.findByCourseAndDayNoOrderByOrderNoAsc(course, dayNo);
+
+        // 들어온 요청을 기준으로 orderNo 갱신
+        for (CourseOrderUpdateReqDto.OrderUpdateItem orderDto : items) {
+            courseItems.stream()
+                    .filter(i -> i.getItemId().equals(orderDto.getItemId()))
+                    .findFirst()
+                    .ifPresent(i -> i.setOrderNo(orderDto.getOrderNo()));
+        }
+
+        itemRepository.saveAll(courseItems);
     }
 
     /** 코스 하루별 조회 */
@@ -133,9 +161,46 @@ public class CourseService {
     }
 
 
-    /** TODO: 특정 코스의 아이템 삭제 구현 필요 */
+    /** 특정 코스의 아이템 삭제 */
+    @Transactional
+    public void deleteCourseItem(Long courseId, Long itemId) {
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new EntityNotFoundException("코스를 찾을 수 없습니다. id=" + courseId));
 
-    /** TODO: 코스 삭제 (Soft Delete) 구현 필요 */
+        CourseItem item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new EntityNotFoundException("아이템을 찾을 수 없습니다. id=" + itemId));
+
+        // 코스 소유 검증 (보안 차원)
+        if (!item.getCourse().getCourseId().equals(courseId)) {
+            throw new IllegalArgumentException("해당 코스의 아이템이 아닙니다.");
+        }
+
+        itemRepository.delete(item); // 물리 삭제
+    }
+
+
+    /** 코스 삭제 (Soft Delete) */
+    @Transactional
+    public void deleteCourse(Long courseId) {
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new EntityNotFoundException("코스를 찾을 수 없습니다. id=" + courseId));
+
+        course.setStatus("N"); // Soft Delete 처리
+    }
+
+
+    /** 추천순 조회 */
+    @Transactional(readOnly = true)
+    public List<CourseResDto> getPopularCourses(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("recCount").descending());
+        Page<Course> courses = courseRepository.findByStatus("Y", pageable);
+
+        return courses.stream()
+                .map(this::mapToCourseResDto)
+                .toList();
+    }
+
+
 
     /** DTO 변환 */
     private CourseResDto mapToCourseResDto(Course course) {
@@ -162,7 +227,8 @@ public class CourseService {
     private CourseItemResDto mapToItemResDto(CourseItem item) {
         return CourseItemResDto.builder()
                 .itemId(item.getItemId())
-                .placeType(item.getPlaceType())
+                .categoryCode(item.getCategory().getCatCode())
+                .categoryName(item.getCategory().getCatName())
                 .placeId(item.getPlaceId())
                 .orderNo(item.getOrderNo())
                 .dayNo(item.getDayNo())

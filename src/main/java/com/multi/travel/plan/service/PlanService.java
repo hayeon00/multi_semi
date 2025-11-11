@@ -80,13 +80,16 @@ public class PlanService {
                     .toList();
 
             for (CourseItem item : items) {
+                String categoryCode = item.getCategory().getCatCode();
+                String categoryName = item.getCategory().getCatName();
+
                 CoursePlaceDto.CoursePlaceDtoBuilder builder = CoursePlaceDto.builder()
                         .id(item.getPlaceId())
-                        .type(item.getPlaceType())
+                        .type(categoryCode) // 카테고리 코드 저장
                         .orderNo(item.getOrderNo())
                         .dayNo(item.getDayNo());
 
-                if ("TOUR_SPOT".equals(item.getPlaceType())) {
+                if ("TOUR_SPOT".equals(categoryCode)) {
                     tourSpotApiRepository.findById(item.getPlaceId())
                             .ifPresent(spot -> builder
                                     .title(spot.getTitle())
@@ -94,7 +97,7 @@ public class PlanService {
                                     .mapx(spot.getMapx().toPlainString())
                                     .mapy(spot.getMapy().toPlainString())
                                     );
-                } else if ("ACCOMMODATION".equals(item.getPlaceType())) {
+                } else if ("ACCOMMODATION".equals(categoryCode)) {
                     accRepository.findById(item.getPlaceId())
                             .ifPresent(acc -> builder
                                     .title(acc.getTitle())
