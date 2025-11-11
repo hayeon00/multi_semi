@@ -178,8 +178,6 @@ public class CourseService {
     }
 
 
-
-
     /** 코스 삭제 (Soft Delete) */
     @Transactional
     public void deleteCourse(Long courseId) {
