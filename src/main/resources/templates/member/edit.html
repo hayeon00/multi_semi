@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>회원정보 수정 | TRAVEL PLANING</title>
+    <!-- 공통 CSS (네비게이션, 푸터 등) -->
+    <link th:href="@{/css/common.css}" rel="stylesheet">
+    <!-- 회원정보 수정 전용 CSS -->
+    <link th:href="@{/css/member-edit.css}" rel="stylesheet">
+</head>
+
+<body>
+<!-- ======================
+     헤더 영역
+====================== -->
+<header>
+    <div class="logo">
+        <img th:src="@{/images/logo.png}" alt="Logo">
+        <span class="title">TRAVEL PLANING</span>
+    </div>
+
+    <div>
+        <span th:text="${member.username} + ' 님 환영합니다.'"></span>
+        &nbsp;&nbsp;
+        <nav>
+            <a th:href="@{/}">Home</a> |
+            <a th:href="@{/mypage}">마이페이지</a> |
+            <a th:href="@{/logout}">로그아웃</a>
+        </nav>
+    </div>
+</header>
+
+<!-- ======================
+     메인 콘텐츠
+====================== -->
+<main>
+    <form th:object="${member}" class="member-form" enctype="multipart/form-data">
+        <!-- 왼쪽: 프로필 이미지 -->
+        <img th:src="${member.imageUrl != null ? member.imageUrl : '/images/default-profile.png'}"
+             alt="프로필 사진" class="profile-img" id="profile-preview">
+
+            <label class="photo-btn">
+                사진 수정
+                <input type="file" name="imageFile" id="profileImage" accept="image/*" hidden>
+            </label>
+        </div>
+
+        <!-- 오른쪽: 회원정보 입력 -->
+        <div class="right-section">
+
+            <div class="form-group">
+                <label for="loginId">아이디 (로그인 ID)</label>
+                <input type="text" th:field="*{loginId}" id="loginId" readonly>
+            </div>
+
+            <div class="form-group">
+                <label for="username">이름</label>
+                <input type="text" th:field="*{username}" id="username" placeholder="이름을 입력하세요">
+            </div>
+
+            <div class="form-group">
+                <label for="email">이메일</label>
+                <input type="email" th:field="*{email}" id="email" readonly>
+            </div>
+
+            <div class="form-group">
+                <label for="tel">전화번호</label>
+                <input type="text" th:field="*{tel}" id="tel" placeholder="전화번호를 입력하세요">
+            </div>
+
+            <div class="form-group">
+                <label for="pw">비밀번호 변경</label>
+                <input type="password" name="pw" id="pw" placeholder="새 비밀번호 (선택)">
+            </div>
+
+            <div class="btn-group">
+                <button type="submit" class="btn submit">수정완료</button>
+                <button type="button" class="btn cancel" onclick="location.href='/mypage'">뒤로가기</button>
+            </div>
+        </div>
+    </form>
+</main>
+
+<!-- ======================
+     푸터
+====================== -->
+<footer>
+    <p>© 2025 TRAVEL PLANING</p>
+</footer>
+
+<!-- ======================
+     JS 로직
+====================== -->
+<script>
+    // 🔹 프로필 이미지 미리보기 기능
+    document.getElementById('profileImage').addEventListener('change', function (e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (event) {
+                document.getElementById('profile-preview').src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // 🔹 PUT 요청으로 회원정보 수정 (API 호출)
+    document.querySelector('.member-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const formData = new FormData(e.target);
+
+        const response = await fetch('/members/update', {
+            method: 'PUT',
+            body: formData,
+            credentials: 'include' // 쿠키 자동 포함
+        });
+
+        if (response.ok) {
+            alert("회원정보가 수정되었습니다!");
+            location.href = "/mypage";
+        } else {
+            const msg = await response.text();
+            alert("수정 실패: " + msg);
+        }
+    });
+</script>
+
+</body>
+</html>

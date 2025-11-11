@@ -39,6 +39,15 @@ public class MemberResDto {
     /** 프로필 이미지 */
     private String image;
 
+    /**  🔹 브라우저 접근용 이미지 URL 생성 */
+    public String getImageUrl() {
+        if (image == null || image.isEmpty()) {
+            return null;
+        }
+        // application.yml → image.member.url = http://localhost:8090/profile/
+        return "http://localhost:8090/profile/" + image;
+    }
+
     public static MemberResDto fromEntity(Member member) {
         return MemberResDto.builder()
                 .id(member.getId())

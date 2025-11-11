@@ -1,14 +1,21 @@
 package com.multi.travel.member.service;
 
+import com.multi.travel.common.util.FileUploadUtils;
 import com.multi.travel.member.dto.MemberReqDto;
 import com.multi.travel.member.dto.MemberResDto;
 import com.multi.travel.member.entity.Member;
 import com.multi.travel.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
+
 
 /**
  * Please explain the class!!!
@@ -20,7 +27,14 @@ import java.util.List;
 @Service
 @Transactional
 @RequiredArgsConstructor
+@Slf4j
 public class MemberService {
+
+    @Value("${image.member.dir}")
+    private String IMAGE_DIR;
+
+    @Value("${image.member.url}")
+    private String IMAGE_URL;
 
     private final MemberRepository memberRepository;
 
@@ -40,16 +54,54 @@ public class MemberService {
     }
 
     @Transactional
-    public Member update(MemberReqDto memberReqDto) {
+    public Member update(MemberReqDto dto) {
 
-        Member member = memberRepository.findByLoginId(memberReqDto.getLoginId())
+        Member member = memberRepository.findByLoginId(dto.getLoginId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 회원을 찾을 수 없습니다."));
 
-        member.updateInfo(memberReqDto.getUsername(),memberReqDto.getEmail(),memberReqDto.getTel(),memberReqDto.getImage());
+        MultipartFile imageFile = dto.getImageFile();
+        String savedFileName = null;
 
+        try {
+            String oldImage = member.getImage();
+
+            // 새 이미지 업로드 처리
+            if (imageFile != null && !imageFile.isEmpty()) {
+
+                // 확장자 추출 (.png / .jpg 등)
+                String extension = imageFile.getOriginalFilename()
+                        .substring(imageFile.getOriginalFilename().lastIndexOf("."));
+
+                // 🔹 loginId 기반 유니크 파일명 생성 (공용 폴더에 저장)
+                String uniqueFileName = dto.getLoginId() + "_" + UUID.randomUUID().toString().replace("-", "") + extension;
+
+                savedFileName = FileUploadUtils.saveFile(IMAGE_DIR, uniqueFileName, imageFile);
+
+                // 🔹 기존 이미지 삭제
+                if (oldImage != null && !oldImage.isEmpty()) {
+                    FileUploadUtils.deleteFile(IMAGE_DIR, oldImage);
+                    log.info("[updateMember] 기존 이미지 삭제: {}", oldImage);
+                }
+
+                // 🔹 새 파일명 DB 반영
+                member.updateInfo(dto.getUsername(), dto.getEmail(), dto.getTel(), savedFileName);
+
+            } else {
+                // 이미지 변경 안 함
+                member.updateInfo(dto.getUsername(), dto.getEmail(), dto.getTel(), oldImage);
+            }
+
+        } catch (IOException e) {
+            if (savedFileName != null) {
+                FileUploadUtils.deleteFile(IMAGE_DIR, savedFileName);
+            }
+            throw new RuntimeException("회원 프로필 이미지 저장 실패", e);
+        }
+
+        log.info("[updateMember] 프로필 업데이트 완료: {} / {}", member.getLoginId(), member.getImage());
         return member;
-
     }
+
 
     public void deleteMember(Long id) {
         Member member = memberRepository.findById(id)

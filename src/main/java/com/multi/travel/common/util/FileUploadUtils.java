@@ -1,5 +1,6 @@
 package com.multi.travel.common.util;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -17,6 +18,7 @@ import java.util.Optional;
  * @since : 2025. 11. 9. 일요일
  */
 
+@Slf4j
 public class FileUploadUtils {
 
     public static String saveFile(String uploadDir, String fileName, MultipartFile file) throws IOException, IOException {
@@ -40,5 +42,23 @@ public class FileUploadUtils {
 
 
 
+    public static boolean deleteFile(String uploadDir, String fileName) {
 
+        boolean result = false;
+        Path uploadPath = Paths.get(uploadDir);
+        // 디렉토리가 없으면 삭제할 파일이 없으므로 true 반환
+        if(!Files.exists(uploadPath)) {
+            result = true;
+        }
+        try {
+            Path filePath = uploadPath.resolve(fileName);
+            Files.delete(filePath);  // 파일 삭제
+            result = true;
+        }catch (IOException ex){
+
+            log.info("Could not delete file: " + fileName, ex);
+        }
+
+        return result;
+    }
 }
