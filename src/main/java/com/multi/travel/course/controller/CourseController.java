@@ -109,7 +109,25 @@ public class CourseController {
     }
 
 
-    /** TODO: 특정 코스의 아이템 삭제 구현 필요 */
+    /** 코스 아이템 삭제 */
+    @DeleteMapping("/{courseId}/items/{itemId}")
+    public ResponseEntity<ResponseDto> deleteCourseItem(
+            @PathVariable Long courseId,
+            @PathVariable Long itemId
+    ) {
+        courseService.deleteCourseItem(courseId, itemId);
+        return ResponseEntity.ok(
+                new ResponseDto(HttpStatus.OK, "코스 아이템 삭제 성공", null)
+        );
+    }
 
-    /** TODO: 코스 삭제 */
+    /** 코스 삭제 (Soft Delete) */
+    @DeleteMapping("/{courseId}")
+    public ResponseEntity<ResponseDto> deleteCourse(@PathVariable Long courseId) {
+        courseService.deleteCourse(courseId);
+        return ResponseEntity.ok(
+                new ResponseDto(HttpStatus.OK, "코스 삭제(비활성화) 완료", null)
+        );
+    }
+
 }

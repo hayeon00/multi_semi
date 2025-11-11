@@ -160,9 +160,35 @@ public class CourseService {
     }
 
 
-    /** TODO: 특정 코스의 아이템 삭제 구현 필요 */
+    /** 특정 코스의 아이템 삭제 */
+    @Transactional
+    public void deleteCourseItem(Long courseId, Long itemId) {
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new EntityNotFoundException("코스를 찾을 수 없습니다. id=" + courseId));
 
-    /** TODO: 코스 삭제 (Soft Delete) 구현 필요 */
+        CourseItem item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new EntityNotFoundException("아이템을 찾을 수 없습니다. id=" + itemId));
+
+        // 코스 소유 검증 (보안 차원)
+        if (!item.getCourse().getCourseId().equals(courseId)) {
+            throw new IllegalArgumentException("해당 코스의 아이템이 아닙니다.");
+        }
+
+        itemRepository.delete(item); // 물리 삭제
+    }
+
+
+
+
+    /** 코스 삭제 (Soft Delete) */
+    @Transactional
+    public void deleteCourse(Long courseId) {
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new EntityNotFoundException("코스를 찾을 수 없습니다. id=" + courseId));
+
+        course.setStatus("N"); // Soft Delete 처리
+    }
+
 
     /** DTO 변환 */
     private CourseResDto mapToCourseResDto(Course course) {
