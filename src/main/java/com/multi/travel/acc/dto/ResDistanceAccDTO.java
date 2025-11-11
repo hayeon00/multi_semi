@@ -1,9 +1,9 @@
-package com.multi.travel.tourspot.dto;
+package com.multi.travel.acc.dto;
 
 /*
  * Please explain the class!!!
  *
- * @filename    : ResDistanceTspDTO
+ * @filename    : ResDistanceAccDTO
  * @author      : Choi MinHyeok
  * @since       : 25. 11. 11. 화요일
  */
@@ -15,7 +15,7 @@ import lombok.ToString;
 @Data
 @Builder
 @ToString
-public class ResDistanceTspDTO {
+public class ResDistanceAccDTO {
     private Long id;
     private String address;
     private String title;

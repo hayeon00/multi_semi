@@ -60,7 +60,6 @@ public class TspService {
         apiService.insertDetail(tsp.getContentId(), tsp.getCategory().getCatCode());
         TourSpot updatedTsp = tspRepository.findById(id)
                 .orElseThrow(() -> new TourSpotNotFoundException(id));
-        // DTO로 변환 후 반환
         return TourSpotEntityToDTO(updatedTsp);
     }
 
@@ -84,7 +83,7 @@ public class TspService {
         Pageable pageable = PageRequest.of(page, size);
         List<TspHasDistanceProjection> lists = tspRepository.findNearestWithDistanceRefactor(criteria.getMapx(), criteria.getMapy(), id, pageable);
 
-        return TspService.convertToResDistanceTspDTO(lists);
+        return convertToResDistanceTspDTO(lists);
     }
 
 
@@ -96,7 +95,7 @@ public class TspService {
                         .address(list.getAddress())
                         .recCount(list.getRecCount())
                         .firstImage(list.getFirstImage())
-                        .distanceMeter(list.getDistanceKm())
+                        .distanceMeter(list.getDistanceKm()*1000)
                         .build()
                 ).toList();
     }
@@ -118,8 +117,8 @@ public class TspService {
                 .id(spot.getId())
                 .address(spot.getAddress())
                 .title(spot.getTitle())
-                .description(spot.getDescription()
-                )
+                .description(spot.getDescription())
+                .homepage(spot.getHomepage())
                 .mapx(spot.getMapx())
                 .mapy(spot.getMapy())
                 .tel(spot.getTel())

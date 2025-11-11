@@ -23,6 +23,7 @@ public class TourSpotDTO {
     private String address;
     private String title;
     private String description;
+    private String homepage;
     private String tel;
     private BigDecimal mapx;
     private BigDecimal mapy;
