@@ -20,7 +20,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
-public interface AccRepository extends JpaRepository<Acc, Long> {
+public interface AccRepository extends JpaRepository<Acc,Long> {
     Optional<Acc> findByIdAndStatus(long id, String status);
 
     Optional<Acc> findByContentId(Integer contentId);

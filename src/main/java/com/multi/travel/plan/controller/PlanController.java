@@ -1,16 +1,13 @@
 package com.multi.travel.plan.controller;
 
-
+import com.multi.travel.plan.dto.PlanDetailResDto;
 import com.multi.travel.common.ResponseDto;
 import com.multi.travel.plan.dto.PlanReqDto;
 import com.multi.travel.plan.service.PlanService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * Please explain the class!!!
@@ -34,6 +31,13 @@ public class PlanController {
 
     }
 
+    @GetMapping("/{planId}")
+    public ResponseEntity<ResponseDto> getPlanDetail(@PathVariable Long planId) {
+        PlanDetailResDto detail = planService.getTripPlanDetail(planId);
+        return ResponseEntity.ok(
+                new ResponseDto(HttpStatus.OK, "여행 계획 상세정보 조회 성공", detail)
+        );
+    }
 
 }
 
