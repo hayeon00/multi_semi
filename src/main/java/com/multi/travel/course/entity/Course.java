@@ -34,6 +34,7 @@ public class Course {
 
     /** 여러 Plan이 하나의 Course를 참조하므로, 역참조 가능하도록 설정 */
     @OneToMany(mappedBy = "course", fetch = FetchType.LAZY)
+    @Builder.Default // 추가 이유: Builder로 생성할 때도 초기값이 반영되도록
     private List<TripPlan> plans = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -41,10 +42,12 @@ public class Course {
     private Member creator;
 
     @Column(name = "status", length = 1, nullable = false)
+    @Builder.Default // 추가 이유: Builder로 생성할 때도 초기값이 반영되도록
     private String status = "Y";  // Y=활성화, N=사용자 기준에서 삭제 (소프트 삭제)
 
     /** 추천 수 (추후 Recommend 테이블과 연동 예정) */
     @Column(name = "rec_count", columnDefinition = "INT DEFAULT 0")
+    @Builder.Default // 추가 이유: Builder로 생성할 때도 초기값이 반영되도록
     private Integer recCount = 0;
 
     @CreationTimestamp

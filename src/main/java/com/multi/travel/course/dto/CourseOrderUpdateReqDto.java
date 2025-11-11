@@ -23,5 +23,6 @@ public class CourseOrderUpdateReqDto {
     public static class OrderUpdateItem {
         private Long itemId;
         private Integer orderNo;
+        private Integer dayNo;
     }
 }

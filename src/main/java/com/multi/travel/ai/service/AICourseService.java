@@ -97,9 +97,9 @@ public class AICourseService {
             {
               "dayNo": 1,
               "items": [
-                {"placeType": "TOUR_SPOT", "placeId": 1, "orderNo": 1},
-                {"placeType": "TOUR_SPOT", "placeId": 2, "orderNo": 2},
-                {"placeType": "ACCOMMODATION", "placeId": 3, "orderNo": 3}
+                {"categoryCode": "tsp", "placeId": 1, "orderNo": 1},
+                {"categoryCode": "tsp", "placeId": 2, "orderNo": 2},
+                {"categoryCode": "acc", "placeId": 3, "orderNo": 3}
               ]
             }
           ]
@@ -156,8 +156,8 @@ public class AICourseService {
             {
               "dayNo": 1,
               "items": [
-                {"placeType": "TOUR_SPOT", "placeId": 1, "orderNo": 1},
-                {"placeType": "ACCOMMODATION", "placeId": 3, "orderNo": 2}
+                {"categoryCode": "tsp", "placeId": 1, "orderNo": 1},
+                {"categoryCode": "acc", "placeId": 3, "orderNo": 2}
               ]
             }
           ]
