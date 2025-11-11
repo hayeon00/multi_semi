@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -186,6 +187,19 @@ public class CourseService {
 
         course.setStatus("N"); // Soft Delete 처리
     }
+
+
+    /** 추천순 조회 */
+    @Transactional(readOnly = true)
+    public List<CourseResDto> getPopularCourses(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("recCount").descending());
+        Page<Course> courses = courseRepository.findByStatus("Y", pageable);
+
+        return courses.stream()
+                .map(this::mapToCourseResDto)
+                .toList();
+    }
+
 
 
     /** DTO 변환 */
