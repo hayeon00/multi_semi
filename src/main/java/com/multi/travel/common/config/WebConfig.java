@@ -18,11 +18,11 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
-    @Value("${image.add-resource-locations}")
-    private String ADD_RESOURCE_LOCATION;
+    @Value("${image.review.add-resource-locations}")
+    private String reviewLocation;
 
-    @Value("${image.add-resource-handler}")
-    private String ADD_RESOURCE_HANDLER;
+    @Value("${image.review.add-resource-handler}")
+    private String reviewHandler;
 
     @Bean
     public RestTemplate restTemplate() {
@@ -31,8 +31,8 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler(ADD_RESOURCE_HANDLER)
-                .addResourceLocations(ADD_RESOURCE_LOCATION);
+        registry.addResourceHandler(reviewHandler)
+                .addResourceLocations(reviewLocation);
     }
 }
 

@@ -74,7 +74,7 @@ public class SecurityConfigjwt {
         return http.build();
 
     }
-    // ✅ CORS 설정 추가 (쿠키 기반 통신 허용)
+    //  CORS 설정 추가 (쿠키 기반 통신 허용)
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();

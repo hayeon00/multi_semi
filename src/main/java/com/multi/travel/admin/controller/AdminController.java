@@ -1,8 +1,9 @@
 package com.multi.travel.admin.controller;
 
+import com.multi.travel.admin.controller.dto.TourSpotReqDto;
+import com.multi.travel.admin.service.AdminService;
 import com.multi.travel.common.ResponseDto;
 import com.multi.travel.member.service.MemberService;
-import com.multi.travel.review.dto.ReviewDetailDto;
 import com.multi.travel.review.service.ReviewService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,8 +11,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 /**
  * Please explain the class!!!
@@ -27,22 +26,10 @@ import java.util.List;
 public class AdminController {
     private final ReviewService reviewService;
     private final MemberService memberService;
+    private final AdminService adminService;
 
 
-    @PreAuthorize("hasRole('ADMIN')")  //  관리자만 가능
-    @GetMapping("/reviews/{id}")
-    public ResponseEntity<ReviewDetailDto> getReviewById(@PathVariable Long id) {
-        ReviewDetailDto review = reviewService.getReviewById(id);
-        return ResponseEntity.ok(review);
 
-    }
-
-    @PreAuthorize("hasRole('ADMIN')")  //  관리자만 가능
-    @GetMapping("/reviews")
-    public ResponseEntity<List<ReviewDetailDto>> getAllReviews() {
-        List<ReviewDetailDto> reviews = reviewService.getAllReviews();
-        return ResponseEntity.ok(reviews);
-    }
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/members")
@@ -61,6 +48,29 @@ public class AdminController {
         return ResponseEntity.ok(
                 new ResponseDto(HttpStatus.OK, "회원 삭제 성공", null)
         );
+    }
+
+    //관광지 추가
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/tourspot")
+    public ResponseEntity<ResponseDto> insertTourspot(@RequestBody TourSpotReqDto  tourSpotReqDto) {
+        adminService.insertTourSpot(tourSpotReqDto);
+
+        return ResponseEntity.ok(
+                new ResponseDto(HttpStatus.OK,"관광지 추가 성공",null)
+
+        );
+    }
+
+    //관광지 삭제
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/tourspot/{id}")
+    public ResponseEntity<ResponseDto> deleteTourspot(@PathVariable Long id) {
+        adminService.deleteSpot(id);
+        return ResponseEntity.ok(
+                new ResponseDto(HttpStatus.OK, "관광지 삭제 성공", null)
+        );
+
     }
 
 }
