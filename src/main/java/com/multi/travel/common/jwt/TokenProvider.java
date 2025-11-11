@@ -48,6 +48,7 @@ public class TokenProvider {
         Claims claims = Jwts
                 .claims()
                 .setSubject(loginId);
+        claims.setId(loginId);
 
         long now = (new Date()).getTime();
         Date tokenExpiresIn = new Date();
@@ -124,7 +125,8 @@ public class TokenProvider {
         log.info("[TokenProvider] authorities : {}", authorities);
 
         CustomUser customUser = new CustomUser();
-        customUser.setEmail(claims.getSubject());
+        customUser.setUserId(claims.getSubject());
+//        customUser.setEmail(claims.getSubject());
         customUser.setAuthorities(authorities);
         return new UsernamePasswordAuthenticationToken(customUser, "", authorities);
     }

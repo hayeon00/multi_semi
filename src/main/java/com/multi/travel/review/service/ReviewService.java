@@ -1,126 +1,122 @@
 package com.multi.travel.review.service;
 
-
-import com.multi.travel.common.util.FileUploadUtils;
+import com.multi.travel.common.file.FileService;
 import com.multi.travel.member.entity.Member;
-import com.multi.travel.plan.entity.TripPlan;
-import com.multi.travel.plan.repository.TripPlanRepository;
+import com.multi.travel.member.repository.MemberRepository;
 import com.multi.travel.review.dto.ReviewDetailDto;
 import com.multi.travel.review.dto.ReviewReqDto;
-import com.multi.travel.review.dto.ReviewResDto;
 import com.multi.travel.review.entity.Review;
 import com.multi.travel.review.entity.ReviewImage;
+import com.multi.travel.review.repository.ReviewImageRepository;
 import com.multi.travel.review.repository.ReviewRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
-@Slf4j
+
 @Service
 @RequiredArgsConstructor
+@Slf4j
+@Transactional
 public class ReviewService {
 
-    @Value("${image.image-dir}")
-    private String IMAGE_DIR;
-
-    @Value("${image.image-url}")
-    private String IMAGE_URL;
-
     private final ReviewRepository reviewRepository;
-    private final TripPlanRepository tripPlanRepository;
+    private final ReviewImageRepository reviewImageRepository;
+    private final MemberRepository memberRepository;
 
-    public ReviewResDto createReview(ReviewReqDto dto) {
-        TripPlan plan = tripPlanRepository.findById(dto.getTripPlanId())
-                .orElseThrow(() -> new IllegalArgumentException("여행 계획을 찾을 수 없습니다."));
+    private final FileService fileService;
 
-        Member member = plan.getMember();
+    public ReviewDetailDto createReview(ReviewReqDto dto, List<MultipartFile> images, String userId) {
+
+        log.debug("🧪 createReview() 호출됨 - 전달된 userId: {}", userId);
+        Member member = memberRepository.findByLoginId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("회원 정보가 없습니다."));
 
         Review review = Review.builder()
-                .tripPlan(plan)
-                .member(member)
                 .title(dto.getTitle())
                 .content(dto.getContent())
                 .rating(dto.getRating())
-                .images(new ArrayList<>())
+                .targetType(dto.getTargetType())
+                .targetId(dto.getTargetId())
+                .member(member)
                 .build();
 
-        List<MultipartFile> images = dto.getReviewImages();
-        List<String> imageUrls = new ArrayList<>();
-
+        // 이미지 저장
         if (images != null && !images.isEmpty()) {
-            for (MultipartFile image : images) {
-                if (!image.isEmpty()) {
-                    try {
-                        String originalFilename = image.getOriginalFilename();
-                        String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
-                        String uniqueFileName = UUID.randomUUID().toString().replace("-", "") + extension;
-
-                        String savedFileName = FileUploadUtils.saveFile(IMAGE_DIR, uniqueFileName, image);
-                        String imageUrl = IMAGE_URL + savedFileName;
-
-                        ReviewImage reviewImage = ReviewImage.builder()
-                                .imageUrl(imageUrl)
+            List<ReviewImage> reviewImages = images.stream()
+                    .map(file -> {
+                        String storedName = fileService.store(file);
+                        return ReviewImage.builder()
+                                .originalName(file.getOriginalFilename())
+                                .storedName(storedName)
+                                .imageUrl("/uploads/" + storedName)
                                 .review(review)
                                 .build();
-
-                        review.getImages().add(reviewImage);
-                        imageUrls.add(imageUrl);
-
-                        log.info("이미지 저장 위치: {}", IMAGE_DIR);
-                        log.info("저장된 파일명: {}", savedFileName);
-                        log.info("접근 가능한 URL: {}", imageUrl);
-
-                    } catch (IOException e) {
-                        log.error("이미지 저장 실패: {}", e.getMessage());
-                        throw new RuntimeException("이미지 저장 실패", e);
-                    }
-                }
-            }
+                    }).toList();
+            review.setImages(reviewImages);
         }
 
-        log.info("👉 받은 이미지 수: {}", images == null ? "null" : images.size());
-
-        reviewRepository.save(review);
-
-        return ReviewResDto.builder()
-                .message("리뷰가 성공적으로 등록되었습니다.")
-                .imageUrls(imageUrls)
-                .build();
+        Review saved = reviewRepository.save(review);
+        return toDto(saved);
     }
 
+    public ReviewDetailDto updateReview(Long reviewId, ReviewReqDto dto, List<MultipartFile> newImages, String userId) {
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new IllegalArgumentException("리뷰가 존재하지 않습니다."));
 
-    @Transactional
-    public List<ReviewDetailDto> getAllReviews() {
-        return reviewRepository.findAll().stream()
-                .map(review -> ReviewDetailDto.builder()
-                        .reviewId(review.getId())
-                        .title(review.getTitle())
-                        .content(review.getContent())
-                        .rating(review.getRating())
-                        .writer(review.getMember().getUsername()) // member.getUsername() 등도 가능
-                        .createdAt(review.getCreatedAt())
-                        .imageUrls(
-                                review.getImages().stream()
-                                        .map(ReviewImage::getImageUrl)
-                                        .toList()
-                        )
-                        .build())
-                .toList();
+        if (!review.getMember().getLoginId().equals(userId)) {
+            throw new SecurityException("본인 리뷰만 수정할 수 있습니다.");
+        }
+
+        // 기존 이미지 삭제
+        for (ReviewImage img : review.getImages()) {
+            fileService.delete(img.getStoredName());
+        }
+        review.getImages().clear();
+
+        // 새 이미지 등록
+        if (newImages != null && !newImages.isEmpty()) {
+            List<ReviewImage> newReviewImages = newImages.stream()
+                    .map(file -> {
+                        String storedName = fileService.store(file);
+                        return ReviewImage.builder()
+                                .originalName(file.getOriginalFilename())
+                                .storedName(storedName)
+                                .imageUrl("/uploads/" + storedName)
+                                .review(review)
+                                .build();
+                    }).toList();
+            review.setImages(newReviewImages);
+        }
+
+        // 내용 수정
+        review.setTitle(dto.getTitle());
+        review.setContent(dto.getContent());
+        review.setRating(dto.getRating());
+
+        return toDto(review);
     }
 
+    public void deleteReview(Long reviewId, String userId) {
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new IllegalArgumentException("리뷰가 존재하지 않습니다."));
 
-    @Transactional
-    public ReviewDetailDto getReviewById(Long id) {
-        Review review = reviewRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("리뷰를 찾을 수 없습니다."));
+        if (!review.getMember().getLoginId().equals(userId)) {
+            throw new SecurityException("본인 리뷰만 삭제할 수 있습니다.");
+        }
 
+        // 이미지 삭제
+        for (ReviewImage image : review.getImages()) {
+            fileService.delete(image.getStoredName());
+        }
+
+        reviewRepository.delete(review);
+    }
+
+    private ReviewDetailDto toDto(Review review) {
         return ReviewDetailDto.builder()
                 .reviewId(review.getId())
                 .title(review.getTitle())
@@ -128,61 +124,23 @@ public class ReviewService {
                 .rating(review.getRating())
                 .writer(review.getMember().getUsername())
                 .createdAt(review.getCreatedAt())
-                .imageUrls(
-                        review.getImages().stream()
-                                .map(ReviewImage::getImageUrl)
-                                .toList()
-                )
+                .imageUrls(review.getImages().stream()
+                        .map(ReviewImage::getImageUrl)
+                        .toList())
                 .build();
     }
 
+    public List<ReviewDetailDto> getReviewsByUser(String userId) {
+        Member member = memberRepository.findByLoginId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
 
-    @Transactional
-    public void updateReview(Long id, ReviewReqDto dto) {
-        Review review = reviewRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("리뷰를 찾을 수 없습니다."));
-
-        review.setTitle(dto.getTitle());
-        review.setContent(dto.getContent());
-        review.setRating(dto.getRating());
-
-        // 기존 이미지 제거
-        review.getImages().clear();
-
-        // 새 이미지 업로드 처리
-        List<MultipartFile> images = dto.getReviewImages();
-        if (images != null && !images.isEmpty()) {
-            for (MultipartFile image : images) {
-                if (!image.isEmpty()) {
-                    try {
-                        String extension = image.getOriginalFilename()
-                                .substring(image.getOriginalFilename().lastIndexOf("."));
-                        String uniqueFileName = UUID.randomUUID().toString().replace("-", "") + extension;
-                        String savedFileName = FileUploadUtils.saveFile(IMAGE_DIR, uniqueFileName, image);
-                        String imageUrl = IMAGE_URL + savedFileName;
-
-                        ReviewImage reviewImage = ReviewImage.builder()
-                                .imageUrl(imageUrl)
-                                .review(review)
-                                .build();
-
-                        review.getImages().add(reviewImage);
-
-                    } catch (IOException e) {
-                        throw new RuntimeException("이미지 저장 실패", e);
-                    }
-                }
-            }
-        }
+        List<Review> reviews = reviewRepository.findByMember(member);
+        return reviews.stream().map(this::toDto).toList();
     }
 
-    @Transactional
-    public void deleteReview(Long id) {
-        Review review = reviewRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("리뷰를 찾을 수 없습니다."));
-
-        reviewRepository.delete(review);
+    public List<ReviewDetailDto> getReviewsByTarget(String targetType, Long targetId) {
+        List<Review> reviews = reviewRepository.findByTargetTypeAndTargetId(targetType, targetId);
+        return reviews.stream().map(this::toDto).toList();
     }
 
 }
-

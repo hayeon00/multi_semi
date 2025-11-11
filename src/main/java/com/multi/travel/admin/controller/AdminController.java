@@ -2,16 +2,12 @@ package com.multi.travel.admin.controller;
 
 import com.multi.travel.common.ResponseDto;
 import com.multi.travel.member.service.MemberService;
-import com.multi.travel.review.dto.ReviewDetailDto;
-import com.multi.travel.review.service.ReviewService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 /**
  * Please explain the class!!!
@@ -25,24 +21,24 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class AdminController {
-    private final ReviewService reviewService;
+    //private final ReviewService reviewService;
     private final MemberService memberService;
 
 
-    @PreAuthorize("hasRole('ADMIN')")  //  관리자만 가능
-    @GetMapping("/reviews/{id}")
-    public ResponseEntity<ReviewDetailDto> getReviewById(@PathVariable Long id) {
-        ReviewDetailDto review = reviewService.getReviewById(id);
-        return ResponseEntity.ok(review);
+//    @PreAuthorize("hasRole('ADMIN')")  //  관리자만 가능
+//    @GetMapping("/reviews/{id}")
+//    public ResponseEntity<ReviewDetailDto> getReviewById(@PathVariable Long id) {
+//        ReviewDetailDto review = reviewService.getReviewById(id);
+//        return ResponseEntity.ok(review);
+//
+//    }
 
-    }
-
-    @PreAuthorize("hasRole('ADMIN')")  //  관리자만 가능
-    @GetMapping("/reviews")
-    public ResponseEntity<List<ReviewDetailDto>> getAllReviews() {
-        List<ReviewDetailDto> reviews = reviewService.getAllReviews();
-        return ResponseEntity.ok(reviews);
-    }
+//    @PreAuthorize("hasRole('ADMIN')")  //  관리자만 가능
+//    @GetMapping("/reviews")
+//    public ResponseEntity<List<ReviewDetailDto>> getAllReviews() {
+//        List<ReviewDetailDto> reviews = reviewService.getAllReviews();
+//        return ResponseEntity.ok(reviews);
+//    }
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/members")

@@ -1,13 +1,5 @@
 package com.multi.travel.review.entity;
 
-/**
- * Please explain the class!!!
- *
- * @author : rlagkdus
- * @filename : Review
- * @since : 2025. 11. 8. 토요일
- */
-
 import com.multi.travel.member.entity.Member;
 import com.multi.travel.plan.entity.TripPlan;
 import jakarta.persistence.*;
@@ -18,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@Table(name="tb_review")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -37,6 +30,16 @@ public class Review {
     @JoinColumn(name = "trip_plan_id")
     private TripPlan tripPlan;
 
+
+
+    // 리뷰 대상 타입: PLAN, COURSE, TOUR_SPOT, ACCOMMODATION
+    @Column(nullable = false, length = 30)
+    private String targetType;
+
+    // 리뷰 대상 ID
+    @Column(nullable = false)
+    private Long targetId;
+
     private String title;
 
     @Column(nullable = false, length = 1000)
@@ -46,7 +49,6 @@ public class Review {
 
     private LocalDateTime createdAt;
 
-    // 이미지 연관관계
     @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ReviewImage> images = new ArrayList<>();
 
@@ -55,5 +57,3 @@ public class Review {
         this.createdAt = LocalDateTime.now();
     }
 }
-
-
