@@ -25,12 +25,12 @@ public class AdminAccController {
     private final AccService accService;
 
     @PostMapping("/regist")
-    public ResponseEntity<ResponseDto> registAcc(@RequestBody AccDTO accDTO) {
+    public ResponseEntity<ResponseDto> registAcc(@ModelAttribute AccDTO accDTO) {
         return ResponseEntity.ok(new ResponseDto(HttpStatus.OK, "숙소 추가 성공", accService.registAcc(accDTO)));
     }
 
     @PutMapping("/update")
-    public ResponseEntity<ResponseDto> updateAcc(@RequestBody AccDTO accDTO) {
+    public ResponseEntity<ResponseDto> updateAcc(@ModelAttribute AccDTO accDTO) {
         return ResponseEntity.ok(new ResponseDto(HttpStatus.OK, "숙소 수정 성공", accService.updateAcc(accDTO)));
     }
 

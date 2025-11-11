@@ -12,6 +12,7 @@ package com.multi.travel.acc.dto;
 import lombok.Builder;
 import lombok.Data;
 import lombok.ToString;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -39,4 +40,5 @@ public class AccDTO {
     private Integer contentId;
     private String catCode;
     private Double distanceMeter;
+    private MultipartFile imageFile;
 }

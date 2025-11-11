@@ -117,4 +117,8 @@ public class Acc {
     public void changeCategory(Category category) {
         this.category = category;
     }
+
+    public void updateImage(String imageURL) {
+        this.firstImage = imageURL;
+    }
 }
