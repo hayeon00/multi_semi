@@ -37,5 +37,4 @@ public class TourSpotDTO {
     private Integer recCount;  // 추천 개수
     private Integer contentId;
     private String cat_code;
-    private Double distanceMeter;
 }

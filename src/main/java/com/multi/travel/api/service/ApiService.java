@@ -257,7 +257,7 @@ public class ApiService {
 
     @Transactional
     public void insertDetail(Integer contentId, String type) {
-        log.info("🚀 관광지 및 숙소 상세정보 수집 시작");
+        log.info("🚀 상세정보 조회 TargetId={}, TargetType={}", contentId, type);
 
         if (contentId == null) {
             log.warn("⚠️ contentId가 null입니다. type={}", type);
