@@ -19,4 +19,5 @@ public class CourseItemReqDto {
     private String placeType; // TOUR_SPOT or ACCOMMODATION
     private Long placeId; // 관광지/숙소의 ID
     private Integer orderNo; // 순서
+    private Integer dayNo;  // 몇 일차에 속하는지
 }

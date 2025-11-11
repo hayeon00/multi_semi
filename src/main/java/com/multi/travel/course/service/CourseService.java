@@ -66,6 +66,7 @@ public class CourseService {
                     .placeType(itemDto.getPlaceType())
                     .placeId(itemDto.getPlaceId())
                     .orderNo(itemDto.getOrderNo())
+                    .dayNo(itemDto.getDayNo())
                     .build();
             course.addItem(item);
         });
@@ -100,6 +101,7 @@ public class CourseService {
                 .placeType(dto.getPlaceType())
                 .placeId(dto.getPlaceId())
                 .orderNo(dto.getOrderNo())
+                .dayNo(dto.getDayNo())
                 .build();
 
         itemRepository.save(item);
@@ -116,6 +118,20 @@ public class CourseService {
             itemRepository.save(item);
         }
     }
+
+    /** 코스 하루별 조회 */
+    @Transactional(readOnly = true)
+    public List<CourseItemResDto> getCourseItemsByDay(Long courseId, Integer dayNo) {
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 ID(" + courseId + ")의 코스를 찾을 수 없습니다."));
+
+        List<CourseItem> items = itemRepository.findByCourseAndDayNoOrderByOrderNoAsc(course, dayNo);
+
+        return items.stream()
+                .map(this::mapToItemResDto)
+                .toList();
+    }
+
 
     /** TODO: 특정 코스의 아이템 삭제 구현 필요 */
 
@@ -149,6 +165,7 @@ public class CourseService {
                 .placeType(item.getPlaceType())
                 .placeId(item.getPlaceId())
                 .orderNo(item.getOrderNo())
+                .dayNo(item.getDayNo())
                 .build();
     }
 }

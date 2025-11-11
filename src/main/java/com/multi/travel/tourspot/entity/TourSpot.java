@@ -25,6 +25,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@ToString(exclude = "category")
 public class TourSpot {
 
     @Id
@@ -80,7 +81,14 @@ public class TourSpot {
     @Column(name = "rec_count", columnDefinition = "INT DEFAULT 0")
     private Integer recCount;  // 추천 개수
 
+    @Column(name = "content_id", columnDefinition = "INT DEFAULT 0")
+    private Integer contentId;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cat_code")
     private Category category;
+
+
+    @Transient
+    private Double distanceKm;
 }
