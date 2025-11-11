@@ -11,7 +11,10 @@ package com.multi.travel.acc.serivce;
 import com.multi.travel.acc.dto.AccDTO;
 import com.multi.travel.acc.entity.Acc;
 import com.multi.travel.acc.repository.AccRepository;
+import com.multi.travel.category.CategoryRepository;
+import com.multi.travel.category.entity.Category;
 import com.multi.travel.common.exception.AccommodationNotFound;
+import com.multi.travel.common.exception.CategoryNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -19,8 +22,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,6 +31,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class AccService {
     private final AccRepository accRepository;
+    private final CategoryRepository categoryRepository;
 
     public List<AccDTO> getAccListPaging(int page, int size, String sort) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(sort).ascending());
@@ -85,10 +89,45 @@ public class AccService {
                 .contentId(acc.getContentId())
                 .status(acc.getStatus())
                 .distanceMeter(distance * 1000)
-                .cat_code("acc")
+                .catCode("acc")
                 .createdAt(acc.getCreatedAt())
                 .modifiedAt(acc.getModifiedAt())
                 .build();
     }
 
+    public AccDTO registAcc(AccDTO accDTO) {
+        Category category = categoryRepository.findById(accDTO.getCatCode()).orElseThrow(() -> new CategoryNotFoundException(accDTO.getCatCode()));
+        Acc newAcc = Acc.builder()
+                .address(accDTO.getAddress())
+                .title(accDTO.getTitle())
+                .tel(accDTO.getTel())
+                .mapx(accDTO.getMapx())
+                .mapy(accDTO.getMapy())
+                .areacode(accDTO.getAreacode())
+                .sigungucode(accDTO.getSigungucode())
+                .lDongRegnCd(accDTO.getLDongRegnCd())
+                .contentId(accDTO.getContentId())
+                .category(category)
+                .status("Y")
+                .recCount(0)
+                .build();
+        accRepository.save(newAcc);
+        return AccEntityToDTO(newAcc, 0.0);
+    }
+
+    @Transactional
+    public AccDTO updateAcc(AccDTO accDTO) {
+        Acc acc = accRepository.findById(accDTO.getId()).orElseThrow(() -> new AccommodationNotFound(accDTO.getId()));
+        acc.updateInfo(accDTO);
+        return AccEntityToDTO(acc, 0.0);
+    }
+
+    @Transactional
+    public Object deleteAcc(@Valid Long accId) {
+        Acc acc = accRepository.findById(accId).orElseThrow(() -> new AccommodationNotFound(accId));
+        if(acc.getStatus().equals("Y")) {
+            acc.changeStatus();
+        }
+        return AccEntityToDTO(acc, 0.0);
+    }
 }

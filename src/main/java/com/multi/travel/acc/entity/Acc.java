@@ -9,6 +9,7 @@ package com.multi.travel.acc.entity;
  */
 
 
+import com.multi.travel.acc.dto.AccDTO;
 import com.multi.travel.category.entity.Category;
 import jakarta.persistence.*;
 import lombok.*;
@@ -90,4 +91,30 @@ public class Acc {
 
     @Transient
     private Double distanceKm;
+
+    public void updateInfo(AccDTO accDTO) {
+        if(accDTO.getAddress() != null) this.address = accDTO.getAddress();
+        if(accDTO.getTitle() != null) this.title = accDTO.getTitle();
+        if(accDTO.getDescription() != null) this.description = accDTO.getDescription();
+        if(accDTO.getTel() != null) this.tel = accDTO.getTel();
+        if(accDTO.getMapx() != null) this.mapx = accDTO.getMapx();
+        if(accDTO.getMapy() != null) this.mapy = accDTO.getMapy();
+        if(accDTO.getAreacode() != null) this.areacode = accDTO.getAreacode();
+        if(accDTO.getSigungucode() != null) this.sigungucode = accDTO.getSigungucode();
+        if(accDTO.getLDongRegnCd() != null) this.lDongRegnCd = accDTO.getLDongRegnCd();
+        if(accDTO.getStatus() != null) this.status = accDTO.getStatus();
+        if(accDTO.getContentId() != null) this.contentId = accDTO.getContentId();
+    }
+
+    public void changeStatus() {
+        if (this.status == null || this.status.equals("Y")) {
+            this.status = "N";
+        } else {
+            this.status = "Y";
+        }
+    }
+
+    public void changeCategory(Category category) {
+        this.category = category;
+    }
 }

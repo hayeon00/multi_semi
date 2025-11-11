@@ -37,6 +37,6 @@ public class AccDTO {
     private String status;  // 활성화 상태
     private Integer recCount;  // 추천 개수
     private Integer contentId;
-    private String cat_code;
+    private String catCode;
     private Double distanceMeter;
 }
