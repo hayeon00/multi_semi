@@ -26,17 +26,18 @@ public class ReviewController {
 
     //리뷰등록
     @PostMapping
-    public ResponseEntity<ReviewDetailDto> createReview(
+    public String createReview(
             @ModelAttribute ReviewReqDto dto,
-            @RequestParam(value = "images",required = false) List<MultipartFile> images,
+            @RequestParam(value = "images", required = false) List<MultipartFile> images,
             @AuthenticationPrincipal CustomUser user
     ) {
         log.debug("🔐 인증된 사용자 userId: {}", user.getUserId());
-        System.out.println("🔐 인증된 사용자 userId: " + user.getUserId());
-
         ReviewDetailDto result = reviewService.createReview(dto, images, user.getUserId());
-        return ResponseEntity.ok(result);
+
+        // 등록 후 → 해당 코스 리뷰 목록 페이지로 리다이렉트
+        return "redirect:/review/course/" + result.getTargetId();
     }
+
 
     //리뷰 수정
     @PutMapping("/{reviewId}")

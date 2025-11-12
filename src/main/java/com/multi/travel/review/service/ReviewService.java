@@ -160,5 +160,17 @@ public class ReviewService {
         return page.map(this::toDto);
     }
 
+
+    public ReviewDetailDto getReviewById(Long reviewId) {
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new IllegalArgumentException("리뷰가 존재하지 않습니다."));
+        return toDto(review);
+    }
+
+
+
+
+
+
 }
 

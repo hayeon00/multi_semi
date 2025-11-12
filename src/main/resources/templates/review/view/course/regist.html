@@ -1,0 +1,75 @@
+<!-- /src/main/resources/templates/review/regist.html -->
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>리뷰 등록 | TRAVEL PLANING</title>
+    <link th:href="@{/css/common.css}" rel="stylesheet">
+    <style>
+        /* (기존 스타일 동일 - 생략 가능) */
+    </style>
+</head>
+<body>
+<header>
+    <div class="logo">
+        <img th:src="@{/logo.png}" alt="로고">
+        <div class="title">TRAVEL PLANING</div>
+    </div>
+    <nav>
+        <span th:if="${user != null}" th:text="${user.name} + ' 님 환영합니다.'"></span>
+        <span th:if="${user == null}">로그인 해주세요</span>
+        <a th:href="@{/}">Home</a> |
+        <a th:href="@{/mypage}">마이페이지</a> |
+        <a th:href="@{/logout}">로그아웃</a>
+    </nav>
+</header>
+
+<main class="review-form">
+    <h2>리뷰 등록</h2>
+    <form th:action="@{/reviews}" method="post" enctype="multipart/form-data">
+        <!-- 코스 -->
+        <label>
+            리뷰 코스 선택
+            <select name="targetType" required>
+                <option value="COURSE">서울 야경 투어</option>
+                <option value="COURSE">부산 해운대</option>
+            </select>
+        </label>
+        <input type="hidden" name="targetId" value="1" /> <!-- 실제 코스 ID를 동적으로 넣을 수 있음 -->
+
+        <!-- 제목 -->
+        <label>
+            리뷰 제목
+            <input type="text" name="title" placeholder="제목을 입력해주세요" required>
+        </label>
+
+        <!-- 내용 -->
+        <label>
+            리뷰 내용
+            <textarea name="content" rows="5" placeholder="리뷰 내용을 입력해주세요" required></textarea>
+        </label>
+
+        <!-- 사진 -->
+        <label>
+            사진 등록
+            <input type="file" name="images" accept="image/*" multiple>
+        </label>
+
+        <!-- 평점 -->
+        <label>
+            평점
+            <select name="rating" required>
+                <option value="5">★★★★★ (5점)</option>
+                <option value="4">★★★★☆ (4점)</option>
+                <option value="3">★★★☆☆ (3점)</option>
+                <option value="2">★★☆☆☆ (2점)</option>
+                <option value="1">★☆☆☆☆ (1점)</option>
+            </select>
+        </label>
+
+        <button type="submit">등록</button>
+    </form>
+</main>
+
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!-- /src/main/resources/templates/review/reviewDetail.html -->
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>리뷰 상세 보기</title>
+    <link th:href="@{/css/common.css}" rel="stylesheet">
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 2rem;
+        }
+
+        .review-container {
+            max-width: 700px;
+            margin: auto;
+            padding: 2rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #fafafa;
+        }
+
+        .review-container h2 {
+            margin-top: 0;
+        }
+
+        .review-meta {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 1rem;
+        }
+
+        .review-images img {
+            max-width: 100%;
+            height: auto;
+            margin-bottom: 1rem;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+
+        .btn-back {
+            display: inline-block;
+            margin-top: 2rem;
+            padding: 0.5rem 1rem;
+            background-color: #3c8dbc;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+
+        .rating-stars {
+            font-size: 1.2rem;
+            color: gold;
+            margin: 0.5rem 0;
+        }
+    </style>
+</head>
+<body>
+<main class="review-container">
+    <h2 th:text="${review.title}">리뷰 제목</h2>
+
+    <div class="review-meta">
+        작성자: <span th:text="${review.writer}">작성자</span> |
+        작성일: <span th:text="${#temporals.format(review.createdAt, 'yyyy-MM-dd HH:mm')}">2025-11-12</span>
+    </div>
+
+    <div class="rating-stars">
+        <span th:each="i : ${#numbers.sequence(1, review.rating)}">★</span>
+        <span th:each="i : ${#numbers.sequence(review.rating + 1, 5)}">☆</span>
+    </div>
+
+    <p th:text="${review.content}">리뷰 내용</p>
+
+    <div class="review-images" th:if="${review.imageUrls != null}">
+        <img th:each="img : ${review.imageUrls}" th:src="@{${img}}" alt="리뷰 이미지">
+    </div>
+
+    <a th:href="@{'/review/course/' + ${review.targetId}}" class="btn-back">← 리뷰 목록으로</a>
+</main>
+</body>
+</html>
