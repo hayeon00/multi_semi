@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>코스 상세보기</title>
+  <link rel="stylesheet" th:href="@{/css/common.css}">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=9be895ba7d6b98f83597991def648c2c"></script>
+</head>
+<body>
+<header>
+  <div class="header-container">
+    <div class="logo">TRAVEL PLANING</div>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/mypage">마이페이지</a>
+      <a href="/logout">로그아웃</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="course-container">
+    <div class="map-section">
+      <div id="map" style="width: 600px; height: 450px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);"></div>
+    </div>
+
+    <div class="days-section">
+      <div id="dayTabs"></div>
+      <div id="dayContent"></div>
+    </div>
+  </div>
+
+  <div class="like-section">
+    <button id="recBtn" style="border:none; background:none; cursor:pointer; font-size:18px;">
+      ❤️
+    </button>
+    <span id="recCount">0</span>
+  </div>
+
+  <div class="button-section" id="actionButtons"></div>
+</main>
+
+<script th:inline="javascript">
+  const courseId = [[${courseId}]];
+  const loginUserId = [[${loginUserId}]]; // 백엔드에서 세션 또는 JWT로 전달
+  const isOwner = [[${isOwner}]]; // true/false
+
+  // 초기 로드
+  $(document).ready(function() {
+    loadCourseDetail();
+    setupButtons();
+  });
+
+  /** 코스 상세 데이터 로드 */
+  function loadCourseDetail() {
+    $.ajax({
+      url: `/api/courses/${courseId}`,
+      type: 'GET',
+      success: function(res) {
+        const course = res.data;
+        $('#recCount').text(course.recCount ?? 0);
+        renderDays(course.items);
+        renderMap(course.items);
+      },
+      error: function(err) {
+        console.error("코스 불러오기 실패:", err);
+      }
+    });
+  }
+
+  /** 일차별 목록 표시 */
+  function renderDays(items) {
+    const dayTabs = $('#dayTabs');
+    const dayContent = $('#dayContent');
+    dayTabs.empty();
+    dayContent.empty();
+
+    const days = [...new Set(items.map(i => i.dayNo))].sort((a,b)=>a-b);
+
+    days.forEach(dayNo => {
+      const tab = $(`<button>${dayNo}일차</button>`);
+      tab.click(() => showDay(dayNo, items));
+      dayTabs.append(tab);
+    });
+
+    // 기본 첫 번째 일차 표시
+    if (days.length > 0) showDay(days[0], items);
+  }
+
+  /** 일차별 장소 리스트 표시 */
+  function showDay(dayNo, items) {
+    const list = $('#dayContent');
+    list.empty();
+
+    items.filter(i => i.dayNo === dayNo)
+            .forEach(i => {
+              list.append(`<div class="place-item">• ${i.placeType} - ${i.placeId}</div>`);
+            });
+  }
+
+  /** 지도 렌더링 */
+  function renderMap(items) {
+    const mapContainer = document.getElementById('map');
+    const mapOption = {
+      center: new kakao.maps.LatLng(37.566826, 126.9786567),
+      level: 7
+    };
+    const map = new kakao.maps.Map(mapContainer, mapOption);
+
+    // 좌표 예시
+    items.forEach(i => {
+      if (i.latitude && i.longitude) {
+        const marker = new kakao.maps.Marker({
+          map: map,
+          position: new kakao.maps.LatLng(i.latitude, i.longitude)
+        });
+      }
+    });
+  }
+
+  /** 버튼 영역 구성 */
+  function setupButtons() {
+    const btnArea = $('#actionButtons');
+    btnArea.empty();
+
+    const backBtn = $('<button>뒤로가기</button>').click(() => history.back());
+    btnArea.append(backBtn);
+
+    if (isOwner) {
+      btnArea.append(`<button onclick="location.href='/courses/edit/${courseId}'">코스 수정하기</button>`);
+      btnArea.append(`<button onclick="deleteCourse(${courseId})">코스 삭제하기</button>`);
+    } else {
+      btnArea.append(`<button onclick="addPlan(${courseId})">계획 추가하기</button>`);
+    }
+  }
+
+  /** 추천 토글 */
+  $('#recBtn').click(function() {
+    $.ajax({
+      url: `/recommend/toggle`,
+      type: 'GET',
+      data: {
+        userId: loginUserId,
+        targetId: courseId,
+        catCode: 'crs'
+      },
+      success: function(res) {
+        const status = res.data.status;
+        const isLiked = status === 'Y';
+        $('#recBtn').html(isLiked ? '❤️' : '🤍');
+        $('#recCount').text(function(_, old) {
+          const count = parseInt(old);
+          return isLiked ? count + 1 : count - 1;
+        });
+      },
+      error: function(err) {
+        console.error("추천 토글 실패:", err);
+      }
+    });
+  });
+
+  function deleteCourse(id) {
+    if (!confirm('정말 삭제하시겠습니까?')) return;
+    $.ajax({
+      url: `/api/courses/${id}`,
+      type: 'DELETE',
+      success: function() {
+        alert('삭제되었습니다.');
+        location.href = '/courses';
+      }
+    });
+  }
+
+  function addPlan(id) {
+    alert(`${id}번 코스를 계획에 추가합니다.`);
+  }
+</script>
+
+<style>
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background-color: #f8f9fa;
+    margin: 0;
+    padding: 0;
+  }
+
+  header {
+    background: #ddd;
+    padding: 15px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .course-container {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin: 40px auto;
+    width: 80%;
+    background: white;
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+  }
+
+  .map-section { flex: 2; }
+  .days-section { flex: 1; }
+
+  .like-section {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 20px;
+  }
+
+  .button-section {
+    text-align: center;
+    margin-top: 20px;
+  }
+
+  button {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    margin: 0 5px;
+    cursor: pointer;
+  }
+
+  button:hover {
+    background: #0056b3;
+  }
+
+  #dayTabs button {
+    background: #eee;
+    border: none;
+    margin-right: 5px;
+    border-radius: 6px;
+    padding: 5px 10px;
+    cursor: pointer;
+  }
+
+  #dayContent {
+    margin-top: 10px;
+    background: #f9f9f9;
+    border-radius: 10px;
+    padding: 10px;
+    height: 300px;
+    overflow-y: auto;
+  }
+</style>
+</body>
+</html>
