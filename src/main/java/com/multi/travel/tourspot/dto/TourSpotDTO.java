@@ -37,5 +37,5 @@ public class TourSpotDTO {
     private String status;  // 활성화 상태
     private Integer recCount;  // 추천 개수
     private Integer contentId;
-    private String cat_code;
+    private String catCode;
 }
