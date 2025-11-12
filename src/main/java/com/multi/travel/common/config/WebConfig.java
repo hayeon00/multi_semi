@@ -30,6 +30,13 @@ public class WebConfig implements WebMvcConfigurer {
     @Value("${image.acc.add-resource-handler}")
     private String accHandler;
 
+    // ✅ tourspot 이미지 경로
+    @Value("${image.tourspot.add-resource-locations}")
+    private String tourspotLocation;
+
+    @Value("${image.tourspot.add-resource-handler}")
+    private String tourspotHandler;
+
     @Bean
     public RestTemplate restTemplate() {
         return new RestTemplate();
@@ -41,6 +48,9 @@ public class WebConfig implements WebMvcConfigurer {
                 .addResourceLocations(reviewLocation);
         registry.addResourceHandler(accHandler)
                 .addResourceLocations(accLocations);
+        registry.addResourceHandler("/tourspotimgs/**")  // ✅ 관광지 추가
+                .addResourceLocations("file:/Users/chang/Desktop/upload/tourspotimgs/");
     }
+
 }
 

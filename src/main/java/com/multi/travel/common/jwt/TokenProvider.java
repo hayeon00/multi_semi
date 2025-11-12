@@ -25,8 +25,8 @@ import java.util.stream.Collectors;
 public class TokenProvider {
 
     private static final String AUTHORITIES_KEY = "auth";  // 클레임에서 권한정보담을키
-    private static final long ACCESS_TOKEN_EXPIRE_TIME = 1000 * 60 * 30;     //30분
-    private static final long REFRESH_TOKEN_EXPIRE_TIME =1000L * 60 * 5; //1000L * 60 * 60 * 24 * 1;  // 1일
+    private static final long ACCESS_TOKEN_EXPIRE_TIME = 1000 * 60 * 100;     //30분
+    private static final long REFRESH_TOKEN_EXPIRE_TIME =1000L * 60 * 60 * 24; //1000L * 60 * 60 * 24 * 1;  // 1일
 
     private final JwtProvider jwtProvider;  // JwtProvider 의존성 추가
     private final Key SKEY;
@@ -48,7 +48,6 @@ public class TokenProvider {
         Claims claims = Jwts
                 .claims()
                 .setSubject(loginId);
-        claims.setId(loginId);
 
         long now = (new Date()).getTime();
         Date tokenExpiresIn = new Date();
