@@ -124,8 +124,8 @@ public class TokenProvider {
         log.info("[TokenProvider] authorities : {}", authorities);
 
         CustomUser customUser = new CustomUser();
-        customUser.setUserId(claims.getId());
-        customUser.setEmail(claims.getSubject());
+        customUser.setUserId(claims.getSubject()); // 로그인 ID(loginId) -> 기존 코드(claims.getId())의 문제: 실제 JWT에는 id 필드가 없음
+        customUser.setEmail((String) claims.get("email")); // 이메일 claim이 있을 때만 -> 기존 코드(claims.getSubject())의 문제: subject에 로그인 ID가 들어 있음
         customUser.setAuthorities(authorities);
         return new UsernamePasswordAuthenticationToken(customUser, "", authorities);
     }

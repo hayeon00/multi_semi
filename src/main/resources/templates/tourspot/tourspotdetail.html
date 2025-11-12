@@ -212,7 +212,8 @@
     });
 
     document.getElementById("btnPlan").addEventListener("click", () => {
-        window.location.href = `/plans/create`;
+        // 관광지 id와 이름을 쿼리로 전달
+        window.location.href = `/plans/view/create?tspId=${id}`;
     });
 
     document.getElementById("btnLike").addEventListener("click", () => {
