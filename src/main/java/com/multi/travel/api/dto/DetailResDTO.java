@@ -46,6 +46,7 @@ public class DetailResDTO {
     @Data
     @ToString
     public static class Item {
+        private String homepage;
         private String overview; // 관광지 설명
     }
 }

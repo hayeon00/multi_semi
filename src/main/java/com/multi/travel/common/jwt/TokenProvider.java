@@ -124,6 +124,7 @@ public class TokenProvider {
         log.info("[TokenProvider] authorities : {}", authorities);
 
         CustomUser customUser = new CustomUser();
+        customUser.setUserId(claims.getId());
         customUser.setEmail(claims.getSubject());
         customUser.setAuthorities(authorities);
         return new UsernamePasswordAuthenticationToken(customUser, "", authorities);

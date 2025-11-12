@@ -25,6 +25,7 @@ public class AccDTO {
     private String address;
     private String title;
     private String description;
+    private String homepage;
     private String tel;
     private BigDecimal mapx;
     private BigDecimal mapy;
@@ -39,6 +40,5 @@ public class AccDTO {
     private Integer recCount;  // 추천 개수
     private Integer contentId;
     private String catCode;
-    private Double distanceMeter;
     private MultipartFile imageFile;
 }

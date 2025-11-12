@@ -9,19 +9,24 @@ package com.multi.travel.acc.serivce;
  */
 
 import com.multi.travel.acc.dto.AccDTO;
+import com.multi.travel.acc.dto.AccHasDistanceProjection;
+import com.multi.travel.acc.dto.ResAccDTO;
+import com.multi.travel.acc.dto.ResDistanceAccDTO;
 import com.multi.travel.acc.entity.Acc;
 import com.multi.travel.acc.repository.AccRepository;
+import com.multi.travel.api.service.ApiService;
+import com.multi.travel.auth.dto.CustomUser;
 import com.multi.travel.category.CategoryRepository;
 import com.multi.travel.category.entity.Category;
 import com.multi.travel.common.exception.AccommodationNotFound;
 import com.multi.travel.common.exception.CategoryNotFoundException;
 import com.multi.travel.common.util.FileUploadUtils;
+import com.multi.travel.common.util.RoleUtils;
 import jakarta.annotation.PostConstruct;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -32,7 +37,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -40,6 +44,7 @@ import java.util.stream.Collectors;
 public class AccService {
     private final AccRepository accRepository;
     private final CategoryRepository categoryRepository;
+    private final ApiService apiService;
 
     @Value("${image.acc.image-dir}")
     private String IMAGE_DIR;
@@ -56,70 +61,43 @@ public class AccService {
     }
 
 
-    private static List<AccDTO> TourSpotListEntityToDto(Page<Acc> accs) {
-        return accs.stream()
-                .map(acc -> AccEntityToDTO(acc, 0.0))
-                .collect(Collectors.toList());
-    }
-
-    private static AccDTO AccEntityToDTO(Acc acc, Double distance) {
-        return AccDTO.builder()
-                .id(acc.getId())
-                .title(acc.getTitle())
-                .address(acc.getAddress())
-                .mapx(acc.getMapx())
-                .mapy(acc.getMapy())
-                .tel(acc.getTel())
-                .firstImage(acc.getFirstImage())
-                .firstImage2(acc.getFirstImage2())
-                .areacode(acc.getAreacode())
-                .recCount(acc.getRecCount() != null ? acc.getRecCount() : 0)
-                .sigungucode(acc.getSigungucode())
-                .lDongRegnCd(acc.getLDongRegnCd())
-                .contentId(acc.getContentId())
-                .status(acc.getStatus())
-                .distanceMeter(distance * 1000)
-                .catCode("acc")
-                .createdAt(acc.getCreatedAt())
-                .modifiedAt(acc.getModifiedAt())
-                .build();
-    }
-
-    public List<AccDTO> getAccListPaging(int page, int size, String sort) {
+    public List<ResAccDTO> getAccList(int page, int size, String sort, CustomUser customUser) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(sort).ascending());
-        return TourSpotListEntityToDto(accRepository.findByStatus("Y", pageable));
+        if (RoleUtils.hasRole(customUser, RoleUtils.ADMIN)) {
+            return convertToResAccDTO(accRepository.findAll(pageable).getContent());
+        }
+        return convertToResAccDTO(accRepository.findByStatus("Y", pageable).getContent());
     }
 
-    public AccDTO getAccDetail(@Valid long id) {
-        Acc entity = accRepository.findByIdAndStatus(id, "Y")
+
+
+    public AccDTO getAccDetail(@Valid long id, CustomUser customUser) {
+        Acc acc;
+        if (RoleUtils.hasRole(customUser, RoleUtils.ADMIN)) {
+            acc = accRepository.findById(id)
+                    .orElseThrow(() -> new AccommodationNotFound(id));
+        } else {
+            acc = accRepository.findByIdAndStatus(id, "Y")
+                    .orElseThrow(() -> new AccommodationNotFound(id));
+        }
+        apiService.insertDetail(acc.getContentId(), acc.getCategory().getCatCode());
+        Acc updatedAcc = accRepository.findById(id)
                 .orElseThrow(() -> new AccommodationNotFound(id));
-        return AccEntityToDTO(entity, 0.0);
-
+        return AccEntityToDTO(updatedAcc);
     }
 
-    public List<AccDTO> getAccSortByDistance(int page, int size, @Valid long id) {
+    public List<ResDistanceAccDTO> getAccSortByDistance(int page, int size, @Valid long id) {
         Acc criteria = accRepository.findByIdAndStatus(id, "Y")
                 .orElseThrow(() -> new AccommodationNotFound(id));
 
-
         Pageable pageable = PageRequest.of(page, size);
+        List<AccHasDistanceProjection> lists = accRepository.findNearestWithDistanceRefactor(criteria.getMapx(), criteria.getMapy(), id, pageable);
 
-
-        List<Object[]> results = accRepository.findNearestWithDistance(criteria.getMapx(), criteria.getMapy(), id, pageable);
-        return results.stream()
-                .map(obj -> {
-                    Long accId = (Long) obj[0];
-                    Double distance = (Double) obj[1];
-                    Acc acc = accRepository.findById(accId).orElseThrow(() -> new AccommodationNotFound(accId));
-                    acc.setDistanceKm(distance);
-                    return AccEntityToDTO(acc, distance);
-                })
-                .collect(Collectors.toList());
-
+        return convertToResDistanceAccDTO(lists);
     }
 
     @Transactional
-    public AccDTO registAcc(AccDTO accDTO) {
+    public AccDTO registAcc(AccDTO accDTO) { //관리자 전용
         Category category = categoryRepository.findById(accDTO.getCatCode()).orElseThrow(() -> new CategoryNotFoundException(accDTO.getCatCode()));
         Acc newAcc = Acc.builder()
                 .address(accDTO.getAddress())
@@ -164,11 +142,11 @@ public class AccService {
             }
             throw new RuntimeException("숙소 이미지 저장 실패", e);
         }
-        return AccEntityToDTO(newAcc, 0.0);
+        return AccEntityToDTO(newAcc);
     }
 
     @Transactional
-    public AccDTO updateAcc(AccDTO accDTO) {
+    public AccDTO updateAcc(AccDTO accDTO) { //관리자 전용
         Acc acc = accRepository.findById(accDTO.getId()).orElseThrow(() -> new AccommodationNotFound(accDTO.getId()));
 
         MultipartFile imageFile = accDTO.getImageFile();
@@ -204,15 +182,71 @@ public class AccService {
 
 
         acc.updateInfo(accDTO);
-        return AccEntityToDTO(acc, 0.0);
+        return AccEntityToDTO(acc);
     }
-
+    
     @Transactional
-    public Object deleteAcc(@Valid Long accId) {
+    public AccDTO deleteAcc(@Valid Long accId) { //관리자 전용
         Acc acc = accRepository.findById(accId).orElseThrow(() -> new AccommodationNotFound(accId));
         if (acc.getStatus().equals("Y")) {
             acc.changeStatus();
         }
-        return AccEntityToDTO(acc, 0.0);
+        return AccEntityToDTO(acc);
+    }
+
+
+
+
+
+
+
+
+    private static List<ResDistanceAccDTO> convertToResDistanceAccDTO(List<AccHasDistanceProjection> lists) {
+        return lists.stream()
+                .map(list -> ResDistanceAccDTO.builder()
+                        .id(list.getId())
+                        .title(list.getTitle())
+                        .address(list.getAddress())
+                        .recCount(list.getRecCount())
+                        .firstImage(list.getFirstImage())
+                        .distanceMeter(list.getDistanceKm()*1000)
+                        .build()
+                ).toList();
+    }
+
+    private static List<ResAccDTO> convertToResAccDTO(List<Acc> lists) {
+        return lists.stream()
+                .map(list -> ResAccDTO.builder()
+                        .id(list.getId())
+                        .title(list.getTitle())
+                        .address(list.getAddress())
+                        .recCount(list.getRecCount())
+                        .firstImage(list.getFirstImage())
+                        .build()
+                ).toList();
+    }
+
+    private static AccDTO AccEntityToDTO(Acc acc) {
+        return AccDTO.builder()
+                .id(acc.getId())
+                .title(acc.getTitle())
+                .address(acc.getAddress())
+                .description(acc.getDescription())
+                .homepage(acc.getHomepage())
+                .mapx(acc.getMapx())
+                .mapy(acc.getMapy())
+                .tel(acc.getTel())
+                .firstImage(acc.getFirstImage())
+                .firstImage2(acc.getFirstImage2())
+                .areacode(acc.getAreacode())
+                .recCount(acc.getRecCount() != null ? acc.getRecCount() : 0)
+                .sigungucode(acc.getSigungucode())
+                .lDongRegnCd(acc.getLDongRegnCd())
+                .contentId(acc.getContentId())
+                .status(acc.getStatus())
+                .catCode("acc")
+                .createdAt(acc.getCreatedAt())
+                .modifiedAt(acc.getModifiedAt())
+                .build();
     }
 }
