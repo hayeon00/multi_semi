@@ -23,6 +23,7 @@ public class TourSpotDTO {
     private String address;
     private String title;
     private String description;
+    private String homepage;
     private String tel;
     private BigDecimal mapx;
     private BigDecimal mapy;
@@ -37,5 +38,4 @@ public class TourSpotDTO {
     private Integer recCount;  // 추천 개수
     private Integer contentId;
     private String cat_code;
-    private Double distanceMeter;
 }

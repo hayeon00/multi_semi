@@ -1,28 +1,18 @@
 package com.multi.travel.course.service;
 
-import com.multi.travel.course.dto.CourseItemReqDto;
-import com.multi.travel.course.dto.CourseReqDto;
-import com.multi.travel.course.dto.CourseResDto;
-import com.multi.travel.course.entity.Course;
-import com.multi.travel.plan.entity.TripPlan;
 import com.multi.travel.course.repository.CourseRepository;
+import com.multi.travel.plan.entity.TripPlan;
 import com.multi.travel.plan.repository.TripPlanRepository;
-import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-
-import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.anyLong;
+import static org.mockito.Mockito.when;
 
 /**
  * Please explain the class!!!
@@ -59,8 +49,8 @@ class CourseServiceTest {
                 .thenReturn(Optional.of(mockPlan));
 
         // 요청 DTO
-        CourseItemReqDto item1 = new CourseItemReqDto("TOUR_SPOT", 1L, 1);
-        CourseItemReqDto item2 = new CourseItemReqDto("ACCOMMODATION", 2L, 2);
+//        CourseItemReqDto item1 = new CourseItemReqDto("TOUR_SPOT", 1L, 1);
+//        CourseItemReqDto item2 = new CourseItemReqDto("ACCOMMODATION", 2L, 2);
 //        CourseReqDto dto = new CourseReqDto(planId, List.of(item1, item2));
 
         // when

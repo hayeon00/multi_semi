@@ -18,11 +18,17 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
-    @Value("${image.add-resource-locations}")
-    private String ADD_RESOURCE_LOCATION;
+    @Value("${image.review.add-resource-locations}")
+    private String reviewLocation;
 
-    @Value("${image.add-resource-handler}")
-    private String ADD_RESOURCE_HANDLER;
+    @Value("${image.review.add-resource-handler}")
+    private String reviewHandler;
+
+    @Value("${image.acc.add-resource-locations}")
+    private String accLocations;
+
+    @Value("${image.acc.add-resource-handler}")
+    private String accHandler;
 
     @Bean
     public RestTemplate restTemplate() {
@@ -31,7 +37,10 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler(ADD_RESOURCE_HANDLER)  // 예: "/uploads/**"
-                .addResourceLocations("file:" + ADD_RESOURCE_LOCATION); // 예: "file:/Users/yourname/project/uploads/"
+        registry.addResourceHandler(reviewHandler)
+                .addResourceLocations(reviewLocation);
+        registry.addResourceHandler(accHandler)
+                .addResourceLocations(accLocations);
     }
 }
+

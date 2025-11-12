@@ -9,8 +9,14 @@ package com.multi.travel.tourspot.service;
  */
 
 
+import com.multi.travel.api.service.ApiService;
+import com.multi.travel.auth.dto.CustomUser;
 import com.multi.travel.common.exception.TourSpotNotFoundException;
+import com.multi.travel.common.util.RoleUtils;
+import com.multi.travel.tourspot.dto.ResDistanceTspDTO;
+import com.multi.travel.tourspot.dto.ResTspDTO;
 import com.multi.travel.tourspot.dto.TourSpotDTO;
+import com.multi.travel.tourspot.dto.TspHasDistanceProjection;
 import com.multi.travel.tourspot.entity.TourSpot;
 import com.multi.travel.tourspot.repository.TspRepository;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +29,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -31,58 +36,89 @@ import java.util.stream.Collectors;
 public class TspService {
 
     private final TspRepository tspRepository;
+    private final ApiService apiService;
 
 
-    public List<TourSpotDTO> getTourSpotList(int page, int size, String sort) {
+    public List<ResTspDTO> getTourSpotList(int page, int size, String sort, CustomUser customUser) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(sort).ascending());
-        return TourSpotListEntityToDto(tspRepository.findByStatus("Y", pageable));
+        if (RoleUtils.hasRole(customUser, RoleUtils.ADMIN)) {
+            return convertToResTspDTO(tspRepository.findAll(pageable).getContent());
+        }
+        return convertToResTspDTO(tspRepository.findByStatus("Y", pageable).getContent());
     }
 
 
-    public TourSpotDTO getTourSpotDetail(Long id) {
-        return TourSpotEntityToDTO(tspRepository.findByIdAndStatus(id, "Y")
-                .orElseThrow(() -> new TourSpotNotFoundException(id)), 0.0);
-
+    public TourSpotDTO getTourSpotDetail(Long id, CustomUser customUser) {
+        TourSpot tsp;
+        if (RoleUtils.hasRole(customUser, RoleUtils.ADMIN)) {
+            tsp = tspRepository.findById(id)
+                    .orElseThrow(() -> new TourSpotNotFoundException(id));
+        } else {
+            tsp = tspRepository.findByIdAndStatus(id, "Y")
+                    .orElseThrow(() -> new TourSpotNotFoundException(id));
+        }
+        apiService.insertDetail(tsp.getContentId(), tsp.getCategory().getCatCode());
+        TourSpot updatedTsp = tspRepository.findById(id)
+                .orElseThrow(() -> new TourSpotNotFoundException(id));
+        return TourSpotEntityToDTO(updatedTsp);
     }
 
-    public List<TourSpotDTO> getTspSearch(int page, int size, String sort, String keyword) {
+
+    public List<ResTspDTO> getTspSearch(int page, int size, String sort, String keyword, CustomUser customUser) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(sort).ascending());
-        Page<TourSpot> tsps = tspRepository.findByStatusAndTitleContainingIgnoreCase("Y", keyword, pageable);
-
-        return TourSpotListEntityToDto(tsps);
+        Page<TourSpot> tspPage;
+        if (RoleUtils.hasRole(customUser, RoleUtils.ADMIN)) {
+            tspPage = tspRepository.findByTitleContainingIgnoreCase(keyword, pageable);
+        } else {
+            tspPage = tspRepository.findByStatusAndTitleContainingIgnoreCase("Y", keyword, pageable);
+        }
+        return convertToResTspDTO(tspPage.getContent());
     }
 
-    public List<TourSpotDTO> getTspSortByDistance(int page, int size, Long id) {
+
+    public List<ResDistanceTspDTO> getTspSortByDistance(int page, int size, Long id) { //리팩토링
         TourSpot criteria = tspRepository.findByIdAndStatus(id, "Y")
                 .orElseThrow(() -> new TourSpotNotFoundException(id));
 
-
         Pageable pageable = PageRequest.of(page, size);
+        List<TspHasDistanceProjection> lists = tspRepository.findNearestWithDistanceRefactor(criteria.getMapx(), criteria.getMapy(), id, pageable);
 
-        List<Object[]> results = tspRepository.findNearestWithDistance(criteria.getMapx(), criteria.getMapy(), id, pageable);
-
-        return results.stream()
-                .map(obj -> {
-                    Long tspId = (Long)obj[0];
-                    Double distance = (Double) obj[1];
-                    TourSpot spot = tspRepository.findById(tspId).orElseThrow(() -> new TourSpotNotFoundException(id));
-                    spot.setDistanceKm(distance);
-                    return TourSpotEntityToDTO(spot, distance);
-                })
-                .collect(Collectors.toList());
+        return convertToResDistanceTspDTO(lists);
     }
 
-    private static List<TourSpotDTO> TourSpotListEntityToDto(Page<TourSpot> tsps) {
-        return tsps.stream()
-                .map(tsp->TourSpotEntityToDTO(tsp, 0.0))
-                .collect(Collectors.toList());
+
+    private static List<ResDistanceTspDTO> convertToResDistanceTspDTO(List<TspHasDistanceProjection> lists) {
+        return lists.stream()
+                .map(list -> ResDistanceTspDTO.builder()
+                        .id(list.getId())
+                        .title(list.getTitle())
+                        .address(list.getAddress())
+                        .recCount(list.getRecCount())
+                        .firstImage(list.getFirstImage())
+                        .distanceMeter(list.getDistanceKm()*1000)
+                        .build()
+                ).toList();
     }
 
-    private static TourSpotDTO TourSpotEntityToDTO(TourSpot spot, Double distance) {
+    private static List<ResTspDTO> convertToResTspDTO(List<TourSpot> lists) {
+        return lists.stream()
+                .map(list -> ResTspDTO.builder()
+                        .id(list.getId())
+                        .title(list.getTitle())
+                        .address(list.getAddress())
+                        .recCount(list.getRecCount())
+                        .firstImage(list.getFirstImage())
+                        .build()
+                ).toList();
+    }
+
+    private static TourSpotDTO TourSpotEntityToDTO(TourSpot spot) {
         return TourSpotDTO.builder()
                 .id(spot.getId())
-                .title(spot.getTitle())
                 .address(spot.getAddress())
+                .title(spot.getTitle())
+                .description(spot.getDescription())
+                .homepage(spot.getHomepage())
                 .mapx(spot.getMapx())
                 .mapy(spot.getMapy())
                 .tel(spot.getTel())
@@ -94,11 +130,9 @@ public class TspService {
                 .lDongRegnCd(spot.getLDongRegnCd())
                 .contentId(spot.getContentId())
                 .status(spot.getStatus())
-                .distanceMeter(distance * 1000)
                 .cat_code("tsp")
                 .createdAt(spot.getCreatedAt())
                 .modifiedAt(spot.getModifiedAt())
                 .build();
     }
-
 }

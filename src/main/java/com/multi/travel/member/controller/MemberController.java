@@ -51,14 +51,14 @@ public class MemberController {
 
     //회원정보 수정
     @PutMapping("/update")
-    public ResponseEntity<ResponseDto> updateMember(@RequestBody MemberReqDto memberReqDto, HttpServletRequest request) {
+    public ResponseEntity<ResponseDto> updateMember(@ModelAttribute MemberReqDto memberReqDto, HttpServletRequest request) {
 
-        // 쿠키에서 access_token 추출
+
         String accessToken = tokenService.resolveTokenFromCookies(request);
         if (accessToken == null) {
             throw new AccessDeniedException("AccessToken이 존재하지 않습니다.");
         }
-        //  AccessToken 검증
+
         if (!tokenProvider.validateToken(accessToken)) {
             throw new AccessDeniedException("유효하지 않거나 만료된 토큰입니다.");
         }
@@ -79,24 +79,24 @@ public class MemberController {
     @DeleteMapping("/delete")
     public ResponseEntity<ResponseDto> deleteMyAccount(HttpServletRequest request) {
 
-        // 쿠키에서 access_token 추출
+
         String accessToken = tokenService.resolveTokenFromCookies(request);
         if (accessToken == null) {
             throw new AccessDeniedException("AccessToken이 존재하지 않습니다.");
         }
 
-        //  토큰 유효성 검증
+
         if (!tokenProvider.validateToken(accessToken)) {
             throw new AccessDeniedException("유효하지 않거나 만료된 토큰입니다.");
         }
 
-        //  토큰에서 로그인 아이디 추출 (즉, 현재 로그인한 사용자)
+
         String loginIdFromToken = tokenProvider.getUserId(accessToken);
 
-        //  해당 회원 정보 조회
+
         MemberResDto member = memberService.findByLoginId(loginIdFromToken);
 
-        //  회원 삭제
+
         memberService.deleteMember(member.getId());
 
         return ResponseEntity.ok(
@@ -105,15 +105,7 @@ public class MemberController {
     }
 
 
-    // 🔹 회원 삭제
-//    @PreAuthorize("hasRole('ADMIN')")  //  관리자만 가능
-//    @DeleteMapping("/members/{id}")
-//    public ResponseEntity<ResponseDto> deleteMember(@PathVariable Long id) {
-//        memberService.deleteMember(id);
-//        return ResponseEntity.ok(
-//                new ResponseDto(HttpStatus.OK, "회원 삭제 성공", null)
-//        );
-//    }
+
 
 
 

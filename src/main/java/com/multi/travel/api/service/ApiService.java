@@ -30,6 +30,8 @@ import org.springframework.web.client.RestTemplate;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -57,7 +59,7 @@ public class ApiService {
                     + "&MobileApp=test"
                     + "&_type=json";
 
-    private static final int MAX_AREA = 100;
+    private static final int MAX_AREA = 45;
     private static final int[] codes = {
             11, 26, 27, 28, 29, 30, 31, 36_110, 41, 43, 44, 46, 47, 48, 50, 51, 52
     };
@@ -257,7 +259,7 @@ public class ApiService {
 
     @Transactional
     public void insertDetail(Integer contentId, String type) {
-        log.info("🚀 관광지 및 숙소 상세정보 수집 시작");
+        log.info("🚀 상세정보 조회 TargetId={}, TargetType={}", contentId, type);
 
         if (contentId == null) {
             log.warn("⚠️ contentId가 null입니다. type={}", type);
@@ -305,14 +307,16 @@ public class ApiService {
             }
 
             String overview = items.get(0).getOverview();
-            log.info("✅ [{}] contentId={} overview={}", type, contentId,
-                    overview.substring(0, Math.min(40, overview.length())));
+            String homepage = cleanHomepage(items.get(0).getHomepage());
+
+            log.info("✅ [{}] contentId={} homepage={} overview={}", type, contentId, homepage, overview.substring(0, Math.min(40, overview.length())));
 
             // 4️⃣ DB 업데이트
             if ("tsp".equalsIgnoreCase(type)) {
                 Optional<TourSpot> tsp = tspRepository.findByContentId(contentId);
                 if (tsp.isPresent()) {
                     tsp.get().setDescription(overview);
+                    tsp.get().setHomepage(homepage);
                     tspRepository.save(tsp.get());
                 } else {
                     log.warn("⚠️ 해당 contentId={}의 TourSpot을 찾을 수 없습니다.", contentId);
@@ -321,6 +325,7 @@ public class ApiService {
                 Optional<Acc> acc = accRepository.findByContentId(contentId);
                 if (acc.isPresent()) {
                     acc.get().setDescription(overview);
+                    acc.get().setHomepage(homepage);
                     accRepository.save(acc.get());
                 } else {
                     log.warn("⚠️ 해당 contentId={}의 Acc를 찾을 수 없습니다.", contentId);
@@ -340,6 +345,19 @@ public class ApiService {
         log.info("🏁 상세정보 수집 완료");
     }
 
+    public static String cleanHomepage(String homepage) {
+        if (homepage == null || homepage.isBlank()) return null;
 
+        // href 속성의 값을 추출
+        Pattern pattern = Pattern.compile("href\\s*=\\s*\"([^\"]+)\"");
+        Matcher matcher = pattern.matcher(homepage);
+
+        if (matcher.find()) {
+            return matcher.group(1); // https://kansonghouse.kr/
+        }
+
+        // href가 없으면 단순히 HTML 태그 제거
+        return homepage.replaceAll("<[^>]*>", "").trim();
+    }
 
 }

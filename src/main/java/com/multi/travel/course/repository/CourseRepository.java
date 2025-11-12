@@ -4,6 +4,10 @@ import com.multi.travel.course.entity.Course;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import java.util.Optional;
 
 /**
  * Please explain the class!!!
@@ -14,4 +18,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
  */
 public interface CourseRepository extends JpaRepository<Course, Long> {
     Page<Course> findByStatus(String status, Pageable pageable);
+
+    // 추천순 정렬 조회
+    Page<Course> findByStatusOrderByRecCountDesc(String status, Pageable pageable);
+
+    @Query("SELECT DISTINCT c FROM Course c " +
+            "LEFT JOIN FETCH c.items i " +
+            "LEFT JOIN FETCH i.category " +
+            "WHERE c.courseId = :courseId")
+    Optional<Course> findByIdWithItemsAndCategory(@Param("courseId") Long courseId);
+
 }

@@ -12,6 +12,7 @@ import com.multi.travel.review.repository.ReviewRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,12 @@ import java.util.stream.Collectors;
 @Slf4j
 @Transactional
 public class ReviewService {
+
+    @Value("${image.review.image-dir}")
+    private String IMAGE_DIR;
+
+    @Value("${image.review.image-url}")
+    private String IMAGE_URL;
 
     private final ReviewRepository reviewRepository;
     private final ReviewImageRepository reviewImageRepository;
@@ -154,3 +161,4 @@ public class ReviewService {
     }
 
 }
+
