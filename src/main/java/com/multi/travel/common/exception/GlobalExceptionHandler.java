@@ -38,6 +38,12 @@ public class GlobalExceptionHandler {
                 .body(Map.of("error", ex.getMessage()));
     }
 
+    @ExceptionHandler(TokenException.class)
+    public ResponseEntity<?> handleAToken(AccommodationNotFound ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(Map.of("error", ex.getMessage()));
+    }
+
 //    @ExceptionHandler(Exception.class)
 //    public Object  exceptionHandler(Exception e, HandlerMethod handler, Model model) {
 //        e.printStackTrace();

@@ -1,6 +1,5 @@
 package com.multi.travel.auth.service;
 
-
 import com.multi.travel.common.exception.DuplicateUsernameException;
 import com.multi.travel.common.jwt.dto.TokenDto;
 import com.multi.travel.common.jwt.service.TokenService;
@@ -15,9 +14,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -28,7 +25,7 @@ public class AuthService {
     private final CustomUserDetailService customUserDetailService;
     private final TokenService tokenService;
 
-    /** 회원가입 */
+    /** ✅ 회원가입 */
     @Transactional
     public Member signup(MemberReqDto memberReqDto) {
         if (memberRepository.findByLoginId(memberReqDto.getLoginId()).isPresent()) {
@@ -46,35 +43,29 @@ public class AuthService {
                 .build();
 
         memberRepository.save(member);
-
         return member;
     }
 
-    /** 로그인 */
+    /** ✅ 로그인 */
     public TokenDto login(MemberReqDto memberReqDto) {
-        //  DB에서 회원 찾기
+        // 1️⃣ DB에서 회원 찾기
         Member member = memberRepository.findByLoginId(memberReqDto.getLoginId())
                 .orElseThrow(() -> new BadCredentialsException("회원 정보를 찾을 수 없습니다."));
 
-
-        // 비밀번호 검증
+        // 2️⃣ 비밀번호 검증
         if (!passwordEncoder.matches(memberReqDto.getPassword(), member.getPassword())) {
             throw new BadCredentialsException("비밀번호가 일치하지 않습니다.");
         }
 
-        // 인증 객체 생성
+        // 3️⃣ Spring Security UserDetails 로부터 권한 목록 가져오기
         UserDetails userDetails = customUserDetailService.loadUserByUsername(memberReqDto.getLoginId());
         List<String> roles = userDetails.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .toList();
 
-        // 토큰 발급
-        Map<String, Object> loginData = new HashMap<>();
-        loginData.put("loginId", memberReqDto.getLoginId());
-        loginData.put("roles", roles);
+        // 4️⃣ AccessToken + RefreshToken 발급
+        TokenDto tokenDto = tokenService.issueTokens(member.getLoginId(), roles);
 
-        return tokenService.createToken(loginData);
+        return tokenDto;
     }
-
-
 }

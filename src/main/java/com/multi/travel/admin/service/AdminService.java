@@ -171,7 +171,6 @@ public class AdminService {
                 .lDongRegnCd(spot.getLDongRegnCd())
                 .contentId(spot.getContentId())
                 .status(spot.getStatus())
-                .distanceMeter(distance * 1000)
                 .cat_code("tsp")
                 .createdAt(spot.getCreatedAt())
                 .modifiedAt(spot.getModifiedAt())

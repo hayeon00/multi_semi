@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 public class TokenProvider {
 
     private static final String AUTHORITIES_KEY = "auth";  // 클레임에서 권한정보담을키
-    private static final long ACCESS_TOKEN_EXPIRE_TIME = 1000 * 60 * 100;     //30분
+    private static final long ACCESS_TOKEN_EXPIRE_TIME = 1000 * 60 * 30;     //30분
     private static final long REFRESH_TOKEN_EXPIRE_TIME =1000L * 60 * 60 * 24; //1000L * 60 * 60 * 24 * 1;  // 1일
 
     private final JwtProvider jwtProvider;  // JwtProvider 의존성 추가
@@ -49,14 +49,19 @@ public class TokenProvider {
                 .claims()
                 .setSubject(loginId);
 
+        // ✅ 두 토큰 모두에 auth 클레임 추가 (역할정보 유지)
+        claims.put(AUTHORITIES_KEY, String.join(",", roles));
+
         long now = (new Date()).getTime();
         Date tokenExpiresIn = new Date();
-        if (code.equals("A")) {
+        if (code.equals("A")) {  //액세스 토큰
             tokenExpiresIn = new Date(now + ACCESS_TOKEN_EXPIRE_TIME);
             claims.put(AUTHORITIES_KEY, String.join(",", roles)); // List<String> -> 콤마로 구분된 문자열
-        } else {
+        } else {  //리프레시 토큰
             tokenExpiresIn = new Date(now + REFRESH_TOKEN_EXPIRE_TIME);
         }
+
+
 
         return Jwts.builder()
                 .setIssuer(ISSUER) // 프로퍼티에 설정한 발행자
