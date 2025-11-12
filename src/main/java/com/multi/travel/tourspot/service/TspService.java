@@ -142,7 +142,7 @@ public class TspService {
                 .lDongRegnCd(spot.getLDongRegnCd())
                 .contentId(spot.getContentId())
                 .status(spot.getStatus())
-                .cat_code("tsp")
+                .catCode("tsp")
                 .createdAt(spot.getCreatedAt())
                 .modifiedAt(spot.getModifiedAt())
                 .build();
