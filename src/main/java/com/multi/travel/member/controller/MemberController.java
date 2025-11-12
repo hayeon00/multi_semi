@@ -113,7 +113,7 @@ public class MemberController {
     @GetMapping("/plans")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ResponseDto> getMyPlans(@AuthenticationPrincipal CustomUser user) {
-        String loginId = user.getMemberId(); // ✅ CustomUser에서 꺼냄
+        String loginId = user.getUserId(); // ✅ CustomUser에서 꺼냄
         List<PlanReqDto> plans = memberService.getMyTripPlans(loginId);
         return ResponseEntity.ok(
                 new ResponseDto(HttpStatus.OK, "내 여행계획 전체조회 성공", plans)
