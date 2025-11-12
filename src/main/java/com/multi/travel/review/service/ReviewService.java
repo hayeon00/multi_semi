@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -30,8 +31,8 @@ public class ReviewService {
     private final FileService fileService;
 
     public ReviewDetailDto createReview(ReviewReqDto dto, List<MultipartFile> images, String userId) {
-
         log.debug("🧪 createReview() 호출됨 - 전달된 userId: {}", userId);
+
         Member member = memberRepository.findByLoginId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("회원 정보가 없습니다."));
 
@@ -44,24 +45,27 @@ public class ReviewService {
                 .member(member)
                 .build();
 
-        // 이미지 저장
+        // 이미지 저장 처리
         if (images != null && !images.isEmpty()) {
-            List<ReviewImage> reviewImages = images.stream()
-                    .map(file -> {
-                        String storedName = fileService.store(file);
-                        return ReviewImage.builder()
-                                .originalName(file.getOriginalFilename())
-                                .storedName(storedName)
-                                .imageUrl("/uploads/" + storedName)
-                                .review(review)
-                                .build();
-                    }).toList();
-            review.setImages(reviewImages);
+            log.debug("📷 이미지 수: {}", images.size());
+
+            for (MultipartFile file : images) {
+                String storedName = fileService.store(file);
+                ReviewImage image = ReviewImage.builder()
+                        .originalName(file.getOriginalFilename())
+                        .storedName(storedName)
+                        .imageUrl("/uploads/" + storedName)
+                        .build();
+
+                review.addImage(image); // 🔁 양방향 연결
+            }
         }
+
 
         Review saved = reviewRepository.save(review);
         return toDto(saved);
     }
+
 
     public ReviewDetailDto updateReview(Long reviewId, ReviewReqDto dto, List<MultipartFile> newImages, String userId) {
         Review review = reviewRepository.findById(reviewId)
@@ -71,34 +75,33 @@ public class ReviewService {
             throw new SecurityException("본인 리뷰만 수정할 수 있습니다.");
         }
 
-        // 기존 이미지 삭제
+        //기존 이미지 삭제
         for (ReviewImage img : review.getImages()) {
             fileService.delete(img.getStoredName());
         }
         review.getImages().clear();
 
-        // 새 이미지 등록
+        //새이미지 등록
         if (newImages != null && !newImages.isEmpty()) {
-            List<ReviewImage> newReviewImages = newImages.stream()
-                    .map(file -> {
-                        String storedName = fileService.store(file);
-                        return ReviewImage.builder()
-                                .originalName(file.getOriginalFilename())
-                                .storedName(storedName)
-                                .imageUrl("/uploads/" + storedName)
-                                .review(review)
-                                .build();
-                    }).toList();
-            review.setImages(newReviewImages);
+            for (MultipartFile file : newImages) {
+                String storedName = fileService.store(file);
+                ReviewImage image = ReviewImage.builder()
+                        .originalName(file.getOriginalFilename())
+                        .storedName(storedName)
+                        .imageUrl("/uploads/" + storedName)
+                        .build();
+                review.addImage(image); // 양방향 관계 설정
+            }
         }
 
-        // 내용 수정
+        //텍스트 수정
         review.setTitle(dto.getTitle());
         review.setContent(dto.getContent());
         review.setRating(dto.getRating());
 
         return toDto(review);
     }
+
 
     public void deleteReview(Long reviewId, String userId) {
         Review review = reviewRepository.findById(reviewId)
@@ -108,7 +111,6 @@ public class ReviewService {
             throw new SecurityException("본인 리뷰만 삭제할 수 있습니다.");
         }
 
-        // 이미지 삭제
         for (ReviewImage image : review.getImages()) {
             fileService.delete(image.getStoredName());
         }
@@ -126,7 +128,7 @@ public class ReviewService {
                 .createdAt(review.getCreatedAt())
                 .imageUrls(review.getImages().stream()
                         .map(ReviewImage::getImageUrl)
-                        .toList())
+                        .collect(Collectors.toList()))
                 .build();
     }
 

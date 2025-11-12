@@ -1,11 +1,15 @@
 package com.multi.travel.common.file;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.UUID;
 
 /**
@@ -17,40 +21,40 @@ import java.util.UUID;
  */
 
 @Service
+@Slf4j
 public class FileService {
 
-    @Value("${image.image-dir}")
-    private String imageDir;
+    @Value("${file.upload-dir:}") // 기본값도 지정 가능
+    private String uploadDir;
 
-    @Value("${image.image-url}")
-    private String imageUrl;
 
+    /**
+     * 파일 저장 후 저장된 파일명 반환
+     */
     public String store(MultipartFile file) {
+        String storedName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+        File target = new File(uploadDir, storedName);
+
         try {
-            // 저장할 파일 이름 생성
-            String storedName = UUID.randomUUID() + "_" + file.getOriginalFilename();
-
-            // 저장할 위치
-            File dest = new File(imageDir + storedName);
-            file.transferTo(dest);
-
-            // 접근 가능한 URL 반환
+            file.transferTo(target);
             return storedName;
         } catch (IOException e) {
-            throw new RuntimeException("파일 저장 실패: " + e.getMessage());
+            log.error("파일 저장 실패: {}", file.getOriginalFilename(), e);
+            throw new RuntimeException("파일 저장 실패: " + file.getOriginalFilename());
         }
     }
 
-    public void delete(String storedName) {
-        File file = new File(imageDir + storedName);
-        if (file.exists()) {
-            file.delete();
+    public void delete(String storedFileName) {
+        try {
+            Path path = Paths.get(uploadDir, storedFileName);
+            Files.deleteIfExists(path);
+        } catch (IOException e) {
+            log.error("파일 삭제 실패: {}", storedFileName, e);
         }
     }
 
-    public String getImageUrl(String storedName) {
-        return imageUrl + storedName;
-    }
+
+
 }
 
 

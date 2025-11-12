@@ -1,7 +1,5 @@
 package com.multi.travel.review.entity;
 
-import com.multi.travel.member.entity.Member;
-import com.multi.travel.plan.entity.TripPlan;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -10,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name="tb_review")
+@Table(name="tb_rev")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -22,38 +20,29 @@ public class Review {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id")
-    private Member member;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "trip_plan_id")
-    private TripPlan tripPlan;
-
-
-
-    // 리뷰 대상 타입: PLAN, COURSE, TOUR_SPOT, ACCOMMODATION
-    @Column(nullable = false, length = 30)
-    private String targetType;
-
-    // 리뷰 대상 ID
-    @Column(nullable = false)
-    private Long targetId;
-
     private String title;
 
-    @Column(nullable = false, length = 1000)
     private String content;
 
     private int rating;
 
+    private String targetType;
+
+    private Long targetId;
+
     private LocalDateTime createdAt;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id")
+    private com.multi.travel.member.entity.Member member;
+
     @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<ReviewImage> images = new ArrayList<>();
 
-    @PrePersist
-    public void prePersist() {
-        this.createdAt = LocalDateTime.now();
+    public void addImage(ReviewImage image) {
+        image.setReview(this);
+        this.images.add(image);
     }
+
 }

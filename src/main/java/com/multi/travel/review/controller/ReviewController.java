@@ -21,6 +21,7 @@ public class ReviewController {
 
     private final ReviewService reviewService;
 
+    //리뷰등록
     @PostMapping
     public ResponseEntity<ReviewDetailDto> createReview(
             @ModelAttribute ReviewReqDto dto,
@@ -34,6 +35,7 @@ public class ReviewController {
         return ResponseEntity.ok(result);
     }
 
+    //리뷰 수정
     @PutMapping("/{reviewId}")
     public ResponseEntity<ReviewDetailDto> updateReview(
             @PathVariable Long reviewId,
@@ -45,21 +47,27 @@ public class ReviewController {
         return ResponseEntity.ok(updated);
     }
 
+
+    //리뷰 삭제
     @DeleteMapping("/{reviewId}")
-    public ResponseEntity<Void> deleteReview(
+    public ResponseEntity<String> deleteReview(
             @PathVariable Long reviewId,
             @AuthenticationPrincipal CustomUser user
     ) {
         reviewService.deleteReview(reviewId, user.getUserId());
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok("리뷰가 성공적으로 삭제되었습니다.");
     }
 
+
+    //내가 쓴 리뷰 전체 조회
     @GetMapping("/my")
     public ResponseEntity<List<ReviewDetailDto>> getMyReviews(@AuthenticationPrincipal CustomUser user) {
         List<ReviewDetailDto> myReviews = reviewService.getReviewsByUser(user.getUserId());
         return ResponseEntity.ok(myReviews);
     }
 
+
+    //타겟별(코스or관광지) 리뷰 전체 조회
     @GetMapping("/target")
     public ResponseEntity<List<ReviewDetailDto>> getReviewsByTarget(
             @RequestParam("type") String targetType,

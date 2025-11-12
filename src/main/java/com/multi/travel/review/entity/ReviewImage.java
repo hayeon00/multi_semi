@@ -6,6 +6,7 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
+@Table(name="tb_rev_img")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -39,4 +40,6 @@ public class ReviewImage {
     public void onCreate() {
         this.createdAt = LocalDateTime.now();
     }
+
+
 }

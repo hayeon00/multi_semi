@@ -19,6 +19,7 @@ import java.time.LocalDate;
  */
 
 @Entity
+@Table(name="tb_pln")
 @Getter
 @Setter
 @Builder
