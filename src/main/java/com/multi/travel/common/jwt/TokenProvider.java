@@ -48,6 +48,7 @@ public class TokenProvider {
         Claims claims = Jwts
                 .claims()
                 .setSubject(loginId);
+        claims.setId(loginId);
 
         long now = (new Date()).getTime();
         Date tokenExpiresIn = new Date();

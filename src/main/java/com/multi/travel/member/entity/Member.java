@@ -9,6 +9,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 /**
  * Please explain the class!!!
@@ -74,4 +75,22 @@ public class Member {
     public void setStatus(String status) {
         this.status = status;
     }
+
+
+    // ✅ ID 기반 equals/hashCode 정의
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Member)) return false;
+        Member member = (Member) o;
+        return id != null && id.equals(member.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
+
+
 }

@@ -26,6 +26,7 @@ public class CustomUserDetailService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + loginId));
 
         return CustomUser.builder()
+                .userId(member.getLoginId())
                 .email(member.getEmail())
                 .password(member.getPassword())
                 .authorities(Collections.singletonList(

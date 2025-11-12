@@ -24,4 +24,6 @@ public class ReviewDetailDto {
     private String writer; // 예: 회원 이름
     private LocalDateTime createdAt;
     private List<String> imageUrls;
+    private String targetType;
+    private Long targetId;
 }
