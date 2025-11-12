@@ -7,6 +7,9 @@
     <link th:href="@{/css/common.css}" rel="stylesheet">
     <!-- 회원정보 수정 전용 CSS -->
     <link th:href="@{/css/member-edit.css}" rel="stylesheet">
+
+    <!-- ✅ 자동 토큰 재발급 공통 JS -->
+    <script src="/js/common.js"></script>
 </head>
 
 <body>
@@ -39,11 +42,10 @@
         <img th:src="${member.imageUrl != null ? member.imageUrl : '/images/default-profile.png'}"
              alt="프로필 사진" class="profile-img" id="profile-preview">
 
-            <label class="photo-btn">
-                사진 수정
-                <input type="file" name="imageFile" id="profileImage" accept="image/*" hidden>
-            </label>
-        </div>
+        <label class="photo-btn">
+            사진 수정
+            <input type="file" name="imageFile" id="profileImage" accept="image/*" hidden>
+        </label>
 
         <!-- 오른쪽: 회원정보 입력 -->
         <div class="right-section">
@@ -104,16 +106,16 @@
         }
     });
 
-    // 🔹 PUT 요청으로 회원정보 수정 (API 호출)
+    // 🔹 PUT 요청으로 회원정보 수정 (401 자동재발급 포함)
     document.querySelector('.member-form').addEventListener('submit', async (e) => {
         e.preventDefault();
 
         const formData = new FormData(e.target);
 
-        const response = await fetch('/members/update', {
+        const response = await fetchWithRefresh('/members/update', {
             method: 'PUT',
             body: formData,
-            credentials: 'include' // 쿠키 자동 포함
+            credentials: 'include'
         });
 
         if (response.ok) {
@@ -121,7 +123,7 @@
             location.href = "/mypage";
         } else {
             const msg = await response.text();
-            alert("수정 실패: " + msg);
+            alert("수정 실패 ❌ : " + msg);
         }
     });
 </script>

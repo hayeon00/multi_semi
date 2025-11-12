@@ -5,6 +5,9 @@ import com.multi.travel.member.dto.MemberReqDto;
 import com.multi.travel.member.dto.MemberResDto;
 import com.multi.travel.member.entity.Member;
 import com.multi.travel.member.repository.MemberRepository;
+import com.multi.travel.plan.dto.PlanReqDto;
+import com.multi.travel.plan.entity.TripPlan;
+import com.multi.travel.plan.repository.TripPlanRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 
 /**
@@ -37,6 +41,9 @@ public class MemberService {
     private String IMAGE_URL;
 
     private final MemberRepository memberRepository;
+
+    private final TripPlanRepository tripPlanRepository;
+
 
     public List<MemberResDto> findAll() {
         return memberRepository.findAll()
@@ -119,4 +126,24 @@ public class MemberService {
 
         return MemberResDto.fromEntity(member);
     }
+
+
+    /** ✅ 로그인한 회원이 작성한 여행계획 전체조회 */
+    public List<PlanReqDto> getMyTripPlans(String loginId) {
+        List<TripPlan> plans = tripPlanRepository.findAllByMemberLoginIdOrderByIdDesc(loginId);
+
+        return plans.stream().map(plan -> {
+            PlanReqDto dto = new PlanReqDto();
+            dto.setMemberId(loginId);
+            // TourSpot ID 대신 출발지와 관련된 정보 없음 → null 또는 0
+            dto.setTourSpotId(null);
+            dto.setTitle(plan.getTitle());
+            dto.setNumberOfPeople(plan.getNumberOfPeople());
+            dto.setStartDate(plan.getStartDate());
+            dto.setEndDate(plan.getEndDate());
+            return dto;
+        }).collect(Collectors.toList());
+    }
+
+
 }

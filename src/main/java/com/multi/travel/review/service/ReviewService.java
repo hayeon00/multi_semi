@@ -27,10 +27,10 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ReviewService {
 
-    @Value("${image.image-dir}")
+    @Value("${image.review.image-dir}")
     private String IMAGE_DIR;
 
-    @Value("${image.image-url}")
+    @Value("${image.review.image-url}")
     private String IMAGE_URL;
 
     private final ReviewRepository reviewRepository;

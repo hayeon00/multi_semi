@@ -1,18 +1,24 @@
 package com.multi.travel.member.controller;
 
+import com.multi.travel.auth.dto.CustomUser;
 import com.multi.travel.common.ResponseDto;
 import com.multi.travel.common.jwt.TokenProvider;
 import com.multi.travel.common.jwt.service.TokenService;
 import com.multi.travel.member.dto.MemberReqDto;
 import com.multi.travel.member.dto.MemberResDto;
 import com.multi.travel.member.service.MemberService;
+import com.multi.travel.plan.dto.PlanReqDto;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * Please explain the class!!!
@@ -52,7 +58,7 @@ public class MemberController {
     //회원정보 수정
     @PutMapping("/update")
     public ResponseEntity<ResponseDto> updateMember(@ModelAttribute MemberReqDto memberReqDto, HttpServletRequest request) {
-
+        //userDetails.getAuthorities();
 
         String accessToken = tokenService.resolveTokenFromCookies(request);
         if (accessToken == null) {
@@ -104,9 +110,24 @@ public class MemberController {
         );
     }
 
+    @GetMapping("/plans")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ResponseDto> getMyPlans(@AuthenticationPrincipal CustomUser user) {
+        String loginId = user.getMemberId(); // ✅ CustomUser에서 꺼냄
+        List<PlanReqDto> plans = memberService.getMyTripPlans(loginId);
+        return ResponseEntity.ok(
+                new ResponseDto(HttpStatus.OK, "내 여행계획 전체조회 성공", plans)
+        );
+    }
 
 
-
+//    @GetMapping("/plans/{planId}")
+//    public ResponseEntity<ResponseDto> getPlanDetail(@PathVariable Long planId) {
+//        PlanDetailResDto detail = memberService.getTripPlanDetail(planId);
+//        return ResponseEntity.ok(
+//                new ResponseDto(HttpStatus.OK, "여행 계획 상세정보 조회 성공", detail)
+//        );
+//    }
 
 
 }

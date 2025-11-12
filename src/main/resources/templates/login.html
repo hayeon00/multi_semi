@@ -65,28 +65,25 @@
             const response = await fetch("/auth/login", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    loginId: loginId,   // DTO 필드명 맞춰야 함
-                    password: password
-                })
+                credentials: "include", // ✅ 쿠키 포함 (JWT 쿠키 전달용)
+                body: JSON.stringify({ loginId, password })
             });
 
-            console.log("응답 상태코드:", response.status); // ✅ 추가
-            const text = await response.text();             // ✅ 원본 응답 확인
-            console.log("응답 바디:", text);                // ✅ 추가
+            const result = await response.json();
+            console.log("응답 상태코드:", response.status);
+            console.log("응답 바디:", result);
 
-
-            if (response.ok) {
-                const result = await response.json();
+            if (response.ok && result.status === 200) {
                 msgBox.textContent = result.message || "로그인 성공!";
                 msgBox.style.color = "green";
-                setTimeout(() => window.location.href = "/", 800);
+                // ✅ 로그인 성공 → 메인페이지로 이동
+                setTimeout(() => window.location.href = "/spots/view/tourspotlist", 500);
             } else {
-                const err = await response.json();
-                msgBox.textContent = err.message || "로그인 실패. 아이디/비밀번호를 확인해주세요.";
+                msgBox.textContent = result.message || "로그인 실패. 아이디/비밀번호를 확인해주세요.";
                 msgBox.style.color = "red";
             }
         } catch (e) {
+            console.error("로그인 에러:", e);
             msgBox.textContent = "서버 오류가 발생했습니다.";
             msgBox.style.color = "red";
         }

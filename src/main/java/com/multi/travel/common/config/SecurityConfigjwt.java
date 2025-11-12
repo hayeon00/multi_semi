@@ -1,6 +1,5 @@
 package com.multi.travel.common.config;
 
-
 import com.multi.travel.common.jwt.JwtAcessDeniedHandler;
 import com.multi.travel.common.jwt.JwtAuthenticationEntrypoint;
 import com.multi.travel.common.jwt.JwtFilter;
@@ -17,10 +16,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
-
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
 
 import java.util.Arrays;
 
@@ -33,61 +30,76 @@ public class SecurityConfigjwt {
     private final JwtAcessDeniedHandler jwtAcessDeniedHandler;
     private final JwtFilter jwtFilter;
 
-
-
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationEntrypoint jwtAuthenticationEntrypoint) throws Exception {
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http,
+            JwtAuthenticationEntrypoint jwtAuthenticationEntrypoint
+    ) throws Exception {
 
         http.csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
 
+                .authorizeHttpRequests(auth -> auth
+                        // ✅ 정적 리소스는 로그인 없이 접근 허용
+                        .requestMatchers(
+                                "/css/**",
+                                "/js/**",
+                                "/images/**",
+                                "/fonts/**",
+                                "/static/**"
+                        ).permitAll()
 
-                .authorizeHttpRequests(auth->auth
+                        // ✅ 로그인/회원가입/토큰 관련 경로 허용
+                        .requestMatchers(
+                                "/login",
+                                "/signup",
+                                "/auth/**",
+                                "/api/auth/**"
+                        ).permitAll()
 
-                        .requestMatchers("/login", "/signup", "/css/**", "/images/**").permitAll()
-                        .requestMatchers("/auth/**", "/api/auth/**").permitAll()
-                        .requestMatchers("/**").permitAll() // /api/plans, /api/courses 요청 시 로그인 없이도 테스트 가능하게 설정
-                                                                  // TODO: 전체 구현 완료 시 삭제 예정
+                        // ✅ 관리자 뷰 페이지(Thymeleaf HTML)는 로그인 없이 접근 허용
+                        //   (AccessToken 만료 시에도 페이지가 열리도록)
+                        .requestMatchers("/admin/view/**").permitAll()
 
+                        // ✅ 나머지 모든 요청(API)은 JWT 인증 필요
+                        .anyRequest().authenticated()
+                )
 
-
-                        .anyRequest().authenticated())
-
-
+                // ✅ JWT 필터 추가
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
 
-                .exceptionHandling(exception->exception
+                // ✅ 인증 실패/권한 거부 처리
+                .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(jwtAuthenticationEntrypoint)
                         .accessDeniedHandler(jwtAcessDeniedHandler)
                 );
 
-
         return http.build();
-
     }
-    //  CORS 설정 추가 (쿠키 기반 통신 허용)
+
+    // ✅ CORS 설정 (쿠키 전송 허용)
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:8090")); // 프론트 포트 (같으면 그대로)
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:8090:*"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("Content-Type", "Authorization"));
         configuration.setAllowCredentials(true); // ✅ 쿠키 전송 허용 (핵심)
+        configuration.addExposedHeader("Set-Cookie");
         configuration.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
-
-
 }

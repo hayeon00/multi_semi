@@ -38,7 +38,6 @@ public class TourSpotReqDto {
   //  private Long catCode;          // 카테고리 코드 (Category FK 매핑용)
 
     private MultipartFile firstImageFile;   // 대표 이미지
-    private MultipartFile secondImageFile;  // 서브 이미지
 
 
 }
