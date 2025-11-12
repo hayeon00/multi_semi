@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+
 @RestController
 @RequiredArgsConstructor
 @Slf4j
@@ -30,34 +31,34 @@ public class TspController {
 
     private final TspService tspService;
 
+
     @GetMapping("/list")
     public ResponseEntity<ResponseDto> getTspList(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "id") String sort,
-            @RequestParam(defaultValue = "10") int size,
-            @AuthenticationPrincipal CustomUser customUser
-    ) {
-
-        return ResponseEntity.ok(new ResponseDto(HttpStatus.OK, "success", tspService.getTourSpotList(page, size, sort, customUser)));
-    }
-
-    @GetMapping("/detail")
-    public ResponseEntity<ResponseDto> getTspDetail(
-            @RequestParam @Valid Long id,
-            @AuthenticationPrincipal CustomUser customUser
-    ) {
-        return ResponseEntity.ok(new ResponseDto(HttpStatus.OK, "상세 조회 성공", tspService.getTourSpotDetail(id, customUser)));
-    }
-
-    @GetMapping("/search")
-    public ResponseEntity<ResponseDto> getTspSearch(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "id") String sort,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "") String keyword,
             @AuthenticationPrincipal CustomUser customUser
     ) {
-        return ResponseEntity.ok(new ResponseDto(HttpStatus.OK, "success", tspService.getTspSearch(page, size, sort, keyword, customUser)));
+        Object result;
+
+
+        if (keyword.isBlank()) {
+            result = tspService.getTourSpotList(page, size, sort, customUser);
+        } else {
+            result = tspService.getTspSearch(page, size, sort, keyword, customUser);
+        }
+        return ResponseEntity.ok(new ResponseDto(HttpStatus.OK, "success", result));
+    }
+
+
+    @GetMapping("/detail")
+    public ResponseEntity<ResponseDto> getTspDetail(
+            @RequestParam @Valid Long id,
+            @AuthenticationPrincipal CustomUser customUser
+    ) {
+        log.info("id >>> {}", id);
+        return ResponseEntity.ok(new ResponseDto(HttpStatus.OK, "상세 조회 성공", tspService.getTourSpotDetail(id, customUser)));
     }
 
     @GetMapping("/distance")
