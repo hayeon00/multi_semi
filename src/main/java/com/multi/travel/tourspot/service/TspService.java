@@ -80,7 +80,10 @@ public class TspService {
             tsp = tspRepository.findByIdAndStatus(id, "Y")
                     .orElseThrow(() -> new TourSpotNotFoundException(id));
         }
-        apiService.insertDetail(tsp.getContentId(), tsp.getCategory().getCatCode());
+        if(tsp.getDescription() == null || tsp.getHomepage() == null) {
+            apiService.insertDetail(tsp.getContentId(), tsp.getCategory().getCatCode());
+        }
+
         TourSpot updatedTsp = tspRepository.findById(id)
                 .orElseThrow(() -> new TourSpotNotFoundException(id));
         return TourSpotEntityToDTO(updatedTsp);
@@ -146,13 +149,5 @@ public class TspService {
                 .createdAt(spot.getCreatedAt())
                 .modifiedAt(spot.getModifiedAt())
                 .build();
-    }
-
-    public int getTotalPages(int size, CustomUser customUser) {
-        Pageable pageable = PageRequest.of(0, size);
-        if (RoleUtils.hasRole(customUser, RoleUtils.ADMIN)) {
-            return tspRepository.findAll(pageable).getTotalPages();
-        }
-        return tspRepository.findByStatus("Y", pageable).getTotalPages();
     }
 }
