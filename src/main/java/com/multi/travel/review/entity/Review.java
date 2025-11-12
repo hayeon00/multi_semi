@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@Table(name="tb_rev")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -44,9 +45,14 @@ public class Review {
 
     private int rating;
 
+    private String targetType;
+
+    private Long targetId;
+
     private LocalDateTime createdAt;
 
-    // 이미지 연관관계
+
+
     @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default // 추가 이유: Builder로 생성할 때도 초기값이 반영되도록
     private List<ReviewImage> images = new ArrayList<>();
@@ -55,6 +61,10 @@ public class Review {
     public void prePersist() {
         this.createdAt = LocalDateTime.now();
     }
+
+    public void addImage(ReviewImage image) {
+        image.setReview(this);
+        this.images.add(image);
+    }
+
 }
-
-

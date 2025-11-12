@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>메인 페이지 | Travel Planing</title>
+    <link th:href="@{/css/common.css}" rel="stylesheet">
+</head>
+<body>
+
+<header>
+    <div class="logo">
+        <img th:src="@{/images/logo.png}" alt="Logo">
+        <span class="title">TRAVEL PLANING</span>
+    </div>
+
+    <nav>
+        <span class="welcome-text">관리자 님 환영합니다.</span>
+        <a th:href="@{/}">Home</a>
+        <a th:href="@{/mypage}">마이페이지</a>
+        <a th:href="@{/logout}">로그아웃</a>
+    </nav>
+</header>
+
+<main>
+    <h2>메인 페이지</h2>
+    <p>이곳에 본문 콘텐츠를 추가하세요.</p>
+</main>
+
+</body>
+</html>

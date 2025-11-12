@@ -20,6 +20,8 @@ import java.util.List;
 @Builder
 public class ReviewReqDto {
     private Long tripPlanId;
+    private String targetType; // COURSE, TOUR_SPOT
+    private Long targetId;
     private String title;
     private String content;
     private int rating;
