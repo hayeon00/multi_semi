@@ -64,6 +64,10 @@ public class CourseService {
 
         // 아이템 추가
         dto.getItems().forEach(itemDto -> {
+            if (itemDto.getCategoryCode() == null || itemDto.getCategoryCode().isBlank()) {
+                throw new IllegalArgumentException("카테고리 코드가 누락되었습니다. placeId=" + itemDto.getPlaceId());
+            }
+
             Category category = categoryRepository.findById(itemDto.getCategoryCode())
                     .orElseThrow(() -> new EntityNotFoundException("카테고리를 찾을 수 없습니다. code=" + itemDto.getCategoryCode()));
 
@@ -83,9 +87,9 @@ public class CourseService {
     }
 
     /** 코스 상세 조회 */
-    @Transactional(readOnly = true) // flush 동작을 생략 -> 조회 성능 향상을 위해 추가
+    @Transactional(readOnly = true)
     public CourseResDto getCourseDetail(Long courseId) {
-        Course course = courseRepository.findById(courseId)
+        Course course = courseRepository.findByIdWithItemsAndCategory(courseId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 ID(" + courseId + ")의 코스를 찾을 수 없습니다."));
         return mapToCourseResDto(course);
     }
@@ -198,6 +202,54 @@ public class CourseService {
         return courses.stream()
                 .map(this::mapToCourseResDto)
                 .toList();
+    }
+
+
+    /** 코스 전체 수정 */
+    @Transactional
+    public CourseResDto updateCourse(Long planId, CourseReqDto dto) {
+
+        TripPlan plan = tripPlanRepository.findById(planId)
+                .orElseThrow(() -> new EntityNotFoundException("TripPlan을 찾을 수 없습니다. id=" + planId));
+
+        Course course = plan.getCourse();
+        if (course == null) {
+            throw new IllegalStateException("해당 계획에 연결된 코스가 없습니다.");
+        }
+
+        // 기존 아이템 전체 삭제 (고아 제거 활성화되어 있음)
+        course.getItems().clear();
+
+        // 수정된 아이템 추가
+        dto.getItems().forEach(itemDto -> {
+            if (itemDto.getCategoryCode() == null || itemDto.getCategoryCode().isBlank()) {
+                throw new IllegalArgumentException("카테고리 코드가 누락되었습니다. placeId=" + itemDto.getPlaceId());
+            }
+
+            Category category = categoryRepository.findById(itemDto.getCategoryCode())
+                    .orElseThrow(() -> new EntityNotFoundException("카테고리를 찾을 수 없습니다. code=" + itemDto.getCategoryCode()));
+
+            CourseItem item = CourseItem.builder()
+                    .course(course)
+                    .category(category)
+                    .placeId(itemDto.getPlaceId())
+                    .orderNo(itemDto.getOrderNo())
+                    .dayNo(itemDto.getDayNo())
+                    .build();
+
+            course.addItem(item);
+        });
+
+        // 계획 기본정보도 함께 수정
+        plan.setTitle(dto.getMemberId());  // (승아님 상황에 맞게 수정 필요)
+        plan.setNumberOfPeople(plan.getNumberOfPeople());
+        plan.setStartDate(plan.getStartDate());
+        plan.setEndDate(plan.getEndDate());
+        tripPlanRepository.save(plan);
+
+        courseRepository.save(course);
+
+        return mapToCourseResDto(course);
     }
 
 

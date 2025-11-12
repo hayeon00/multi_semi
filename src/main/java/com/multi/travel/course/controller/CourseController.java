@@ -3,6 +3,7 @@ package com.multi.travel.course.controller;
 import com.multi.travel.common.ResponseDto;
 import com.multi.travel.course.dto.*;
 import com.multi.travel.course.service.CourseService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -142,4 +143,15 @@ public class CourseController {
         );
     }
 
+    /** 코스 전체 수정 (기존 아이템 삭제 후 재등록) */
+    @PutMapping("/{planId}")
+    public ResponseEntity<ResponseDto> updateCourse(
+            @PathVariable Long planId,
+            @Valid @RequestBody CourseReqDto dto
+    ) {
+        CourseResDto updated = courseService.updateCourse(planId, dto);
+        return ResponseEntity.ok(
+                new ResponseDto(HttpStatus.OK, "코스 수정 완료", updated)
+        );
+    }
 }

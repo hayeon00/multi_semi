@@ -89,22 +89,22 @@ public class PlanService {
                         .orderNo(item.getOrderNo())
                         .dayNo(item.getDayNo());
 
-                if ("TOUR_SPOT".equals(categoryCode)) {
+                if ("tsp".equals(categoryCode)) {
                     tourSpotApiRepository.findById(item.getPlaceId())
                             .ifPresent(spot -> builder
                                     .title(spot.getTitle())
                                     .address(spot.getAddress())
                                     .mapx(spot.getMapx().toPlainString())
                                     .mapy(spot.getMapy().toPlainString())
-                                    );
-                } else if ("ACCOMMODATION".equals(categoryCode)) {
+                            );
+                } else if ("acc".equals(categoryCode)) {
                     accRepository.findById(item.getPlaceId())
                             .ifPresent(acc -> builder
                                     .title(acc.getTitle())
                                     .address(acc.getAddress())
                                     .mapx(acc.getMapx().toPlainString())
                                     .mapy(acc.getMapy().toPlainString())
-                                    );
+                            );
                 }
 
                 coursePlaceDtos.add(builder.build());
