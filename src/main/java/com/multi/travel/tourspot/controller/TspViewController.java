@@ -8,6 +8,7 @@ package com.multi.travel.tourspot.controller;
  * @since       : 25. 11. 12. 수요일
  */
 
+import com.multi.travel.common.config.AppConfig;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -26,7 +27,10 @@ public class TspViewController {
 
     @GetMapping("/tourspotdetail")
     public String tourSpotDetail(@RequestParam Long id,
-                                 Model model) {
+                                 Model model,
+                                 AppConfig appConfig) {
+        model.addAttribute("id", id);
+        model.addAttribute("kakaokey", appConfig.getKakaoMapApiKey());
         return "/tourspot/tourspotdetail";
     }
 }
