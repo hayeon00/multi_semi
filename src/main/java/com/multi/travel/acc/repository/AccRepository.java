@@ -9,6 +9,7 @@ package com.multi.travel.acc.repository;
  */
 
 
+import com.multi.travel.acc.dto.AccHasDistanceProjection;
 import com.multi.travel.acc.entity.Acc;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -28,7 +29,6 @@ public interface AccRepository extends JpaRepository<Acc,Long> {
     Page<Acc> findByStatus(String status, Pageable pageable);
 
     @Query(value = """
-                    /* language=SQL */
             SELECT a.id,
                    (6371 * acos(
                        cos(radians(:mapy)) * cos(radians(a.mapy)) *
@@ -43,4 +43,20 @@ public interface AccRepository extends JpaRepository<Acc,Long> {
                                            @Param("mapy") BigDecimal mapy,
                                            @Param("id") Long id,
                                            Pageable pageable);
+
+    @Query(value = """
+            SELECT a.id, a.title, a.address, a.rec_count as recCount, a.first_image as firstImage,
+                   (6371 * acos(
+                       cos(radians(:mapy)) * cos(radians(a.mapy)) *
+                       cos(radians(a.mapx) - radians(:mapx)) +
+                       sin(radians(:mapy)) * sin(radians(a.mapy))
+                   )) AS distanceKm
+            FROM tb_acc a
+            WHERE a.status = 'Y' AND a.id <> :id
+            ORDER BY distanceKm
+            """, nativeQuery = true)
+    List<AccHasDistanceProjection> findNearestWithDistanceRefactor(@Param("mapx") BigDecimal mapx,
+                                                                   @Param("mapy") BigDecimal mapy,
+                                                                   @Param("id") Long id,
+                                                                   Pageable pageable);
 }

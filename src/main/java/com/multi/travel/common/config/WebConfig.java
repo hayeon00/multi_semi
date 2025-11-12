@@ -24,6 +24,12 @@ public class WebConfig implements WebMvcConfigurer {
     @Value("${image.review.add-resource-handler}")
     private String reviewHandler;
 
+    @Value("${image.acc.add-resource-locations}")
+    private String accLocations;
+
+    @Value("${image.acc.add-resource-handler}")
+    private String accHandler;
+
     // ✅ tourspot 이미지 경로
     @Value("${image.tourspot.add-resource-locations}")
     private String tourspotLocation;
@@ -38,14 +44,10 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // 기본 static 리소스 유지
-        registry.addResourceHandler("/**")
-                .addResourceLocations("classpath:/static/");
-
-        // 이미지 업로드 경로 추가
-        registry.addResourceHandler("/reviewimgs/**")
-                .addResourceLocations("file:/Users/chang/Desktop/upload/reviewimgs/");
-
+        registry.addResourceHandler(reviewHandler)
+                .addResourceLocations(reviewLocation);
+        registry.addResourceHandler(accHandler)
+                .addResourceLocations(accLocations);
         registry.addResourceHandler("/tourspotimgs/**")  // ✅ 관광지 추가
                 .addResourceLocations("file:/Users/chang/Desktop/upload/tourspotimgs/");
     }

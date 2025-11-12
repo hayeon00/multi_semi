@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -17,6 +18,15 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 public class ReviewResDto {
-    private String message;
+    private Long id;
+    private String title;
+    private String content;
+    private int rating;
+    private String targetType;
+    private Long targetId;
+    private String writerName;
+    private LocalDateTime createdAt;
     private List<String> imageUrls;
+
+
 }

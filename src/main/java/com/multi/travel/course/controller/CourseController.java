@@ -3,6 +3,7 @@ package com.multi.travel.course.controller;
 import com.multi.travel.common.ResponseDto;
 import com.multi.travel.course.dto.*;
 import com.multi.travel.course.service.CourseService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -109,7 +110,48 @@ public class CourseController {
     }
 
 
-    /** TODO: 특정 코스의 아이템 삭제 구현 필요 */
+    /** 코스 아이템 삭제 */
+    @DeleteMapping("/{courseId}/items/{itemId}")
+    public ResponseEntity<ResponseDto> deleteCourseItem(
+            @PathVariable Long courseId,
+            @PathVariable Long itemId
+    ) {
+        courseService.deleteCourseItem(courseId, itemId);
+        return ResponseEntity.ok(
+                new ResponseDto(HttpStatus.OK, "코스 아이템 삭제 성공", null)
+        );
+    }
 
-    /** TODO: 코스 삭제 */
+    /** 코스 삭제 (Soft Delete) */
+    @DeleteMapping("/{courseId}")
+    public ResponseEntity<ResponseDto> deleteCourse(@PathVariable Long courseId) {
+        courseService.deleteCourse(courseId);
+        return ResponseEntity.ok(
+                new ResponseDto(HttpStatus.OK, "코스 삭제(비활성화) 완료", null)
+        );
+    }
+
+    /** 추천순 코스 목록 조회 */
+    @GetMapping("/popular")
+    public ResponseEntity<ResponseDto> getPopularCourses(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "6") int size
+    ) {
+        return ResponseEntity.ok(
+                new ResponseDto(HttpStatus.OK, "추천순 코스 목록 조회 성공",
+                        courseService.getPopularCourses(page, size))
+        );
+    }
+
+    /** 코스 전체 수정 (기존 아이템 삭제 후 재등록) */
+    @PutMapping("/{planId}")
+    public ResponseEntity<ResponseDto> updateCourse(
+            @PathVariable Long planId,
+            @Valid @RequestBody CourseReqDto dto
+    ) {
+        CourseResDto updated = courseService.updateCourse(planId, dto);
+        return ResponseEntity.ok(
+                new ResponseDto(HttpStatus.OK, "코스 수정 완료", updated)
+        );
+    }
 }

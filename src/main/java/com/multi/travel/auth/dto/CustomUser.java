@@ -14,12 +14,12 @@ import java.util.Collection;
 @AllArgsConstructor
 @Builder
 public class CustomUser implements UserDetails {
-    //private Long memberCode;
-    private String memberId;
-    private String email; // 이메일을 로그인 ID로 사용
-    private String memberPassword;
+    private String userId;
+    private String email;
+    private String password;
 
     private Collection<? extends GrantedAuthority> authorities;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return this.authorities;
@@ -27,16 +27,12 @@ public class CustomUser implements UserDetails {
 
     @Override
     public String getPassword() {
-        return memberPassword;
+        return password;
     }
 
-//    @Override
-//    public String getUsername() {
-//        return memberId;
-//    }
     @Override
     public String getUsername() {
-        return memberId;
+        return userId;
     } // 아이디르 반환하여 Spring Security에서 로그인 ID로 사용
 
     @Override

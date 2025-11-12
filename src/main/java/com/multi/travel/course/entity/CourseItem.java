@@ -1,5 +1,6 @@
 package com.multi.travel.course.entity;
 
+import com.multi.travel.category.entity.Category;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -29,9 +30,10 @@ public class CourseItem {
     @JoinColumn(name = "course_id", nullable = false)
     private Course course;
 
-    /** 장소 구분 (TOUR_SPOT / ACCOMMODATION) */
-    @Column(name = "place_type", length = 50, nullable = false)
-    private String placeType;
+    /** 장소 카테고리 (예: TOUR_SPOT, ACCOMMODATION 등) */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cat_code", nullable = false)
+    private Category category;
 
     /** 장소 ID (TourSpot.id 또는 Acc.id) */
     @Column(name = "place_id", nullable = false)
