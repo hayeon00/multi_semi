@@ -40,6 +40,10 @@ public class PlanService {
     private final AccRepository accRepository;
 
     public Long createTripPlan(PlanReqDto dto) {
+        System.out.println("🟢 [PlanService] memberId = " + dto.getMemberId());
+        System.out.println("🟢 [PlanService] tourSpotId = " + dto.getTourSpotId());
+        System.out.println("🟢 [PlanService] title = " + dto.getTitle());
+
         Member member = memberRepository.findByLoginId(dto.getMemberId())
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
