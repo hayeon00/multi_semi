@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>관광지 상세 정보</title>
+    <style>
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background: #fafafa;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .detail-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        img {
+            width: 100%;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            margin-bottom: 10px;
+        }
+
+        p {
+            line-height: 1.6;
+        }
+
+        .back-btn {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 8px 16px;
+            border: 1px solid #333;
+            border-radius: 5px;
+            background: white;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div class="detail-container" id="detail"></div>
+
+<button class="back-btn" onclick="history.back()">← 목록으로</button>
+
+<script th:inline="javascript">
+    const id = /*[[${id}]]*/ 0;
+
+    fetch(`/spots/detail?id=${id}`)
+        .then(res => res.json())
+        .then(result => {
+            const data = result.data;
+            const detailDiv = document.getElementById("detail");
+
+            detailDiv.innerHTML = `
+                <img src="${data.firstImage || '/images/no-image.png'}" alt="관광지 이미지">
+                <h2>${data.title}</h2>
+                <p><strong>주소:</strong> ${data.address}</p>
+                <p><strong>전화번호:</strong> ${data.tel || '정보 없음'}</p>
+                <p><strong>추천수:</strong> ${data.recCount}</p>
+                <p><strong>상태:</strong> ${data.status}</p>
+            `;
+        })
+        .catch(err => {
+            document.getElementById("detail").innerHTML = "<p>데이터를 불러오지 못했습니다.</p>";
+            console.error(err);
+        });
+</script>
+
+</body>
+</html>

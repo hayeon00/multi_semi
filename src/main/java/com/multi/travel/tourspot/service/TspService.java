@@ -27,7 +27,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -39,14 +41,35 @@ public class TspService {
     private final ApiService apiService;
 
 
-    public List<ResTspDTO> getTourSpotList(int page, int size, String sort, CustomUser customUser) {
+    public Map<String, Object> getTourSpotList(int page, int size, String sort, CustomUser customUser) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(sort).ascending());
+        Page<TourSpot> tspPage;
         if (RoleUtils.hasRole(customUser, RoleUtils.ADMIN)) {
-            return convertToResTspDTO(tspRepository.findAll(pageable).getContent());
+            tspPage = tspRepository.findAll(pageable);
+        } else {
+            tspPage = tspRepository.findByStatus("Y", pageable);
         }
-        return convertToResTspDTO(tspRepository.findByStatus("Y", pageable).getContent());
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("totalPages", tspPage.getTotalPages());
+        response.put("contents", convertToResTspDTO(tspPage.getContent()));
+        return response;
     }
 
+
+    public Map<String, Object> getTspSearch(int page, int size, String sort, String keyword, CustomUser customUser) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sort).ascending());
+        Page<TourSpot> tspPage;
+        if (RoleUtils.hasRole(customUser, RoleUtils.ADMIN)) {
+            tspPage = tspRepository.findByTitleContainingIgnoreCase(keyword, pageable);
+        } else {
+            tspPage = tspRepository.findByStatusAndTitleContainingIgnoreCase("Y", keyword, pageable);
+        }
+        Map<String, Object> response = new HashMap<>();
+        response.put("totalPages", tspPage.getTotalPages());
+        response.put("contents", convertToResTspDTO(tspPage.getContent()));
+        return response;
+    }
 
     public TourSpotDTO getTourSpotDetail(Long id, CustomUser customUser) {
         TourSpot tsp;
@@ -63,17 +86,6 @@ public class TspService {
         return TourSpotEntityToDTO(updatedTsp);
     }
 
-
-    public List<ResTspDTO> getTspSearch(int page, int size, String sort, String keyword, CustomUser customUser) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(sort).ascending());
-        Page<TourSpot> tspPage;
-        if (RoleUtils.hasRole(customUser, RoleUtils.ADMIN)) {
-            tspPage = tspRepository.findByTitleContainingIgnoreCase(keyword, pageable);
-        } else {
-            tspPage = tspRepository.findByStatusAndTitleContainingIgnoreCase("Y", keyword, pageable);
-        }
-        return convertToResTspDTO(tspPage.getContent());
-    }
 
 
     public List<ResDistanceTspDTO> getTspSortByDistance(int page, int size, Long id) { //리팩토링
@@ -134,5 +146,13 @@ public class TspService {
                 .createdAt(spot.getCreatedAt())
                 .modifiedAt(spot.getModifiedAt())
                 .build();
+    }
+
+    public int getTotalPages(int size, CustomUser customUser) {
+        Pageable pageable = PageRequest.of(0, size);
+        if (RoleUtils.hasRole(customUser, RoleUtils.ADMIN)) {
+            return tspRepository.findAll(pageable).getTotalPages();
+        }
+        return tspRepository.findByStatus("Y", pageable).getTotalPages();
     }
 }
