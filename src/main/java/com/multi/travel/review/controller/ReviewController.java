@@ -6,6 +6,9 @@ import com.multi.travel.review.dto.ReviewReqDto;
 import com.multi.travel.review.service.ReviewService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -59,22 +62,31 @@ public class ReviewController {
     }
 
 
-    //내가 쓴 리뷰 전체 조회
+    // 내가 쓴 리뷰 조회 (페이징)
     @GetMapping("/my")
-    public ResponseEntity<List<ReviewDetailDto>> getMyReviews(@AuthenticationPrincipal CustomUser user) {
-        List<ReviewDetailDto> myReviews = reviewService.getReviewsByUser(user.getUserId());
+    public ResponseEntity<Page<ReviewDetailDto>> getMyReviews(
+            @AuthenticationPrincipal CustomUser user,
+            Pageable pageable
+    ) {
+
+        Pageable fixedPageable = PageRequest.of(pageable.getPageNumber(), 10);
+
+        Page<ReviewDetailDto> myReviews = reviewService.getReviewsByUser(user.getUserId(), pageable);
         return ResponseEntity.ok(myReviews);
     }
 
-
-    //타겟별(코스or관광지) 리뷰 전체 조회
+    // 타겟별 리뷰 조회 (페이징)
     @GetMapping("/target")
-    public ResponseEntity<List<ReviewDetailDto>> getReviewsByTarget(
+    public ResponseEntity<Page<ReviewDetailDto>> getReviewsByTarget(
             @RequestParam("type") String targetType,
-            @RequestParam("id") Long targetId
+            @RequestParam("id") Long targetId,
+            Pageable pageable
     ) {
-        List<ReviewDetailDto> reviews = reviewService.getReviewsByTarget(targetType, targetId);
+        Pageable fixedPageable = PageRequest.of(pageable.getPageNumber(), 10);
+
+        Page<ReviewDetailDto> reviews = reviewService.getReviewsByTarget(targetType, targetId, pageable);
         return ResponseEntity.ok(reviews);
     }
+
 
 }

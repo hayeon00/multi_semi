@@ -12,6 +12,8 @@ import com.multi.travel.review.repository.ReviewRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -29,6 +31,9 @@ public class ReviewService {
     private final MemberRepository memberRepository;
 
     private final FileService fileService;
+
+
+
 
     public ReviewDetailDto createReview(ReviewReqDto dto, List<MultipartFile> images, String userId) {
         log.debug("🧪 createReview() 호출됨 - 전달된 userId: {}", userId);
@@ -57,7 +62,7 @@ public class ReviewService {
                         .imageUrl("/uploads/" + storedName)
                         .build();
 
-                review.addImage(image); // 🔁 양방향 연결
+                review.addImage(image);
             }
         }
 
@@ -120,6 +125,8 @@ public class ReviewService {
 
     private ReviewDetailDto toDto(Review review) {
         return ReviewDetailDto.builder()
+                .targetType(review.getTargetType())
+                .targetId(review.getTargetId())
                 .reviewId(review.getId())
                 .title(review.getTitle())
                 .content(review.getContent())
@@ -132,17 +139,18 @@ public class ReviewService {
                 .build();
     }
 
-    public List<ReviewDetailDto> getReviewsByUser(String userId) {
+
+    public Page<ReviewDetailDto> getReviewsByTarget(String targetType, Long targetId, Pageable pageable) {
+        Page<Review> page = reviewRepository.findByTargetTypeAndTargetId(targetType, targetId, pageable);
+        return page.map(this::toDto);
+    }
+
+    public Page<ReviewDetailDto> getReviewsByUser(String userId, Pageable pageable) {
         Member member = memberRepository.findByLoginId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
 
-        List<Review> reviews = reviewRepository.findByMember(member);
-        return reviews.stream().map(this::toDto).toList();
-    }
-
-    public List<ReviewDetailDto> getReviewsByTarget(String targetType, Long targetId) {
-        List<Review> reviews = reviewRepository.findByTargetTypeAndTargetId(targetType, targetId);
-        return reviews.stream().map(this::toDto).toList();
+        Page<Review> page = reviewRepository.findByMember(member, pageable);
+        return page.map(this::toDto);
     }
 
 }

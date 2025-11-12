@@ -7,8 +7,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-
 /**
  * Please explain the class!!!
  *
@@ -18,10 +16,9 @@ import java.util.List;
  */
 @Repository
 public interface ReviewRepository extends JpaRepository<Review, Long> {
-    List<Review> findByTargetTypeAndTargetId(String targetType, Long targetId);
 
-    Page<Review> findAllByTargetTypeIn(List<String> validTypes, Pageable pageable);
+    Page<Review> findByTargetTypeAndTargetId(String targetType, Long targetId, Pageable pageable);
+    Page<Review> findByMember(Member member, Pageable pageable);
 
-    List<Review> findByMember(Member member);
 
 }
