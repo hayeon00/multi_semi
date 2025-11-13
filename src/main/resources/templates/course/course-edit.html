@@ -296,10 +296,12 @@
   let lastType = "tour";
 
   $(document).ready(function() {
-    initMap();
-    loadPlan();
-    setupTabs();
-    setupSearch();
+    kakao.maps.load(function() {
+      initMap();
+      loadPlan();
+      setupTabs();
+      setupSearch();
+    });
   });
 
   function initMap() {

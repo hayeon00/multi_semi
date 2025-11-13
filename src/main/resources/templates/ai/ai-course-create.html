@@ -65,9 +65,12 @@
   let activeDay = 1;
 
   $(document).ready(() => {
-    initMap();
-    generateCourse();
+    kakao.maps.load(function() {
+      initMap();
+      generateCourse();
+    });
   });
+
 
   // 지도 초기화
   function initMap() {

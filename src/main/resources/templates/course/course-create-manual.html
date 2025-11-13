@@ -281,10 +281,12 @@
   let lastType = "tour";
 
   $(document).ready(function() {
-    initMap();
-    initDays();
-    setupTabs();
-    setupSearch();
+    kakao.maps.load(function() {
+      initMap();
+      initDays();
+      setupTabs();
+      setupSearch();
+    });
   });
 
   function initMap() {

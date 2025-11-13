@@ -101,24 +101,26 @@
 
   /** 지도 표시 */
   function renderMap(items) {
-    const mapContainer = document.getElementById('map');
-    const mapOption = {
-      center: new kakao.maps.LatLng(37.566826, 126.9786567),
-      level: 7
-    };
-    const map = new kakao.maps.Map(mapContainer, mapOption);
+    kakao.maps.load(function() {
+      const mapContainer = document.getElementById('map');
+      const mapOption = {
+        center: new kakao.maps.LatLng(37.566826, 126.9786567),
+        level: 7
+      };
+      const map = new kakao.maps.Map(mapContainer, mapOption);
 
-    const bounds = new kakao.maps.LatLngBounds();
+      const bounds = new kakao.maps.LatLngBounds();
 
-    items.forEach(i => {
-      if (i.mapy && i.mapx) {
-        const pos = new kakao.maps.LatLng(parseFloat(i.mapy), parseFloat(i.mapx));
-        const marker = new kakao.maps.Marker({ map, position: pos });
-        bounds.extend(pos);
-      }
+      items.forEach(i => {
+        if (i.mapy && i.mapx) {
+          const pos = new kakao.maps.LatLng(parseFloat(i.mapy), parseFloat(i.mapx));
+          const marker = new kakao.maps.Marker({ map, position: pos });
+          bounds.extend(pos);
+        }
+      });
+
+      if (!bounds.isEmpty()) map.setBounds(bounds);
     });
-
-    if (!bounds.isEmpty()) map.setBounds(bounds);
   }
 
   /** 버튼 구성 */
