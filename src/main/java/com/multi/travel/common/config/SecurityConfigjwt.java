@@ -68,7 +68,7 @@ public class SecurityConfigjwt {
 
                         ).permitAll()
                         .requestMatchers("/login", "/signup", "/css/**", "/images/**").permitAll()
-                        .requestMatchers("/auth/**", "/api/auth/**").permitAll()
+                        .requestMatchers("/auth/**", "/api/auth/**","/spots/view/tourspotlist").permitAll()
                         .requestMatchers("/**").permitAll() // /api/plans, /api/courses 요청 시 로그인 없이도 테스트 가능하게 설정
                         // TODO: 전체 구현 완료 시 삭제 예정
 
