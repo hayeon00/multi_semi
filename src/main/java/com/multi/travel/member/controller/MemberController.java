@@ -54,31 +54,46 @@ public class MemberController {
 
         );
     }
+    /**
+     * ✅ 로그인된 회원정보 조회 (SecurityContext 기반)
+     * - JWTFilter를 통해 인증이 끝나면 SecurityContextHolder에 CustomUser가 들어감
+     * - @AuthenticationPrincipal 로 현재 로그인한 사용자 정보 접근 가능
+     */
+    @GetMapping("/info")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ResponseDto> getMemberInfo(@AuthenticationPrincipal CustomUser user) {
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ResponseDto(HttpStatus.UNAUTHORIZED, "인증 정보가 없습니다.", null));
+        }
 
-    //회원정보 수정
+        log.info("[GET /members/info] 로그인 사용자: {}", user.getUserId());
+        MemberResDto member = memberService.findByLoginId(user.getUserId());
+
+        return ResponseEntity.ok(new ResponseDto(HttpStatus.OK, "회원정보 조회 성공", member));
+    }
+
+
+    /**
+     * ✅ 회원정보 수정 (본인만 가능)
+     */
     @PutMapping("/update")
-    public ResponseEntity<ResponseDto> updateMember(@ModelAttribute MemberReqDto memberReqDto, HttpServletRequest request) {
-        //userDetails.getAuthorities();
-
-        String accessToken = tokenService.resolveTokenFromCookies(request);
-        if (accessToken == null) {
-            throw new AccessDeniedException("AccessToken이 존재하지 않습니다.");
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ResponseDto> updateMember(
+            @ModelAttribute MemberReqDto memberReqDto,
+            @AuthenticationPrincipal CustomUser user
+    ) {
+        if (user == null) {
+            throw new AccessDeniedException("로그인 정보가 없습니다.");
         }
 
-        if (!tokenProvider.validateToken(accessToken)) {
-            throw new AccessDeniedException("유효하지 않거나 만료된 토큰입니다.");
-        }
-
-        String loginIdFromToken = tokenProvider.getUserId(accessToken);
-
+        String loginIdFromToken = user.getUserId();
         if (!loginIdFromToken.equals(memberReqDto.getLoginId())) {
             throw new AccessDeniedException("본인 정보만 수정할 수 있습니다.");
         }
 
         memberService.update(memberReqDto);
-
         return ResponseEntity.ok(new ResponseDto(HttpStatus.OK, "회원정보 수정 성공", null));
-
     }
 
     // 회원 삭제 (본인만 가능)
@@ -120,14 +135,24 @@ public class MemberController {
         );
     }
 
+    @ResponseBody
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/mypage")
+    public ResponseEntity<ResponseDto> getMyPageInfo(@AuthenticationPrincipal CustomUser user) {
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ResponseDto(HttpStatus.UNAUTHORIZED, "인증 정보가 없습니다.", null));
+        }
 
-//    @GetMapping("/plans/{planId}")
-//    public ResponseEntity<ResponseDto> getPlanDetail(@PathVariable Long planId) {
-//        PlanDetailResDto detail = memberService.getTripPlanDetail(planId);
-//        return ResponseEntity.ok(
-//                new ResponseDto(HttpStatus.OK, "여행 계획 상세정보 조회 성공", detail)
-//        );
-//    }
+        log.info("[GET /member/mypage] 로그인 사용자: {}", user.getUserId());
+        MemberResDto member = memberService.findByLoginId(user.getUserId());
+
+        return ResponseEntity.ok(
+                new ResponseDto(HttpStatus.OK, "회원 정보 조회 성공", member)
+        );
+    }
+
+
 
 
 }
