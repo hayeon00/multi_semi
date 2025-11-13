@@ -49,8 +49,8 @@ import java.util.UUID;
 public class AccService {
     private final AccRepository accRepository;
     private final CategoryRepository categoryRepository;
-    private final ApiService apiService;
     private final TspRepository tspRepository;
+    private final ApiService apiService;
 
     @Value("${image.acc.image-dir}")
     private String IMAGE_DIR;
@@ -67,14 +67,40 @@ public class AccService {
     }
 
 
-    public List<ResAccDTO> getAccList(int page, int size, String sort, CustomUser customUser) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(sort).ascending());
-        if (RoleUtils.hasRole(customUser, RoleUtils.ADMIN)) {
-            return convertToResAccDTO(accRepository.findAll(pageable).getContent());
+    public Map<String, Object> getAccList(int page, int size, String sort, CustomUser customUser) {
+        Page<Acc> accPage;
+        Pageable pageable;
+        if (sort.equals("recCount")) {
+            pageable = PageRequest.of(page, size, Sort.by(sort).descending());
+        } else {
+            pageable = PageRequest.of(page, size, Sort.by(sort).ascending());
         }
-        return convertToResAccDTO(accRepository.findByStatus("Y", pageable).getContent());
+
+        if (RoleUtils.hasRole(customUser, RoleUtils.ADMIN)) {
+            accPage = accRepository.findAll(pageable);
+        } else {
+            accPage = accRepository.findByStatus("Y", pageable);
+        }
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("totalPages", accPage.getTotalPages());
+        response.put("contents", convertToResAccDTO(accPage.getContent()));
+        return response;
     }
 
+    public Map<String, Object> getAccSearch(int page, int size, String sort, String keyword, CustomUser customUser) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sort).ascending());
+        Page<Acc> accPage;
+        if (RoleUtils.hasRole(customUser, RoleUtils.ADMIN)) {
+            accPage = accRepository.search(keyword, pageable);
+        } else {
+            accPage = accRepository.statusAndSearch("Y", keyword, pageable);
+        }
+        Map<String, Object> response = new HashMap<>();
+        response.put("totalPages", accPage.getTotalPages());
+        response.put("contents", convertToResAccDTO(accPage.getContent()));
+        return response;
+    }
 
     public AccDTO getAccDetail(@Valid long id, CustomUser customUser) {
         Acc acc;

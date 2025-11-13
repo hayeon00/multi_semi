@@ -21,6 +21,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Map;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/accommodations")
@@ -33,9 +35,19 @@ public class AccController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "areacode") String sort,
             @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "") String keyword,
             @AuthenticationPrincipal CustomUser customUser
     ) {
-        return ResponseEntity.ok(new ResponseDto(HttpStatus.OK, "숙소 목록 조회 성공", accService.getAccList(page, size, sort, customUser)));
+        Map<String, Object> result;
+        String message;
+        if (keyword.isBlank()) {
+            result = accService.getAccList(page, size, sort, customUser);
+            message = "숙소 목록 조회 성공";
+        } else {
+            result = accService.getAccSearch(page, size, sort, keyword, customUser);
+            message = "숙소 검색 성공";
+        }
+        return ResponseEntity.ok(new ResponseDto(HttpStatus.OK, message, result));
     }
 
     @GetMapping("/detail")

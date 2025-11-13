@@ -39,8 +39,14 @@ public class TspService {
 
 
     public Map<String, Object> getTourSpotList(int page, int size, String sort, CustomUser customUser) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(sort).ascending());
         Page<TourSpot> tspPage;
+        Pageable pageable;
+        if (sort.equals("recCount")) {
+            pageable = PageRequest.of(page, size, Sort.by(sort).descending());
+        } else {
+            pageable = PageRequest.of(page, size, Sort.by(sort).ascending());
+        }
+
         if (RoleUtils.hasRole(customUser, RoleUtils.ADMIN)) {
             tspPage = tspRepository.findAll(pageable);
         } else {

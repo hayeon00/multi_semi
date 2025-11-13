@@ -382,9 +382,23 @@
         window.location.href = `/accommodations/view/acclist?tspId=${id}`;
     });
 
-    document.getElementById("btnPlan").addEventListener("click", () => {
+    /*document.getElementById("btnPlan").addEventListener("click", () => {
         // 관광지 id와 이름을 쿼리로 전달
         window.location.href = `/plans/view/create?tspId=${id}`;
+    });*/
+
+    document.getElementById("btnPlan").addEventListener("click", () => {
+        fetchWithRefresh(`/plans/view/create?tspId=${id}`, {method: 'GET'})
+            .then(res => res.json())
+            .then(result => {
+                if (result.status !== 200) {
+                    showToast("⚠️ 요청 실패: " + (result.message || "서버 응답 오류"));
+                }
+            })
+            .catch(err => {
+                console.error("❌ 계획 페이지 호출 실패:", err);
+                showToast("서버 통신 중 오류가 발생했습니다.");
+            });
     });
 
     // ======= 추천 버튼 클릭 =======
