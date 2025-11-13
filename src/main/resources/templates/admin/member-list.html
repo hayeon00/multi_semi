@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>회원 관리 | Travel Planing</title>
+    <link th:href="@{/css/admin.css}" rel="stylesheet">
+    <!-- ✅ 공통 JS 유틸 (fetchWithRefresh 함수 들어있는 파일) -->
+
+</head>
+<body>
+<header>
+    <div class="logo">
+        <img th:src="@{/images/logo.png}" alt="Logo">
+        <span class="title">TRAVEL PLANING</span>
+    </div>
+
+    <nav class="admin-nav">
+        <div class="welcome-text">관리자 님 환영합니다.</div>
+        <div class="menu-links">
+            <a th:href="@{/}">Home</a>
+            <a th:href="@{/mypage}">마이페이지</a>
+            <a th:href="@{/logout}">로그아웃</a>
+        </div>
+    </nav>
+</header>
+
+<main>
+    <div class="admin-container">
+        <aside class="admin-sidebar">
+            <h2 class="admin-title">회원 관리</h2>
+            <p class="admin-sub">관리자 전용 페이지입니다.</p>
+        </aside>
+
+        <section class="admin-content">
+            <table id="memberTable" border="1" cellpadding="10">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>아이디</th>
+                    <th>이름</th>
+                    <th>이메일</th>
+                    <th>전화번호</th>
+                    <th>권한</th>
+                    <th>상태</th>
+                    <th>삭제</th>
+                </tr>
+                </thead>
+                <tbody>
+                <!-- JS로 채움 -->
+                </tbody>
+            </table>
+        </section>
+    </div>
+</main>
+
+<footer>
+    &copy; 2025 Travel Planing. All rights reserved.
+</footer>
+
+<script th:src="@{/js/common.js}"></script>
+
+
+<script>
+    // ✅ 기존 fetch → fetchWithRefresh()로 변경
+    async function loadMembers() {
+        try {
+            console.log("나패치하러 들어간다");
+            const response = await fetchWithRefresh("/admin/members", {
+                method: "GET",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include"
+            });
+
+            if (!response.ok) {
+                alert("회원 목록을 불러오지 못했습니다. (권한 또는 토큰 확인)");
+                return;
+            }
+
+            const result = await response.json();
+            const tbody = document.querySelector("#memberTable tbody");
+            tbody.innerHTML = "";
+
+            result.data.forEach(member => {
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>${member.id}</td>
+                    <td>${member.loginId}</td>
+                    <td>${member.username}</td>
+                    <td>${member.email}</td>
+                    <td>${member.tel}</td>
+                    <td>${member.role}</td>
+                    <td>${member.status}</td>
+                    <td><button onclick="deleteMember(${member.id})">🗑 Delete</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        } catch (error) {
+            console.error("오류 발생:", error);
+        }
+    }
+
+    async function deleteMember(id) {
+        if (!confirm("정말 삭제하시겠습니까?")) return;
+
+        const response = await fetchWithRefresh(`/admin/members/${id}`, {
+            method: "DELETE",
+            credentials: "include"
+        });
+
+        if (response.ok) {
+            alert("회원이 삭제되었습니다.");
+            loadMembers();
+        } else {
+            alert("삭제 실패 ❌ (권한 또는 서버 오류)");
+        }
+    }
+
+    window.onload = loadMembers;
+</script>
+</body>
+</html>

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>Travel Planning</title>
+  <style>
+    /* ===== CSS ===== */
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background-color: #f9f9f9;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #d9d9d9;
+      padding: 15px 30px;
+    }
+
+    .logo {
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+
+    .title {
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+
+    nav a {
+      margin-left: 10px;
+      color: black;
+      text-decoration: none;
+    }
+
+    main {
+      max-width: 600px;
+      margin: 50px auto;
+      padding: 30px;
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin-top: 15px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      margin-top: 5px;
+    }
+
+    button {
+      margin-top: 50px;
+      float: right;
+      background-color: #000000;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #2f2f2f;
+    }
+
+    .readonly {
+      background-color: #f2f2f2;
+    }
+  </style>
+</head>
+<body>
+<header>
+  <div class="logo">Logo</div>
+  <div class="title">TRAVEL PLANNING</div>
+  <div class="menu">
+    <span>{사용자} 님 환영합니다.</span>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/mypage">마이페이지</a>
+      <a href="/logout">로그아웃</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <form id="planForm">
+    <label>1. 여행 제목을 입력해주세요</label>
+    <input type="text" id="title" placeholder="예: 자유 여행" required>
+
+    <label>2. 출발 위치</label>
+    <input type="text" id="startLocation" class="readonly" readonly>
+    <!-- 숨은 필드 -->
+    <input type="hidden" id="tourSpotId">
+
+    <label>3. 여행 기간을 선택해주세요</label>
+    <div style="display:flex; gap:10px;">
+      <input type="date" id="startDate" required>
+      <input type="date" id="endDate" required>
+    </div>
+
+    <label>4. 인원수를 선택해주세요</label>
+    <input type="number" id="numberOfPeople" min="1" required>
+
+    <button type="submit">다음 >></button>
+  </form>
+</main>
+
+<script>
+  // HTML 요소 참조 먼저
+  const tourSpotInput = document.getElementById("tourSpotId");
+  const startLocationInput = document.getElementById("startLocation");
+
+  // URL 파라미터에서 관광지 ID 가져오기
+  const urlParams = new URLSearchParams(window.location.search);
+  const tspId = urlParams.get('tspId');
+
+  // 기본값 설정
+  const defaultSpotId = tspId ? parseInt(tspId) : 11;
+  let defaultSpotName = "강서역사문화거리"; // fallback
+
+  // 관광지명 API로 자동 조회
+  if (tspId) {
+    fetch(`/spots/detail?id=${tspId}`)
+            .then(res => res.json())
+            .then(result => {
+              if (result.data && result.data.title) {
+                defaultSpotName = result.data.title;
+                startLocationInput.value = defaultSpotName;
+              }
+            })
+            .catch(err => console.error("❌ 관광지명 조회 실패:", err));
+  }
+
+  // 기본값 강제 세팅
+  tourSpotInput.value = defaultSpotId;
+  startLocationInput.value = defaultSpotName;
+
+  // 날짜 유효성 검사 로직 추가
+  const startDateInput = document.getElementById("startDate");
+  const endDateInput = document.getElementById("endDate");
+
+  function validateDates() {
+    const start = startDateInput.value;
+    const end = endDateInput.value;
+
+    if (start && end && start > end) {
+      alert("종료일은 시작일 이후여야 합니다.");
+      endDateInput.value = "";     // 잘못 입력된 종료일 초기화
+      return false;
+    }
+    return true;
+  }
+
+  startDateInput.addEventListener("change", validateDates);
+  endDateInput.addEventListener("change", validateDates);
+
+  // 폼 제출
+  document.getElementById("planForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    // 제출 시에도 날짜 유효성 검사 (안전성 ↑)
+    if (!validateDates()) return;
+
+    const dto = {
+      tourSpotId: parseInt(tourSpotInput.value),
+      title: document.getElementById("title").value,
+      numberOfPeople: parseInt(document.getElementById("numberOfPeople").value),
+      startDate: startDateInput.value,
+      endDate: endDateInput.value
+    };
+
+    console.log("[DEBUG] 요청 JSON:", dto);
+
+    try {
+      const response = await fetch("/plans", {
+        method: "POST",
+        headers: { "Content-Type": "application/json;charset=utf-8" },
+        body: JSON.stringify(dto)
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        alert(result.message);
+        location.href = `/courses/view/choose?planId=${result.data}`;
+      } else {
+        alert("오류 발생: " + result.message);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("서버 통신 오류가 발생했습니다.");
+    }
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <script src="/js/common.js"></script>
+    <meta charset="UTF-8">
+    <title>숙소 목록 | Travel Planning</title>
+    <style>
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background: #fafafa;
+            margin: 0;
+        }
+
+        header {
+            display: flex;
+            align-items: flex-end;
+            justify-content: flex-start;
+            padding: 20px 40px 0;
+            position: relative;
+        }
+
+        .btn-back {
+            padding: 5px 14px;
+            border: none;
+            border-radius: 6px;
+            background-color: #ddd;
+            cursor: pointer;
+            font-weight: 600;
+            color: #333;
+            transition: 0.2s;
+            margin-bottom: 6px;
+        }
+
+        h1 {
+            flex: 1;
+            text-align: center;
+            font-size: 32px;
+            font-weight: 700;
+            color: #222;
+            margin: 0;
+            padding: 10px 0 20px;
+            letter-spacing: -0.3px;
+            line-height: 1.2;
+        }
+
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease;
+        }
+
+        .card:hover {
+            transform: scale(1.02);
+        }
+
+        .card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 8px;
+            background: #ddd;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 30px 0;
+            gap: 6px;
+        }
+
+
+
+        .page-btn {
+            border: none;
+            background: none;
+            cursor: pointer;
+            padding: 8px 12px;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .page-btn.active {
+            background-color: #333;
+            color: #fff;
+            border-radius: 5px;
+        }
+
+        .page-btn.disabled {
+            color: #aaa;
+            cursor: not-allowed;
+        }
+
+    </style>
+</head>
+<body>
+
+<!-- ✅ 뒤로가기 버튼 -->
+<header>
+    <button class="btn-back" id="btnBack">← 뒤로가기</button>
+
+    <h1>숙소 목록</h1>
+</header>
+
+
+<!-- ✅ 숙소 카드 출력 영역 -->
+<div id="acc-container" class="grid"></div>
+
+
+<!-- ✅ 페이지네이션 -->
+<div id="pagination" class="pagination"></div>
+
+<script th:inline="javascript">
+    // ======= 컨트롤러에서 전달받은 tspId =======
+    const tspId = /*[[${tspId}]]*/ 0;
+    console.log("📍 전달받은 tspId:", tspId);
+
+    let page = 0;
+    let size = 9;
+
+    // ======= 숙소 목록 불러오기 =======
+    function loadAccs() {
+        const query = new URLSearchParams({
+            page,
+            size,
+            id: tspId
+        });
+
+        fetchWithRefresh(`/accommodations/distance?${query}`)
+            .then(res => res.json())
+            .then(result => {
+                if (result.status !== 200) throw new Error(result.message);
+
+                const data = result.data;
+                renderAccs(data.contents); // ✅ 숙소 목록
+                renderPagination(data.totalPages); // ✅ 페이지네이션
+            })
+            .catch(err => {
+                console.error("❌ 숙소 데이터 불러오기 실패:", err);
+                document.getElementById("acc-container").innerHTML =
+                    "<p style='text-align:center; grid-column:1/-1;'>데이터를 불러오지 못했습니다.</p>";
+            });
+    }
+
+    // ======= 숙소 카드 렌더링 =======
+    function renderAccs(data) {
+        const container = document.getElementById("acc-container");
+        container.innerHTML = "";
+
+        if (!data || data.length === 0) {
+            container.innerHTML =
+                "<p style='text-align:center; grid-column:1/-1;'>검색 결과가 없습니다.</p>";
+            return;
+        }
+
+        data.forEach(acc => {
+            const card = document.createElement("div");
+            card.classList.add("card");
+
+            const img = document.createElement("img");
+            img.src = acc.firstImage || "/images/no-image.png";
+
+            const title = document.createElement("h3");
+            title.textContent = acc.title;
+
+            const addr = document.createElement("p");
+            addr.textContent = acc.address;
+
+            const rec = document.createElement("p");
+            rec.textContent = "추천수: " + (acc.recCount ?? 0);
+
+            const distanceInfo = document.createElement("p");
+            if (acc.distanceMeter != null) {
+                const distance = acc.distanceMeter;
+
+                // --- 단위 변환 ---
+                let displayDistance;
+                if (distance >= 1000) {
+                    displayDistance = `${(distance / 1000).toFixed(2)}km`;
+                } else {
+                    displayDistance = `${distance.toFixed(0)}m`;
+                }
+
+                // --- 도보 시간 계산 (75m/min 기준) ---
+                const minutes = Math.round(distance / 75);
+                let timeText = "";
+
+                if (minutes < 1) {
+                    timeText = "도보 1분 미만";
+                } else if (minutes < 60) {
+                    timeText = `도보 약 ${minutes}분`;
+                } else {
+                    const hours = Math.floor(minutes / 60);
+                    const mins = minutes % 60;
+                    timeText = `도보 약 ${hours}시간 ${mins > 0 ? `${mins}분` : ""}`;
+                }
+
+                distanceText = `📍 선택한 관광지로부터의 거리: 약 ${displayDistance} (${timeText})`;
+            } else {
+                distanceText = "📍 거리 정보 없음";
+            }
+
+            distanceInfo.textContent = distanceText;
+
+            // ✅ 클릭 시 상세 페이지 이동
+            card.addEventListener("click", () => {
+                window.location.href = `/accommodations/view/accdetail?accId=${acc.id}&tspId=${tspId}`;
+            });
+
+            card.append(img, title, addr, rec, distanceInfo);
+            container.appendChild(card);
+        });
+    }
+
+    // ======= 페이지네이션 렌더링 =======
+    function renderPagination(totalPages) {
+        const pagination = document.getElementById("pagination");
+        pagination.innerHTML = "";
+
+        if (totalPages <= 1) return;
+
+        // Previous
+        const prevBtn = document.createElement("button");
+        prevBtn.textContent = "← Previous";
+        prevBtn.classList.add("page-btn");
+        if (page === 0) prevBtn.classList.add("disabled");
+        prevBtn.addEventListener("click", () => {
+            if (page > 0) {
+                page--;
+                loadAccs();
+            }
+        });
+        pagination.appendChild(prevBtn);
+
+        // 페이지 번호 표시 (1 ~ totalPages)
+        const maxVisible = 5; // 한 번에 보이는 페이지 수
+        let start = Math.max(0, page - 2);
+        let end = Math.min(totalPages, start + maxVisible);
+
+        if (end - start < maxVisible && start > 0) {
+            start = Math.max(0, end - maxVisible);
+        }
+
+        for (let i = start; i < end; i++) {
+            const pageBtn = document.createElement("button");
+            pageBtn.textContent = i + 1;
+            pageBtn.classList.add("page-btn");
+            if (i === page) pageBtn.classList.add("active");
+            pageBtn.addEventListener("click", () => {
+                page = i;
+                loadAccs();
+            });
+            pagination.appendChild(pageBtn);
+        }
+
+        // Next
+        const nextBtn = document.createElement("button");
+        nextBtn.textContent = "Next →";
+        nextBtn.classList.add("page-btn");
+        if (page >= totalPages - 1) nextBtn.classList.add("disabled");
+        nextBtn.addEventListener("click", () => {
+            if (page < totalPages - 1) {
+                page++;
+                loadAccs();
+            }
+        });
+        pagination.appendChild(nextBtn);
+    }
+
+    // ======= 버튼 이벤트 =======
+    document.getElementById("btnBack").addEventListener("click", () => {
+        window.history.back();
+    });
+
+    // ======= 초기 로드 =======
+    document.addEventListener("DOMContentLoaded", loadAccs);
+</script>
+</body>
+</html>

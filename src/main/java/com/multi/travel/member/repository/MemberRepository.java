@@ -1,13 +1,13 @@
 package com.multi.travel.member.repository;
 
 
-import com.multi.travel.member.dto.MemberDto;
+import com.multi.travel.member.entity.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
-public interface MemberRepository extends JpaRepository<MemberDto, Long> {
-    Optional<MemberDto> findByMemberEmail(String memberEmail);
+public interface MemberRepository extends JpaRepository<Member, Long> {
 
-    Optional<MemberDto> findByMemberId(String memberId);
+
+    Optional<Member> findByLoginId(String loginId);
 }

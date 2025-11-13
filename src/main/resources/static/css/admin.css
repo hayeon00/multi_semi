@@ -1,0 +1,109 @@
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start; /* ✅ 상단 정렬 */
+    background-color: #e0e0e0;
+    padding: 10px 20px;
+}
+
+/* 로고 왼쪽 */
+header .logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+header .logo img {
+    width: 50px;
+    height: 50px;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+header .title {
+    font-size: 22px;
+    font-weight: bold;
+}
+
+
+
+/* 관리자 메뉴 영역 */
+.admin-nav {
+    display: flex;
+    flex-direction: column; /* ✅ 세로 배치 */
+    align-items: flex-end;  /* 오른쪽 정렬 */
+    line-height: 1.4;
+}
+
+/* 위쪽 문구 */
+.admin-nav .welcome-text {
+    font-size: 14px;
+    margin-bottom: 4px;
+    color: #333;
+}
+
+/* 아래쪽 메뉴 링크 */
+.admin-nav .menu-links a {
+    margin-left: 8px;
+    text-decoration: none;
+    color: black;
+    font-weight: 500;
+}
+
+.admin-nav .menu-links a:hover {
+    text-decoration: underline;
+}
+
+
+/* admin layout */
+.admin-container {
+    display: flex;
+    gap: 48px;                 /* 사이 간격 */
+    align-items: flex-start;
+    padding: 40px 60px;       /* 위아래/좌우 여백 */
+    box-sizing: border-box;
+}
+
+/* 왼쪽 타이틀 섹션 */
+.admin-sidebar {
+    width: 220px;             /* 고정 너비 — 원하는 위치로 조절 */
+    padding-top: 6px;
+}
+
+.admin-title {
+    font-size: 36px;
+    margin: 0 0 16px 0;
+    line-height: 1;
+}
+
+.admin-sub {
+    color: #666;
+    font-size: 14px;
+    margin: 0;
+}
+
+/* 테이블이 들어가는 오른쪽 컨텐츠 */
+.admin-content {
+    flex: 1;                  /* 남은 영역을 차지 */
+    overflow-x: auto;         /* 작은 화면 대비 스크롤 */
+}
+
+/* 테이블 스타일 (기존 테이블 스타일과 충돌나면 조정) */
+#memberTable {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: auto;
+}
+
+#memberTable th, #memberTable td {
+    padding: 14px 12px;
+    text-align: left;
+    border: 1px solid #aaa;
+    vertical-align: middle;
+}
+
+#memberTable th {
+    background: #fff;
+    font-weight: 700;
+}

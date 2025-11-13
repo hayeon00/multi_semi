@@ -34,6 +34,12 @@ public class JwtFilter extends OncePerRequestFilter {
     };
 
     private static final String[] WILDCARD_PATHS = {
+            "/spots/view/**",
+            "/courses/view/**",
+            "/accommodations/view/**",
+            "/reviews/target",
+            "/members/view/**",
+            "/admin/view/**",
             "/auth/**",
             "/public/**",
             "/swagger-ui/**"
@@ -46,6 +52,13 @@ public class JwtFilter extends OncePerRequestFilter {
         String requestURI = request.getRequestURI();
 
         try {
+            // 0. 로그인/회원가입/정적 리소스는 필터 통과
+            if (isExcludedPath(requestURI)) {
+                log.info("[JwtFilter] {} → JWT 필터 예외 경로, 필터 통과", requestURI);
+                filterChain.doFilter(request, response);
+                return;
+            }
+
             // 정확히 일치하는 경로는 필터를 건너뜀
             for (String exactPath : EXACT_PATHS) {
                 if (requestURI.equals(exactPath)) {
@@ -131,6 +144,21 @@ public class JwtFilter extends OncePerRequestFilter {
         }
         ObjectMapper mapper = new ObjectMapper();
         return mapper.writeValueAsString(object);
+    }
+
+    /**
+     * 필터 예외 경로 (로그인, 회원가입, 정적자원 등)
+     */
+    private boolean isExcludedPath(String uri) {
+        return uri.startsWith("/login") ||
+                uri.startsWith("/signup") ||
+                uri.startsWith("/css") ||
+                uri.startsWith("/admin/view") ||
+                uri.startsWith("/members/view") ||
+                uri.startsWith("/images") ||
+                uri.startsWith("/js") ||
+                uri.equals("/") ||
+                uri.startsWith("/favicon");
     }
 
 }
