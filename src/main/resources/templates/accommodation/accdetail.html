@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>관광지 상세보기 | Travel Planning</title>
+    <title>숙소 상세보기 | Travel Planning</title>
     <script src="/js/common.js"></script>
     <style>
         body {
@@ -27,7 +27,8 @@
             margin-bottom: 15px;
         }
 
-        .btn-nav {
+        /* ✅ 뒤로가기 버튼 스타일 */
+        .btn-back {
             position: absolute;
             top: 20px;
             left: 20px;
@@ -41,15 +42,7 @@
             transition: 0.2s;
         }
 
-        #btnHistoryBack {
-            left: 20px;
-        }
-
-        #btnBack {
-            left: 150px;
-        }
-
-        .btn-nav:hover {
+        .btn-back:hover {
             background-color: #ccc;
         }
 
@@ -206,10 +199,9 @@
 <body>
 <div class="container">
     <!-- ✅ 뒤로가기 버튼 -->
-    <button class="btn-nav" id="btnHistoryBack">← 이전 페이지</button>
-    <button class="btn-nav" id="btnBack">← 관광지 목록</button>
+    <button class="btn-back" id="btnBack">← 뒤로가기</button>
 
-    <h1>관광지 상세정보</h1>
+    <h1>숙소 상세정보</h1>
 
     <!-- 로딩 중 -->
     <div id="loading">
@@ -231,8 +223,8 @@
 
     <!-- 버튼 그룹 -->
     <div id="actions" class="btn-group" style="display:none;">
-        <button class="btn btn-accommodation" id="btnAcc">🏨 근처 숙소 보기</button>
-        <button class="btn btn-plan" id="btnPlan">🗓️ 여행 계획 생성</button>
+        <button class="btn btn-accommodation" id="btnAcc">🏨 관광지 목록 보기</button>
+        <button class="btn btn-plan" id="btnPlan">🗓️ 관광지 상세 정보로 돌아가기</button>
         <button class="btn btn-like" id="btnLike">♡ 추천</button>
     </div>
 </div>
@@ -250,12 +242,14 @@
     document.head.appendChild(script);
 </script>
 
+
 <script th:inline="javascript">
-    const id = /*[[${id}]]*/ 0;
-    console.log("📍 관광지 ID:", id);
+    const accId = /*[[${accId}]]*/ 0;
+    const tspId = /*[[${tspId}]]*/ 0;
+    console.log("📍 숙소 ID:", accId);
+    console.log("📍 관광지 ID:", tspId);
 
     let liked = false; // 추천 상태
-
     // ======= Toast 알림 함수 =======
     function showToast(message) {
         const toast = document.createElement("div");
@@ -263,11 +257,12 @@
         toast.className = "toast-message";
         document.body.appendChild(toast);
         setTimeout(() => toast.remove(), 2000);
+
     }
 
     // ======= 상세정보 로드 함수 =======
     function loadDetail() {
-        fetchWithRefresh(`/spots/detail?id=${id}`)
+        fetchWithRefresh(`/accommodations/detail?id=${accId}`)
             .then(res => res.json())
             .then(result => {
                 const data = result.data;
@@ -310,7 +305,7 @@
 
     // ======= 리뷰 로드 =======
     function loadReviews() {
-        fetch(`/reviews/target?type=tsp&id=${id}&size=3`)
+        fetch(`/reviews/target?type=acc&id=${accId}&size=3`)
             .then(res => res.json())
             .then(result => {
                 const reviews = result.content; // ✅ Page의 content 필드 직접 접근
@@ -371,25 +366,21 @@
 
     // ======= 버튼 이벤트 =======
     document.getElementById("btnBack").addEventListener("click", () => {
-        window.location.href = `/spots/view/tourspotlist`;
-    });
-
-    document.getElementById("btnHistoryBack").addEventListener("click", () => {
         window.history.back();
     });
 
     document.getElementById("btnAcc").addEventListener("click", () => {
-        window.location.href = `/accommodations/view/acclist?tspId=${id}`;
+        window.location.href = `/spots/view/tourspotlist`;
     });
 
     document.getElementById("btnPlan").addEventListener("click", () => {
-        // 관광지 id와 이름을 쿼리로 전달
-        window.location.href = `/plans/view/create?tspId=${id}`;
+        // 숙소 id와 이름을 쿼리로 전달
+        window.location.href = `/spots/view/tourspotdetail?id=${tspId}`;
     });
 
     // ======= 추천 버튼 클릭 =======
     document.getElementById("btnLike").addEventListener("click", () => {
-        fetchWithRefresh(`/recommend/toggle?targetId=${id}&catCode=tsp`, {method: "GET"})
+        fetchWithRefresh(`/recommend/toggle?targetId=${accId}&catCode=acc`, {method: "GET"})
             .then(res => res.json())
             .then(result => {
                 if (result.status === 200 && result.data) {
@@ -399,7 +390,7 @@
                     if (recStatus === "Y") {
                         btn.classList.add("active");
                         btn.innerHTML = "❤️ 추천 취소";
-                        showToast("✅ 관광지를 추천했습니다!");
+                        showToast("✅ 숙소를 추천했습니다!");
                     } else {
                         btn.classList.remove("active");
                         btn.innerHTML = "♡ 추천";

@@ -1,5 +1,7 @@
 package com.multi.travel.course.service;
 
+import com.multi.travel.acc.entity.Acc;
+import com.multi.travel.acc.repository.AccRepository;
 import com.multi.travel.category.CategoryRepository;
 import com.multi.travel.category.entity.Category;
 import com.multi.travel.course.dto.*;
@@ -10,6 +12,8 @@ import com.multi.travel.course.repository.CourseRepository;
 import com.multi.travel.member.entity.Member;
 import com.multi.travel.plan.entity.TripPlan;
 import com.multi.travel.plan.repository.TripPlanRepository;
+import com.multi.travel.tourspot.entity.TourSpot;
+import com.multi.travel.tourspot.repository.TspRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -20,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Please explain the class!!!
@@ -37,6 +42,8 @@ public class CourseService {
     private final CourseItemRepository itemRepository;
     private final TripPlanRepository tripPlanRepository;
     private final CategoryRepository categoryRepository;
+    private final TspRepository tspRepository;
+    private final AccRepository accRepository;
 
     /** 코스 생성 */
     public CourseResDto createCourse(CourseReqDto dto) {
@@ -91,6 +98,11 @@ public class CourseService {
     public CourseResDto getCourseDetail(Long courseId) {
         Course course = courseRepository.findByIdWithItemsAndCategory(courseId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 ID(" + courseId + ")의 코스를 찾을 수 없습니다."));
+
+        if ("N".equals(course.getStatus())) {
+            throw new EntityNotFoundException("삭제된 코스입니다.");
+        }
+
         return mapToCourseResDto(course);
     }
 
@@ -185,11 +197,20 @@ public class CourseService {
 
     /** 코스 삭제 (Soft Delete) */
     @Transactional
-    public void deleteCourse(Long courseId) {
+    public void deleteCourse(Long courseId, String loginUserId) {
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new EntityNotFoundException("코스를 찾을 수 없습니다. id=" + courseId));
 
-        course.setStatus("N"); // Soft Delete 처리
+        // 🔹 Soft Delete 권한 검증 (loginId 기준 비교)
+        if (course.getCreator() == null || course.getCreator().getLoginId() == null) {
+            throw new SecurityException("이 코스의 생성자 정보를 확인할 수 없습니다.");
+        }
+
+        if (!course.getCreator().getLoginId().equals(loginUserId)) {
+            throw new SecurityException("본인이 생성한 코스만 삭제할 수 있습니다.");
+        }
+
+        course.setStatus("N"); // Soft Delete
     }
 
 
@@ -268,6 +289,7 @@ public class CourseService {
                 .status(course.getStatus())
                 .recCount(course.getRecCount())
                 .createdAt(course.getCreatedAt())
+                .creatorUserId(course.getCreator() != null ? course.getCreator().getLoginId() : null)
                 .items(course.getItems().stream()
                         .map(this::mapToItemResDto)
                         .toList())
@@ -276,15 +298,38 @@ public class CourseService {
 
 
 
+    /** 코스 아이템 변환 (장소명 포함) */
     private CourseItemResDto mapToItemResDto(CourseItem item) {
+        String placeTitle = resolvePlaceTitle(item.getCategory().getCatCode(), item.getPlaceId());
+
         return CourseItemResDto.builder()
                 .itemId(item.getItemId())
                 .categoryCode(item.getCategory().getCatCode())
                 .categoryName(item.getCategory().getCatName())
                 .placeId(item.getPlaceId())
+                .placeTitle(placeTitle) // 추가
                 .orderNo(item.getOrderNo())
                 .dayNo(item.getDayNo())
                 .build();
+    }
+
+    /** 장소명 찾기 로직 */
+    private String resolvePlaceTitle(String catCode, Long placeId) {
+        if (catCode == null || placeId == null) return "알 수 없음";
+
+        switch (catCode) {
+            case "tsp" -> { // 관광지
+                Optional<TourSpot> tspOpt = tspRepository.findById(placeId);
+                return tspOpt.map(TourSpot::getTitle).orElse("관광지 정보 없음");
+            }
+            case "acc" -> { // 숙소
+                Optional<Acc> accOpt = accRepository.findById(placeId);
+                return accOpt.map(Acc::getTitle).orElse("숙소 정보 없음");
+            }
+            default -> {
+                return "기타 장소";
+            }
+        }
     }
 
     public Course getCourseById(Long courseId) {

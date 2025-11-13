@@ -1,6 +1,5 @@
 package com.multi.travel.course.dto;
 
-import com.multi.travel.course.entity.CourseItem;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -26,4 +25,5 @@ public class CourseResDto {
     private LocalDateTime createdAt;
     private List<CourseItemResDto> items;
     private Integer recCount;
+    private String creatorUserId;
 }

@@ -35,11 +35,14 @@ public class JwtFilter extends OncePerRequestFilter {
 
     private static final String[] WILDCARD_PATHS = {
             "/spots/view/**",
+            "/courses/view/**",
             "/members/view/**",
             "/admin/view/**",
             "/auth/**",
             "/public/**",
-            "/swagger-ui/**"
+            "/swagger-ui/**",
+            "/member/view/**"
+
     };
 
 
@@ -100,8 +103,11 @@ public class JwtFilter extends OncePerRequestFilter {
                 log.info("[JwtFilter] JWT 토큰이 존재하지 않습니다.");
             }
 
+            log.info("✅ [JwtFilter] Before filterChain.doFilter() → {}", SecurityContextHolder.getContext().getAuthentication());
+
             // 4. 필터 체인 계속 진행
             filterChain.doFilter(request, response);
+            log.info("✅ [JwtFilter] After filterChain.doFilter() → {}", SecurityContextHolder.getContext().getAuthentication());
             log.info("[JwtFilter] 필터 체인 완료 후 응답 처리");
 
         } catch (TokenException e) {

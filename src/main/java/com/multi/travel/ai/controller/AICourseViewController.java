@@ -1,10 +1,12 @@
 package com.multi.travel.ai.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 /**
  * Please explain the class!!!
@@ -15,19 +17,17 @@ import org.springframework.web.bind.annotation.PathVariable;
  */
 @Controller
 @RequiredArgsConstructor
+@RequestMapping("/ai/courses/view")
 public class AICourseViewController {
 
-    /** AI 코스 결과 페이지 */
-    @GetMapping("/ai/courses/view/{planId}")
-    public String showAICourseView(@PathVariable Long planId, Model model) {
-        model.addAttribute("planId", planId);
-        return "ai/course-view"; // → 결과 페이지
-    }
+    @Value("${KAKAO_MAP_API_KEY}")
+    private String kakaoKey;
 
-    /** 피드백 입력 페이지 */
-    @GetMapping("/ai/courses/feedback/{planId}")
-    public String showFeedbackPage(@PathVariable Long planId, Model model) {
+    /** AI 코스 생성 화면 */
+    @GetMapping("/create")
+    public String aiCourseCreate(@RequestParam Long planId, Model model) {
         model.addAttribute("planId", planId);
-        return "ai/course-feedback"; // → 피드백 입력 페이지
+        model.addAttribute("kakaoKey", kakaoKey);
+        return "ai/ai-course-create";
     }
 }

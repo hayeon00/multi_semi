@@ -25,7 +25,7 @@ public class TspViewController {
 
     @GetMapping("/tourspotlist")
     public String tourSpotList() {
-        return "tourspot/tourspotlist";
+        return "/tourspot/tourspotlist";
     }
 
 

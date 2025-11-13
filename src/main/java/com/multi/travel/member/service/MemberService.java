@@ -117,6 +117,14 @@ public class MemberService {
         memberRepository.save(member);
     }
 
+    @Transactional
+    public void updateStatus(Long id, String status) {
+        Member member = memberRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
+        member.setStatus(status);
+        memberRepository.save(member);
+    }
+
 
 
     public MemberResDto findByLoginId(String loginIdFromToken) {
