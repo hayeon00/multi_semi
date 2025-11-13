@@ -32,4 +32,6 @@ public class CourseItemReqDto {
 
     @NotNull(message = "dayNo는 필수입니다.")
     private Integer dayNo;  // 몇 일차에 속하는지
+
+
 }

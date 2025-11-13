@@ -286,4 +286,10 @@ public class CourseService {
                 .dayNo(item.getDayNo())
                 .build();
     }
+
+    public Course getCourseById(Long courseId) {
+        return courseRepository.findById(courseId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 ID(" + courseId + ")의 코스를 찾을 수 없습니다."));
+    }
+
 }

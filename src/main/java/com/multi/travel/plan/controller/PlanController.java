@@ -43,6 +43,7 @@ public class PlanController {
 
     }
 
+
     @GetMapping("/{planId}")
     public ResponseEntity<ResponseDto> getPlanDetail(@PathVariable Long planId) {
         PlanDetailResDto detail = planService.getTripPlanDetail(planId);
@@ -50,6 +51,24 @@ public class PlanController {
                 new ResponseDto(HttpStatus.OK, "여행 계획 상세정보 조회 성공", detail)
         );
     }
+
+    @PutMapping("/{planId}")
+    public ResponseEntity<ResponseDto> updatePlan(@PathVariable Long planId,
+                                                  @RequestBody PlanReqDto dto,
+                                                  @AuthenticationPrincipal CustomUser user) {
+
+        planService.updateTripPlan(planId, dto, user.getUserId());
+        return ResponseEntity.ok(new ResponseDto(HttpStatus.OK, "여행 계획이 수정되었습니다.", null));
+    }
+
+    @DeleteMapping("/{planId}")
+    public ResponseEntity<ResponseDto> deletePlan(@PathVariable Long planId,
+                                                  @AuthenticationPrincipal CustomUser user) {
+
+        planService.deleteTripPlan(planId, user.getUserId());
+        return ResponseEntity.ok(new ResponseDto(HttpStatus.OK, "여행 계획이 삭제되었습니다.", null));
+    }
+
 
 }
 

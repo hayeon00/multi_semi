@@ -35,6 +35,7 @@ public class ReviewController {
         log.debug("🔐 인증된 사용자 userId: {}", user.getUserId());
         ReviewDetailDto result = reviewService.createReview(dto, images, user.getUserId());
 
+
         // 등록 후 → 해당 코스 리뷰 목록 페이지로 리다이렉트
         return "redirect:/review/course/" + result.getTargetId();
     }
