@@ -59,4 +59,21 @@ public class TripPlan {
     @JoinColumn(name = "course_id")
     private Course course;
 
+    public void update(String title, int numberOfPeople, LocalDate startDate, LocalDate endDate,
+                       String startLocation, BigDecimal startMapX, BigDecimal startMapY) {
+        this.title = title;
+        this.numberOfPeople = numberOfPeople;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.startLocation = startLocation;
+        this.startMapX = startMapX;
+        this.startMapY = startMapY;
+    }
+
+
+
+
+
+
+
 }

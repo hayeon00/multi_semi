@@ -17,11 +17,56 @@
     .map-container { display: flex; background: #f3f3f3; border-radius: 20px; overflow: hidden; }
     #map { width: 70%; height: 500px; }
     .side-panel { width: 30%; background: #f9f9f9; padding: 10px; display: flex; flex-direction: column; }
-    .tabs { display: flex; justify-content: center; gap: 5px; margin-bottom: 10px; }
-    .tabs button { border: none; padding: 5px 10px; border-radius: 8px; background: #ccc; cursor: pointer; }
-    .tabs button.active { background: #000; color: #fff; }
+
+    /* 슬라이더 탭 래퍼 */
+    .day-tabs-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-bottom: 10px;
+    }
+
+    .tab-arrow {
+      border: none;
+      background: #e0e0e0;
+      padding: 5px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+    .tab-arrow:hover {
+      background: #d0d0d0;
+    }
+
+    /* 가로 스크롤되는 탭 */
+    .tabs {
+      display: flex;
+      gap: 5px;
+      overflow-x: auto;
+      white-space: nowrap;
+      flex: 1;
+      scrollbar-width: none;
+    }
+    .tabs::-webkit-scrollbar { display: none; }
+
+    .tabs button {
+      padding: 6px 10px;
+      border-radius: 8px;
+      border: none;
+      background: #ccc;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .tabs button.active {
+      background: #000;
+      color: #fff;
+    }
+
     .place-list { flex: 1; overflow-y: auto; text-align: left; padding: 5px 10px; }
     .place-item { background: white; margin: 4px 0; border-radius: 10px; padding: 8px; }
+
     .btns { text-align: center; margin-top: 20px; }
     .btns button { padding: 10px 20px; border: none; border-radius: 10px; cursor: pointer; margin: 0 10px; }
     .btn-retry { background: #ccc; color: #333; }
@@ -47,7 +92,16 @@
   <div class="map-container">
     <div id="map"></div>
     <div class="side-panel">
-      <div class="tabs" id="dayTabs"></div>
+
+      <!-- 슬라이더 탭 전체 래퍼 -->
+      <div class="day-tabs-wrapper">
+        <button class="tab-arrow" id="tabLeftBtn">◀</button>
+
+        <div class="tabs" id="dayTabs"></div>
+
+        <button class="tab-arrow" id="tabRightBtn">▶</button>
+      </div>
+
       <div class="place-list" id="placeList"></div>
     </div>
   </div>
@@ -71,15 +125,12 @@
     });
   });
 
-
-  // 지도 초기화
   function initMap() {
     const container = document.getElementById("map");
     const options = { center: new kakao.maps.LatLng(37.4979, 127.0276), level: 6 };
     map = new kakao.maps.Map(container, options);
   }
 
-  // AI 코스 생성
   function generateCourse() {
     $.post(`/ai/courses/plan/${planId}`, function(res) {
       if (!res.data) return alert("AI 코스 생성 실패");
@@ -92,7 +143,6 @@
     });
   }
 
-  // 좌표 정보 보강
   async function enrichPlaces() {
     const promises = [];
     days.forEach(day => {
@@ -115,15 +165,32 @@
     await Promise.all(promises);
   }
 
-  // 탭 렌더링
   function renderTabs() {
     const tabs = $("#dayTabs").empty();
     days.forEach(day => {
       const btn = $(`<button class="${day.dayNo === 1 ? "active" : ""}">${day.dayNo}일차</button>`);
+
       btn.click(() => {
         activeDay = day.dayNo;
+
         $(".tabs button").removeClass("active");
         btn.addClass("active");
+
+        const tabBox = document.getElementById("dayTabs");
+        const tabBtn = btn[0];
+
+        // 버튼 화면상의 절대 좌표
+        const btnRect = tabBtn.getBoundingClientRect();
+        const boxRect = tabBox.getBoundingClientRect();
+
+        // 버튼 중심 좌표 - 탭박스 중심 좌표
+        const diff = (btnRect.left + btnRect.width / 2) - (boxRect.left + boxRect.width / 2);
+
+        tabBox.scrollBy({
+          left: diff,
+          behavior: "smooth"
+        });
+
         renderList();
         renderMap();
       });
@@ -131,18 +198,23 @@
     });
   }
 
-  // 리스트 렌더링
+  $("#tabLeftBtn").click(() => {
+    document.getElementById("dayTabs").scrollBy({ left: -150, behavior: "smooth" });
+  });
+  $("#tabRightBtn").click(() => {
+    document.getElementById("dayTabs").scrollBy({ left: 150, behavior: "smooth" });
+  });
+
   function renderList() {
     const list = $("#placeList").empty();
     const currentDay = days.find(d => d.dayNo === activeDay);
     if (!currentDay) return;
-    currentDay.items.forEach((item, idx) => {
-      const div = $(`<div class="place-item">${idx + 1}. ${item.title || "장소"} (${item.categoryCode})</div>`);
+    currentDay.items.forEach((item) => {
+      const div = $(`<div class="place-item">${item.title || "장소"}</div>`);
       list.append(div);
     });
   }
 
-  // 지도 렌더링
   function renderMap() {
     clearMap();
     const bounds = new kakao.maps.LatLngBounds();
@@ -150,21 +222,24 @@
     days.forEach(day => {
       const coords = [];
       day.items.forEach(item => {
-        if (!item.mapy || !item.mapx) return; // 좌표 없는 경우 스킵
+        if (!item.mapy || !item.mapx) return;
         const pos = new kakao.maps.LatLng(parseFloat(item.mapy), parseFloat(item.mapx));
         coords.push(pos);
+
         const markerImage = new kakao.maps.MarkerImage(
                 day.dayNo === activeDay
                         ? "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png"
                         : "https://t1.daumcdn.net/mapjsapi/images/marker.png",
                 new kakao.maps.Size(24, 35)
         );
+
         const marker = new kakao.maps.Marker({
           map,
           position: pos,
           title: `[${day.dayNo}일차] ${item.title}`,
           image: markerImage
         });
+
         markers.push(marker);
         bounds.extend(pos);
       });
@@ -181,7 +256,6 @@
       }
     });
 
-    // 모든 마커 기준으로 중심 이동
     if (!bounds.isEmpty()) map.setBounds(bounds);
   }
 
@@ -192,7 +266,6 @@
     polylines = [];
   }
 
-  // 코스 다시짜기
   $("#btnRetry").click(() => {
     if (!confirm("AI에게 다시 코스를 추천받을까요?")) return;
     $.post(`/ai/courses/feedback`, JSON.stringify({ planId }), function(res) {
@@ -206,7 +279,6 @@
     });
   });
 
-  // 코스 확정
   $("#btnConfirm").click(() => {
     if (!confirm("이 코스를 확정하시겠습니까?")) return;
     const req = { planId, days };

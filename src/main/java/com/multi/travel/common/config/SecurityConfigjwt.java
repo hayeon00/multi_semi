@@ -51,7 +51,9 @@ public class SecurityConfigjwt {
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+
                 )
+                .securityContext((context) -> context.requireExplicitSave(false))
 
                 .authorizeHttpRequests(auth -> auth
                         // ✅ 정적 리소스는 로그인 없이 접근 허용
@@ -61,16 +63,17 @@ public class SecurityConfigjwt {
                                 "/images/**",
                                 "/fonts/**",
                                 "/static/**",
-                                "/admin/view/**"
+                                "/admin/view/**",
+                                "/member/view/**"
 
                         ).permitAll()
                         .requestMatchers("/login", "/signup", "/css/**", "/images/**").permitAll()
-                        .requestMatchers("/auth/**", "/api/auth/**").permitAll()
+                        .requestMatchers("/auth/**", "/api/auth/**","/spots/view/tourspotlist").permitAll()
                         .requestMatchers("/**").permitAll() // /api/plans, /api/courses 요청 시 로그인 없이도 테스트 가능하게 설정
                         // TODO: 전체 구현 완료 시 삭제 예정
 
 
-                        .requestMatchers(HttpMethod.GET, "/reviews", "/reviews/**", "/api/plans", "/api/courses" ).permitAll()
+                        .requestMatchers(HttpMethod.GET, "/reviews", "/reviews/**", "/api/plans", "/api/courses","member/view/**" ).permitAll()
                         // ✅ 로그인/회원가입/토큰 관련 경로 허용
                         .requestMatchers(
                                 "/login",

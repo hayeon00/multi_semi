@@ -47,4 +47,6 @@ public class CourseItem {
     @Column(name = "order_no", nullable = false)
     private Integer orderNo;
 
+
+
 }
