@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="ko">
 <head>
+    <script src="/js/common.js"></script>
+
     <meta charset="UTF-8">
     <title>관광지 목록 | Travel Planning</title>
     <style>
@@ -113,7 +115,7 @@
     // ======= 관광지 목록 불러오기 =======
     function loadSpots() {
         const query = new URLSearchParams({page, sort, size, keyword});
-        fetch(`/spots/list?${query}`)
+        fetchWithRefresh(`/spots/list?${query}`)
             .then(res => res.json())
             .then(result => {
                 if (result.status !== 200) throw new Error(result.message);

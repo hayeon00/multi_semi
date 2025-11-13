@@ -171,7 +171,7 @@ public class AdminService {
                 .lDongRegnCd(spot.getLDongRegnCd())
                 .contentId(spot.getContentId())
                 .status(spot.getStatus())
-                .cat_code("tsp")
+                //.cat_code("tsp")
                 .createdAt(spot.getCreatedAt())
                 .modifiedAt(spot.getModifiedAt())
                 .build();
