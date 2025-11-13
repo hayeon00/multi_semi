@@ -17,8 +17,11 @@ import com.multi.travel.category.CategoryRepository;
 import com.multi.travel.category.entity.Category;
 import com.multi.travel.common.exception.AccommodationNotFound;
 import com.multi.travel.common.exception.CategoryNotFoundException;
+import com.multi.travel.common.exception.TourSpotNotFoundException;
 import com.multi.travel.common.util.FileUploadUtils;
 import com.multi.travel.common.util.RoleUtils;
+import com.multi.travel.tourspot.entity.TourSpot;
+import com.multi.travel.tourspot.repository.TspRepository;
 import jakarta.annotation.PostConstruct;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +37,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -45,6 +51,7 @@ public class AccService {
     private final AccRepository accRepository;
     private final CategoryRepository categoryRepository;
     private final ApiService apiService;
+    private final TspRepository tspRepository;
 
     @Value("${image.acc.image-dir}")
     private String IMAGE_DIR;
@@ -80,20 +87,34 @@ public class AccService {
             acc = accRepository.findByIdAndStatus(id, "Y")
                     .orElseThrow(() -> new AccommodationNotFound(id));
         }
-        apiService.insertDetail(acc.getContentId(), acc.getCategory().getCatCode());
+        if(acc.getDescription() == null || acc.getHomepage() == null){
+            apiService.insertDetail(acc.getContentId(), acc.getCategory().getCatCode());
+        }
+
         Acc updatedAcc = accRepository.findById(id)
                 .orElseThrow(() -> new AccommodationNotFound(id));
         return AccEntityToDTO(updatedAcc);
     }
 
-    public List<ResDistanceAccDTO> getAccSortByDistance(int page, int size, @Valid long id) {
-        Acc criteria = accRepository.findByIdAndStatus(id, "Y")
-                .orElseThrow(() -> new AccommodationNotFound(id));
-
+    public Map<String, Object> getAccSortByDistance(int page, int size, @Valid long id, CustomUser customUser) {
         Pageable pageable = PageRequest.of(page, size);
-        List<AccHasDistanceProjection> lists = accRepository.findNearestWithDistanceRefactor(criteria.getMapx(), criteria.getMapy(), id, pageable);
+        TourSpot criteria;
+        Page<AccHasDistanceProjection> accPage;
+        if (RoleUtils.hasRole(customUser, RoleUtils.ADMIN)) {
+            criteria = tspRepository.findById(id)
+                    .orElseThrow(() -> new TourSpotNotFoundException(id));
+            accPage = accRepository.findNearestWithDistanceAdmin(criteria.getMapx(), criteria.getMapy(), pageable);
+        } else {
+            criteria = tspRepository.findByIdAndStatus(id, "Y")
+                    .orElseThrow(() -> new TourSpotNotFoundException(id));
+            accPage = accRepository.findNearestWithDistanceAndStatus(criteria.getMapx(), criteria.getMapy(), pageable);
+        }
 
-        return convertToResDistanceAccDTO(lists);
+        Map<String, Object> response = new HashMap<>();
+
+        response.put("totalPages", accPage.getTotalPages());
+        response.put("contents", convertToResDistanceAccDTO(accPage.getContent()));
+        return response;
     }
 
     @Transactional
@@ -184,7 +205,7 @@ public class AccService {
         acc.updateInfo(accDTO);
         return AccEntityToDTO(acc);
     }
-    
+
     @Transactional
     public AccDTO deleteAcc(@Valid Long accId) { //관리자 전용
         Acc acc = accRepository.findById(accId).orElseThrow(() -> new AccommodationNotFound(accId));
@@ -209,7 +230,10 @@ public class AccService {
                         .address(list.getAddress())
                         .recCount(list.getRecCount())
                         .firstImage(list.getFirstImage())
-                        .distanceMeter(list.getDistanceKm()*1000)
+                        .distanceMeter(list.getDistanceKm()
+                                .multiply(BigDecimal.valueOf(1000))
+                                .setScale(2, RoundingMode.HALF_UP)
+                                .doubleValue())
                         .build()
                 ).toList();
     }

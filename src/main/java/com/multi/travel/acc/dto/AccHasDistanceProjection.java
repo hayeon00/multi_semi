@@ -9,6 +9,8 @@ package com.multi.travel.acc.dto;
  */
 
 
+import java.math.BigDecimal;
+
 public interface AccHasDistanceProjection {
     Long getId();
 
@@ -20,5 +22,5 @@ public interface AccHasDistanceProjection {
 
     String getFirstImage();
 
-    Double getDistanceKm();
+    BigDecimal getDistanceKm();
 }
