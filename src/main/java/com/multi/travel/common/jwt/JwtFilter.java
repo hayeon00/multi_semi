@@ -39,8 +39,7 @@ public class JwtFilter extends OncePerRequestFilter {
             "/admin/view/**",
             "/auth/**",
             "/public/**",
-            "/swagger-ui/**",
-            "/reviews/view/**"
+            "/swagger-ui/**"
     };
 
 

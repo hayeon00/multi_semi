@@ -1,12 +1,9 @@
 package com.multi.travel.review.controller;
 
 import com.multi.travel.auth.dto.CustomUser;
-import com.multi.travel.review.dto.ReviewDetailDto;
 import com.multi.travel.review.dto.ReviewReqDto;
 import com.multi.travel.review.service.ReviewService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -24,24 +21,40 @@ public class ReviewFrontController {
     private final ReviewService reviewService;
 
 
-    @GetMapping("/my-page")
-    public String myReviewPage(@AuthenticationPrincipal CustomUser user, Model model, Pageable pageable) {
-        Page<ReviewDetailDto> page = reviewService.getReviewsByUser(user.getUserId(), pageable);
-        model.addAttribute("myReviews", page);
-        return "review/myReviews";
-    }
-
-
-
     /** 코스 리뷰 등록 페이지 출력 */
     @GetMapping("/regist/course/{courseId}")
-    public String showCourseReviewPage(@PathVariable Long courseId, Model model,
-                                       @AuthenticationPrincipal CustomUser user) {
+    public String registCourseReviewPage(@PathVariable Long courseId, Model model) {
         model.addAttribute("courseId", courseId);
-        model.addAttribute("user", user);
-        model.addAttribute("review", new ReviewReqDto());
         return "review/courseReviewForm";
     }
+
+    /** 코스 리뷰 상세 페이지 출력 */
+    @GetMapping("/detail/{courseId}")
+    public String showCourseReviewDetailPage(@PathVariable Long courseId, Model model) {
+        model.addAttribute("courseId", courseId);
+        return "review/courseReviewDetail";
+    }
+
+    /** 코스 리뷰 조회 페이지 출력 */
+    @GetMapping("/search/{courseId}")
+    public String showCourseReviewPage(@PathVariable Long courseId, Model model) {
+        model.addAttribute("courseId", courseId);
+        return "review/courseReviewList";
+    }
+
+    /** 내가 쓴 리뷰 페이지 출력 */
+    @GetMapping("/search/my")
+    public String showMyReviewPage(Model model, @AuthenticationPrincipal CustomUser user) {
+       // model.addAttribute("userId", user.getUsername()); // 필요시
+        return "review/mycourseReviewList";
+    }
+
+
+
+
+
+
+
 
 
     /** 비동기(Ajax) 리뷰 등록 요청 처리 → JSON 응답 반환 */
@@ -58,5 +71,7 @@ public class ReviewFrontController {
             return ResponseEntity.internalServerError().body("리뷰 등록 실패: " + e.getMessage());
         }
     }
+
+
 
 }

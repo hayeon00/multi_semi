@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>내가 쓴 리뷰</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pretendard&display=swap">
+    <style>
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background: #f5f6f8;
+            margin: 0;
+            padding: 0;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #ddd;
+            padding: 15px 40px;
+        }
+        .page-header h1 { font-size: 20px; margin: 0; }
+        .page-header nav a { margin-left: 15px; color: #333; text-decoration: none; }
+
+        .content-wrapper {
+            width: 1200px;
+            margin: 30px auto;
+            background: #fff;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            font-size: 24px;
+            color: #333;
+        }
+
+        .review-card {
+            background: #fafafa;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 0 6px rgba(0,0,0,0.05);
+        }
+
+        .review-card h3 {
+            margin: 0 0 10px;
+            font-size: 20px;
+            color: #2c3e50;
+        }
+
+        .review-card p {
+            margin: 5px 0;
+            color: #555;
+        }
+
+        .review-card .rating {
+            color: #f39c12;
+            font-weight: bold;
+        }
+
+        .review-images img {
+            width: 120px;
+            height: auto;
+            border-radius: 10px;
+            margin-right: 10px;
+            margin-top: 10px;
+        }
+
+        .no-review {
+            text-align: center;
+            color: #999;
+            padding: 40px 0;
+        }
+
+        @media (max-width: 768px) {
+            .content-wrapper { width: 90%; padding: 20px; }
+            .review-images img { width: 100px; }
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="page-header">
+    <h1>TRAVEL PLANNING</h1>
+    <nav>
+        <span>사용자님 환영합니다.</span>
+        <a href="/">Home</a>
+        <a href="/mypage">마이페이지</a>
+        <a href="/logout">로그아웃</a>
+    </nav>
+</div>
+
+<div class="content-wrapper">
+    <h2>내가 쓴 리뷰</h2>
+    <div id="myReviewList">
+        <!-- 리뷰가 여기에 렌더링됨 -->
+    </div>
+</div>
+
+<script th:src="@{/js/common.js}"></script>
+<script>
+    async function loadMyReviews() {
+        try {
+            const res = await fetchWithRefresh('/reviews/my', {
+                method: 'GET',
+                credentials: 'include'
+            });
+
+            const result = await res.json();
+            const reviews = result.content;
+            const container = document.getElementById('myReviewList');
+            container.innerHTML = "";
+
+            if (!reviews || reviews.length === 0) {
+                container.innerHTML = `<div class="no-review">작성한 리뷰가 없습니다.</div>`;
+                return;
+            }
+
+            reviews.forEach(r => {
+                const div = document.createElement("div");
+                div.className = "review-card";
+
+                div.innerHTML = `
+          <h3>${r.title}</h3>
+          <p>${r.content}</p>
+          <p class="rating">★ ${r.rating} / 5</p>
+          <div class="review-images">
+            ${(r.imageUrls || []).map(url => `<img src="${url}" alt="리뷰 이미지">`).join("")}
+          </div>
+          <p style="font-size: 14px; color: #888;">작성자: ${r.writer}</p>
+        `;
+                container.appendChild(div);
+            });
+        } catch (e) {
+            console.error("리뷰 로딩 실패:", e);
+            document.getElementById('myReviewList').innerHTML = `<div class="no-review">리뷰를 불러오는 중 오류가 발생했습니다.</div>`;
+        }
+    }
+
+    window.onload = loadMyReviews;
+</script>
+</body>
+</html>

@@ -161,23 +161,6 @@ public class ReviewService {
     }
 
 
-    public ReviewDetailDto getReviewById(Long reviewId) {
-        Review review = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new IllegalArgumentException("리뷰가 존재하지 않습니다."));
-        return toDto(review);
-    }
-
-
-//    public void saveCourseReview(CourseReviewDto dto, Long memberId) {
-//        CourseReview review = CourseReview.builder()
-//                .content(dto.getContent())
-//                .course(courseRepository.findById(dto.getCourseId()).orElseThrow())
-//                .member(memberRepository.findById(memberId).orElseThrow())
-//                .build();
-//
-//        reviewRepository.save(review);
-//    }
-
 
 
 
