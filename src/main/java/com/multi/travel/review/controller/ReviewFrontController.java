@@ -1,6 +1,8 @@
 package com.multi.travel.review.controller;
 
 import com.multi.travel.auth.dto.CustomUser;
+import com.multi.travel.course.entity.Course;
+import com.multi.travel.course.service.CourseService;
 import com.multi.travel.review.dto.ReviewReqDto;
 import com.multi.travel.review.service.ReviewService;
 import lombok.RequiredArgsConstructor;
@@ -19,14 +21,30 @@ import java.util.List;
 public class ReviewFrontController {
 
     private final ReviewService reviewService;
+    private final CourseService courseService;
 
+    /** 내가 쓴 리뷰 페이지 출력 */
+    @GetMapping("/search/my")
+    public String showMyReviewPage(Model model, @AuthenticationPrincipal CustomUser user) {
+        // model.addAttribute("userId", user.getUsername()); // 필요시
+        return "review/mycourseReviewList";
+    }
 
     /** 코스 리뷰 등록 페이지 출력 */
-    @GetMapping("/regist/course/{courseId}")
-    public String registCourseReviewPage(@PathVariable Long courseId, Model model) {
-        model.addAttribute("courseId", courseId);
-        return "review/courseReviewForm";
+    @GetMapping("/write")
+    public String reviewWrite(@RequestParam Long courseId, Model model) {
+
+        Course course = courseService.getCourseById(courseId);
+        model.addAttribute("course", course);
+        return "review/courseReviewFrom"; // 리뷰작성 화면
     }
+
+
+
+
+
+
+
 
     /** 코스 리뷰 상세 페이지 출력 */
     @GetMapping("/detail/{courseId}")
@@ -42,12 +60,7 @@ public class ReviewFrontController {
         return "review/courseReviewList";
     }
 
-    /** 내가 쓴 리뷰 페이지 출력 */
-    @GetMapping("/search/my")
-    public String showMyReviewPage(Model model, @AuthenticationPrincipal CustomUser user) {
-       // model.addAttribute("userId", user.getUsername()); // 필요시
-        return "review/mycourseReviewList";
-    }
+
 
 
 

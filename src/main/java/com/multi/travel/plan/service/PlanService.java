@@ -2,9 +2,13 @@ package com.multi.travel.plan.service;
 
 import com.multi.travel.acc.repository.AccRepository;
 import com.multi.travel.api.repository.TourSpotApiRepository;
+import com.multi.travel.category.CategoryRepository;
+import com.multi.travel.category.entity.Category;
+import com.multi.travel.course.dto.CourseItemReqDto;
 import com.multi.travel.course.dto.CoursePlaceDto;
 import com.multi.travel.course.entity.Course;
 import com.multi.travel.course.entity.CourseItem;
+import com.multi.travel.course.repository.CourseRepository;
 import com.multi.travel.member.entity.Member;
 import com.multi.travel.member.repository.MemberRepository;
 import com.multi.travel.plan.dto.PlanDetailResDto;
@@ -20,15 +24,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-/**
- * 여행 계획 생성 서비스
- * 관광지 상세 페이지에서 여행 계획 생성 시,
- * 해당 관광지를 출발 위치로 자동 설정
- *
- * @author : hayeon
- * @since : 2025. 11. 09
- */
-
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -37,7 +32,9 @@ public class PlanService {
     private final TripPlanRepository tripPlanRepository;
     private final MemberRepository memberRepository;
     private final TourSpotApiRepository tourSpotApiRepository;
+    private final CourseRepository courseRepository;
     private final AccRepository accRepository;
+    private final CategoryRepository categoryRepository;
 
     public Long createTripPlan(PlanReqDto dto) {
         Member member = memberRepository.findByLoginId(dto.getMemberId())
@@ -63,7 +60,6 @@ public class PlanService {
         return saved.getId();
     }
 
-
     @Transactional(readOnly = true)
     public PlanDetailResDto getTripPlanDetail(Long planId) {
         TripPlan plan = tripPlanRepository.findById(planId)
@@ -71,21 +67,18 @@ public class PlanService {
 
         List<CoursePlaceDto> coursePlaceDtos = new ArrayList<>();
 
-        // 코스가 있는 경우
         if (plan.getCourse() != null) {
             Course course = plan.getCourse();
-
             List<CourseItem> items = course.getItems().stream()
                     .sorted(Comparator.comparingInt(CourseItem::getOrderNo))
                     .toList();
 
             for (CourseItem item : items) {
                 String categoryCode = item.getCategory().getCatCode();
-                String categoryName = item.getCategory().getCatName();
 
                 CoursePlaceDto.CoursePlaceDtoBuilder builder = CoursePlaceDto.builder()
                         .id(item.getPlaceId())
-                        .type(categoryCode) // 카테고리 코드 저장
+                        .type(categoryCode)
                         .orderNo(item.getOrderNo())
                         .dayNo(item.getDayNo());
 
@@ -127,7 +120,68 @@ public class PlanService {
                 .build();
     }
 
+    public void updateTripPlan(Long planId, PlanReqDto dto, String requesterId) {
+        TripPlan plan = tripPlanRepository.findById(planId)
+                .orElseThrow(() -> new IllegalArgumentException("여행 계획을 찾을 수 없습니다."));
+
+        if (!plan.getMember().getLoginId().equals(requesterId)) {
+            throw new SecurityException("수정 권한이 없습니다.");
+        }
+
+        // 출발지 관광지 정보 가져오기
+        TourSpot startSpot = tourSpotApiRepository.findById(dto.getTourSpotId())
+                .orElseThrow(() -> new IllegalArgumentException("관광지 정보를 찾을 수 없습니다."));
+
+        // 여행 기본 정보 업데이트
+        plan.update(
+                dto.getTitle(),
+                dto.getNumberOfPeople(),
+                dto.getStartDate(),
+                dto.getEndDate(),
+                startSpot.getTitle(),
+                startSpot.getMapx(),
+                startSpot.getMapy()
+        );
+
+        // 🔄 새로운 Course 생성
+        Course newCourse = Course.builder()
+                .creator(plan.getMember())
+                .status("Y")
+                .build();
+
+        // 📦 CourseItem 추가
+        for (CourseItemReqDto itemDto : dto.getCourse().getItems()) {
+            CourseItem item = new CourseItem();
+            item.setCourse(newCourse);  // 연관관계 설정
+            item.setPlaceId(itemDto.getPlaceId());
+            item.setOrderNo(itemDto.getOrderNo());
+            item.setDayNo(itemDto.getDayNo());
+
+            // 카테고리 설정
+            Category category = categoryRepository.findById(itemDto.getCategoryCode())
+                    .orElseThrow(() -> new IllegalArgumentException("카테고리를 찾을 수 없습니다. code=" + itemDto.getCategoryCode()));
+            item.setCategory(category);
+
+            newCourse.addItem(item);  // 양방향 연관관계 편의 메서드
+        }
+
+        // ✅ 코스를 먼저 저장해야 Hibernate 에러 방지됨
+        Course savedCourse = courseRepository.save(newCourse);
+
+        // 🔗 저장된 코스를 여행 계획에 연결
+        plan.setCourse(savedCourse);
+    }
 
 
 
+    public void deleteTripPlan(Long planId, String requesterId) {
+        TripPlan plan = tripPlanRepository.findById(planId)
+                .orElseThrow(() -> new IllegalArgumentException("여행 계획을 찾을 수 없습니다."));
+
+        if (!plan.getMember().getLoginId().equals(requesterId)) {
+            throw new SecurityException("삭제 권한이 없습니다.");
+        }
+
+        tripPlanRepository.delete(plan);
+    }
 }
