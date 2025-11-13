@@ -11,9 +11,11 @@ package com.multi.travel.recommend.service;
 
 import com.multi.travel.acc.entity.Acc;
 import com.multi.travel.acc.repository.AccRepository;
+import com.multi.travel.auth.dto.CustomUser;
 import com.multi.travel.category.CategoryRepository;
 import com.multi.travel.course.entity.Course;
 import com.multi.travel.course.repository.CourseRepository;
+import com.multi.travel.member.entity.Member;
 import com.multi.travel.member.repository.MemberRepository;
 import com.multi.travel.recommend.dto.RecDTO;
 import com.multi.travel.recommend.entity.Recommend;
@@ -23,6 +25,7 @@ import com.multi.travel.tourspot.repository.TspRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,14 +43,19 @@ public class RecService {
     private final CourseRepository courseRepository;
 
     @Transactional
-    public RecDTO toggleRecommend(Long userId, Long targetId, String catCode) {
+    public RecDTO toggleRecommend(CustomUser customUser, Long targetId, String catCode) {
+        if (customUser == null) {
+            throw new AccessDeniedException("로그인이 필요한 기능입니다.");
+        }
+        Member member = memberRepository.findByLoginId(customUser.getUserId()).orElseThrow(() -> new EntityNotFoundException("Member not Found."));
+
         Optional<Recommend> existing =
-                recRepository.findByMember_IdAndTargetIdAndCategory_CatCode(userId, targetId, catCode);
+                recRepository.findByMember_IdAndTargetIdAndCategory_CatCode(member.getId(), targetId, catCode);
 
         // 공통 targetEntity 조회 (TourSpot, Acc, Course)
         Object target = getTargetEntity(catCode, targetId)
                 .orElseThrow(() -> new EntityNotFoundException(
-                        "Target Entity not found, userId :" + userId + ", targetId : " + targetId + ", cat_code : " + catCode));
+                        "Target Entity not found, userId :" + member.getId() + ", targetId : " + targetId + ", cat_code : " + catCode));
 
         if (existing.isPresent()) {
             Recommend rec = existing.get();
@@ -59,11 +67,11 @@ public class RecService {
                 RecCountUpdate(target, -1);
             }
 
-            return RecEntityToDTO(rec, targetId, userId, catCode, rec.getStatus());
+            return RecEntityToDTO(rec, targetId, member.getId(), catCode, rec.getStatus());
         } else {
             Recommend newRec = Recommend.builder()
                     .targetId(targetId)
-                    .member(memberRepository.findById(userId)
+                    .member(memberRepository.findById(member.getId())
                             .orElseThrow(() -> new EntityNotFoundException("Member not found")))
                     .category(categoryRepository.findById(catCode)
                             .orElseThrow(() -> new EntityNotFoundException("Category not found")))
@@ -74,7 +82,7 @@ public class RecService {
 
             RecCountUpdate(target, 1);
 
-            return RecEntityToDTO(newRec, newRec.getTargetId(), userId, catCode, "Y");
+            return RecEntityToDTO(newRec, newRec.getTargetId(), member.getId(), catCode, "Y");
         }
     }
 

@@ -1,5 +1,6 @@
 package com.multi.travel.member.controller;
 
+import com.multi.travel.auth.dto.CustomUser;
 import com.multi.travel.common.jwt.TokenProvider;
 import com.multi.travel.common.jwt.service.TokenService;
 import com.multi.travel.member.dto.MemberResDto;
@@ -8,6 +9,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -63,5 +66,29 @@ public class MemberViewController {
 
         return "member/edit";  // templates/member/edit.html
     }
+
+    /**
+     * ✅ 로그인한 회원의 마이페이지로 이동
+     * - @AuthenticationPrincipal 로 로그인 정보(CustomUser) 받아오기
+     * - MemberService 로 DB에서 상세 정보 조회 후 Model에 담기
+     * - mypage.html View로 이동
+     */
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/mypage")
+    public String myPage(@AuthenticationPrincipal CustomUser user, Model model) {
+
+        // 로그인 정보 확인
+        log.info("[MemberViewController] 로그인 사용자: {}", user.getUserId());
+
+        // DB에서 회원 상세 조회
+        MemberResDto member = memberService.findByLoginId(user.getUserId());
+
+        // View에 전달
+        model.addAttribute("member", member);
+
+        // templates/mypage.html 로 이동
+        return "mypage";
+    }
+
 
 }

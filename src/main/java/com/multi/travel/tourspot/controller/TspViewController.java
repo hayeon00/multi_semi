@@ -20,17 +20,20 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RequiredArgsConstructor
 @RequestMapping("/spots/view")
 public class TspViewController {
+
+    private final AppConfig appConfig;
+
     @GetMapping("/tourspotlist")
-    public String tourSpotList(Model model) {
+    public String tourSpotList() {
         return "tourspot/tourspotlist";
     }
 
+
     @GetMapping("/tourspotdetail")
     public String tourSpotDetail(@RequestParam Long id,
-                                 Model model,
-                                 AppConfig appConfig) {
+                                 Model model){
         model.addAttribute("id", id);
-        model.addAttribute("kakaokey", appConfig.getKakaoMapApiKey());
+        model.addAttribute("kakaoKey", appConfig.getKakaoMapApiKey());
         return "/tourspot/tourspotdetail";
     }
 }

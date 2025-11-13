@@ -9,12 +9,14 @@ package com.multi.travel.recommend.controller;
  */
 
 
+import com.multi.travel.auth.dto.CustomUser;
 import com.multi.travel.common.ResponseDto;
 import com.multi.travel.recommend.service.RecService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -29,11 +31,11 @@ public class RecController {
 
     @GetMapping("/toggle")
     public ResponseEntity<ResponseDto> toggleRecommend(
-            @RequestParam @Valid Long userId, //추후 토큰으로부터 user 정보 조회로 변경
             @RequestParam @Valid Long targetId,
-            @RequestParam @Valid String catCode
-    ) {
+            @RequestParam @Valid String catCode,
+            @AuthenticationPrincipal CustomUser customUser
+            ) {
 
-        return ResponseEntity.ok(new ResponseDto(HttpStatus.OK, "추천 값 변경 성공", recService.toggleRecommend(userId, targetId, catCode)));
+        return ResponseEntity.ok(new ResponseDto(HttpStatus.OK, "추천 값 변경 성공", recService.toggleRecommend(customUser, targetId, catCode)));
     }
 }
