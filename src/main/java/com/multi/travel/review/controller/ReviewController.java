@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -71,7 +72,7 @@ public class ReviewController {
             Pageable pageable
     ) {
 
-        Pageable fixedPageable = PageRequest.of(pageable.getPageNumber(), 10);
+        Pageable fixedPageable = PageRequest.of(pageable.getPageNumber(), 10, Sort.by(Sort.Direction.DESC, "createdAt"));
 
         Page<ReviewDetailDto> myReviews = reviewService.getReviewsByUser(user.getUserId(), pageable);
         return ResponseEntity.ok(myReviews);
@@ -82,9 +83,10 @@ public class ReviewController {
     public ResponseEntity<Page<ReviewDetailDto>> getReviewsByTarget(
             @RequestParam("type") String targetType,
             @RequestParam("id") Long targetId,
+            @RequestParam(defaultValue = "10") int size,
             Pageable pageable
     ) {
-        Pageable fixedPageable = PageRequest.of(pageable.getPageNumber(), 10);
+        Pageable fixedPageable = PageRequest.of(pageable.getPageNumber(), size, Sort.by(Sort.Direction.DESC, "createdAt"));
 
         Page<ReviewDetailDto> reviews = reviewService.getReviewsByTarget(targetType, targetId, pageable);
         return ResponseEntity.ok(reviews);

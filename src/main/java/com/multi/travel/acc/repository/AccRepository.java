@@ -11,6 +11,7 @@ package com.multi.travel.acc.repository;
 
 import com.multi.travel.acc.dto.AccHasDistanceProjection;
 import com.multi.travel.acc.entity.Acc;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -44,19 +45,64 @@ public interface AccRepository extends JpaRepository<Acc,Long> {
                                            @Param("id") Long id,
                                            Pageable pageable);
 
-    @Query(value = """
-            SELECT a.id, a.title, a.address, a.rec_count as recCount, a.first_image as firstImage,
-                   (6371 * acos(
+    @Query(
+            value = """
+                    SELECT a.id,
+               a.title,
+               a.address,
+               a.rec_count AS recCount,
+               a.first_image AS firstImage,
+               (
+                   6371 * acos(
                        cos(radians(:mapy)) * cos(radians(a.mapy)) *
                        cos(radians(a.mapx) - radians(:mapx)) +
                        sin(radians(:mapy)) * sin(radians(a.mapy))
-                   )) AS distanceKm
-            FROM tb_acc a
-            WHERE a.status = 'Y' AND a.id <> :id
-            ORDER BY distanceKm
-            """, nativeQuery = true)
-    List<AccHasDistanceProjection> findNearestWithDistanceRefactor(@Param("mapx") BigDecimal mapx,
-                                                                   @Param("mapy") BigDecimal mapy,
-                                                                   @Param("id") Long id,
-                                                                   Pageable pageable);
+                   )
+               ) AS distanceKm
+        FROM tb_acc a
+        WHERE a.status = 'Y'
+        ORDER BY distanceKm
+        """,
+            countQuery = """
+        SELECT COUNT(*)
+        FROM tb_acc a
+        WHERE a.status = 'Y'
+        """,
+            nativeQuery = true
+    )
+    Page<AccHasDistanceProjection> findNearestWithDistanceAndStatus(
+            @Param("mapx") BigDecimal mapx,
+            @Param("mapy") BigDecimal mapy,
+            Pageable pageable
+    );
+
+    @Query(
+            value = """
+                    SELECT a.id,
+               a.title,
+               a.address,
+               a.rec_count AS recCount,
+               a.first_image AS firstImage,
+               (
+                   6371 * acos(
+                       cos(radians(:mapy)) * cos(radians(a.mapy)) *
+                       cos(radians(a.mapx) - radians(:mapx)) +
+                       sin(radians(:mapy)) * sin(radians(a.mapy))
+                   )
+               ) AS distanceKm
+                    FROM tb_acc a
+                    ORDER BY distanceKm
+        """,
+            countQuery = """
+
+                    SELECT COUNT(*)
+        FROM tb_acc a
+        """,
+            nativeQuery = true
+    )
+    Page<AccHasDistanceProjection> findNearestWithDistanceAdmin(
+            @Param("mapx") BigDecimal mapx,
+            @Param("mapy") BigDecimal mapy,
+            Pageable pageable
+    );
 }
