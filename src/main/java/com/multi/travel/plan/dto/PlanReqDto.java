@@ -1,5 +1,6 @@
 package com.multi.travel.plan.dto;
 
+import com.multi.travel.course.dto.CourseReqDto;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -23,7 +24,8 @@ public class PlanReqDto {
     private String title;         // 여행 제목
     private int numberOfPeople;   // 인원 수
     private LocalDate startDate;  // 여행 시작일
-    private LocalDate endDate;    // 여행 종료일
+    private LocalDate endDate; // 여행 종료일
+    private CourseReqDto course;
 
 }
 
