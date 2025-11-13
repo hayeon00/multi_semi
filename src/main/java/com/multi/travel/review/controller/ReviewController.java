@@ -11,12 +11,13 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
-@RestController
+@Controller
 @RequiredArgsConstructor
 @Slf4j
 @RequestMapping("/reviews")
@@ -26,17 +27,18 @@ public class ReviewController {
 
     //리뷰등록
     @PostMapping
-    public ResponseEntity<ReviewDetailDto> createReview(
+    public String createReview(
             @ModelAttribute ReviewReqDto dto,
-            @RequestParam(value = "images",required = false) List<MultipartFile> images,
+            @RequestParam(value = "images", required = false) List<MultipartFile> images,
             @AuthenticationPrincipal CustomUser user
     ) {
         log.debug("🔐 인증된 사용자 userId: {}", user.getUserId());
-        System.out.println("🔐 인증된 사용자 userId: " + user.getUserId());
-
         ReviewDetailDto result = reviewService.createReview(dto, images, user.getUserId());
-        return ResponseEntity.ok(result);
+
+        // 등록 후 → 해당 코스 리뷰 목록 페이지로 리다이렉트
+        return "redirect:/review/course/" + result.getTargetId();
     }
+
 
     //리뷰 수정
     @PutMapping("/{reviewId}")
@@ -87,6 +89,10 @@ public class ReviewController {
         Page<ReviewDetailDto> reviews = reviewService.getReviewsByTarget(targetType, targetId, pageable);
         return ResponseEntity.ok(reviews);
     }
+
+
+
+
 
 
 }

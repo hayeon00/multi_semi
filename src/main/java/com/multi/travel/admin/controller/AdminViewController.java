@@ -27,7 +27,7 @@
 //    @PreAuthorize("hasRole('ADMIN')")
 //    @GetMapping("/members")
 //    public String memberListPage() {
-//        return "admin/member-list";  // → templates/admin/member-list.html
+//        return "admin/member-list";  // → templates/admin/member-courseReviewList.html
 //    }
 //
 //    /** ✅ 관리자 관광지 목록 페이지 */

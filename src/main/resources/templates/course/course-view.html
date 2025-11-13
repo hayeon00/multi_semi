@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
 <head>
   <meta charset="UTF-8">
   <title>코스 상세보기</title>
@@ -20,25 +20,11 @@
 </header>
 
 <main>
-  <div class="course-container">
-    <div class="map-section">
-      <div id="map" style="width: 600px; height: 450px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);"></div>
+    <div class="content-wrapper" style="width: 80%; margin: 40px auto; background: #fff; padding: 30px; border-radius: 15px; box-shadow: 0 3px 10px rgba(0,0,0,0.1);">
+        <h2 style="font-size: 24px; color: #333; margin-bottom: 20px;">내가 쓴 리뷰</h2>
+        <div id="myReviewList"></div>
+        <div class="pagination" id="pagination" style="margin-top: 30px; text-align: center;"></div>
     </div>
-
-    <div class="days-section">
-      <div id="dayTabs"></div>
-      <div id="dayContent"></div>
-    </div>
-  </div>
-
-  <div class="like-section">
-    <button id="recBtn" style="border:none; background:none; cursor:pointer; font-size:18px;">
-      ❤️
-    </button>
-    <span id="recCount">0</span>
-  </div>
-
-  <div class="button-section" id="actionButtons"></div>
 </main>
 
 <script th:inline="javascript">
@@ -140,7 +126,6 @@
     } else {
       btnArea.append(`<button onclick="addPlan(${courseId})">계획 추가하기</button>`);
     }
-  }
 
   /** 추천 토글 */
   $('#recBtn').click(function() {
@@ -189,80 +174,5 @@
     alert(`${id}번 코스를 계획에 추가합니다.`);
   }
 </script>
-
-<style>
-  body {
-    font-family: 'Noto Sans KR', sans-serif;
-    background-color: #f8f9fa;
-    margin: 0;
-    padding: 0;
-  }
-
-  header {
-    background: #ddd;
-    padding: 15px 40px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .course-container {
-    display: flex;
-    justify-content: center;
-    gap: 40px;
-    margin: 40px auto;
-    width: 80%;
-    background: white;
-    border-radius: 15px;
-    padding: 30px;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-  }
-
-  .map-section { flex: 2; }
-  .days-section { flex: 1; }
-
-  .like-section {
-    text-align: center;
-    margin-top: 20px;
-    font-size: 20px;
-  }
-
-  .button-section {
-    text-align: center;
-    margin-top: 20px;
-  }
-
-  button {
-    background: #007bff;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 6px;
-    margin: 0 5px;
-    cursor: pointer;
-  }
-
-  button:hover {
-    background: #0056b3;
-  }
-
-  #dayTabs button {
-    background: #eee;
-    border: none;
-    margin-right: 5px;
-    border-radius: 6px;
-    padding: 5px 10px;
-    cursor: pointer;
-  }
-
-  #dayContent {
-    margin-top: 10px;
-    background: #f9f9f9;
-    border-radius: 10px;
-    padding: 10px;
-    height: 300px;
-    overflow-y: auto;
-  }
-</style>
 </body>
-</html>
+</h
