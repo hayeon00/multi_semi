@@ -3,146 +3,179 @@
 <head>
     <meta charset="UTF-8">
     <title>회원정보 수정 | TRAVEL PLANING</title>
-    <link th:href="@{/css/common.css}" rel="stylesheet">
-    <link th:href="@{/css/member-edit.css}" rel="stylesheet">
-    <script src="/js/common.js"></script>
+    <link rel="stylesheet" th:href="@{/css/member-edit.css}">
 </head>
 
 <body>
 <header>
-    <div class="logo">
-        <img th:src="@{/images/logo.png}" alt="Logo">
-        <span class="title">TRAVEL PLANING</span>
-    </div>
+    <div class="header-container">
+        <div class="header-left">
+            <img th:src="@{/images/logo.png}" alt="Logo" class="logo">
+            <span class="title">TRAVEL PLANING</span>
+        </div>
 
-    <div id="header-user-info">
-        <!-- JS로 로그인 사용자명 채움 -->
-        <span id="welcome-text">로그인 정보를 불러오는 중...</span>
-        &nbsp;&nbsp;
-        <nav>
-            <a th:href="@{/}">Home</a> |
-            <a th:href="@{/member/view/mypage}">마이페이지</a> |
-            <a th:href="@{/logout}">로그아웃</a>
-        </nav>
+        <div class="header-right">
+            <span id="welcome-text">{사용자} 님 환영합니다.</span>
+            <nav class="nav-links">
+                <a th:href="@{/}">Home</a>
+                <a th:href="@{/member/view/mypage}">마이페이지</a>
+                <a th:href="@{/logout}">로그아웃</a>
+            </nav>
+        </div>
     </div>
 </header>
 
 <main>
-    <form id="member-form" class="member-form" enctype="multipart/form-data">
+    <h2>회원정보 수정</h2>
 
-        <div class="left-section">
-            <img src="/images/default-profile.png"
-                 alt="프로필 사진"
-                 class="profile-img"
-                 id="profile-preview">
-
-            <label class="photo-btn">
-                프로필사진 수정
-                <input type="file" name="imageFile" id="profileImage" accept="image/*" hidden>
-            </label>
+    <div class="edit-container">
+        <!-- 왼쪽: 프로필 이미지 -->
+        <div class="profile-section">
+            <img id="profileImg" src="/images/default-profile.png" alt="프로필 이미지" class="profile-img">
+            <label for="imageFile" class="upload-btn">사진 수정 📷</label>
+            <input type="file" id="imageFile" name="imageFile" accept="image/*" hidden onchange="previewImage(event)">
         </div>
 
-        <div class="right-section">
-            <div class="form-group">
-                <label for="loginId">아이디 (로그인 ID)</label>
-                <input type="text" name="loginId" id="loginId" readonly>
-            </div>
+        <!-- 오른쪽: 정보 입력 폼 -->
+        <div class="edit-form">
+            <label for="username">이름</label>
+            <input type="text" id="username" placeholder="기존 이름" />
 
-            <div class="form-group">
-                <label for="username">이름</label>
-                <input type="text" name="username" id="username" placeholder="이름을 입력하세요">
-            </div>
+            <label for="tel">전화번호</label>
+            <input type="text" id="tel" placeholder="기존 전화번호" />
 
-            <div class="form-group">
-                <label for="email">이메일</label>
-                <input type="email" name="email" id="email" readonly>
-            </div>
-
-            <div class="form-group">
-                <label for="tel">전화번호</label>
-                <input type="text" name="tel" id="tel" placeholder="전화번호를 입력하세요">
-            </div>
-
-            <div class="form-group">
-                <label for="pw">비밀번호 변경</label>
-                <input type="password" name="pw" id="pw" placeholder="새 비밀번호 (선택)">
-            </div>
+            <label for="email">이메일</label>
+            <input type="email" id="email" placeholder="기존 이메일" />
 
             <div class="btn-group">
-                <button type="submit" class="btn submit">수정완료</button>
-                <button type="button" class="btn cancel" onclick="location.href='/member/view/mypage'">뒤로가기</button>
+                <button type="button" class="btn btn-save" onclick="updateMember()">수정완료</button>
+                <a href="/member/view/mypage" class="btn btn-cancel">뒤로가기</a>
             </div>
         </div>
-    </form>
+    </div>
 </main>
 
-<footer>
-    <p>© 2025 TRAVEL PLANING</p>
-</footer>
+<footer>© 2025 TRAVEL PLANING. All rights reserved.</footer>
 
 <script>
-    // ✅ 프로필 이미지 미리보기
-    document.getElementById('profileImage').addEventListener('change', e => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = ev => document.getElementById('profile-preview').src = ev.target.result;
-        reader.readAsDataURL(file);
+    // ✅ 로그인한 사용자 정보 조회
+    document.addEventListener("DOMContentLoaded", () => {
+        console.log("페이지 로드 - 회원정보 조회 시작");
+
+        fetch("/members/info", {
+            method: "GET",
+            credentials: "include"
+        })
+            .then(res => {
+                console.log("응답 상태:", res.status);
+                if (!res.ok) throw new Error("회원정보 조회 실패");
+                return res.json();
+            })
+            .then(data => {
+                console.log("받은 데이터:", data);
+
+                const member = data.data;
+
+                document.getElementById("welcome-text").innerText = `${member.username} 님 환영합니다.`;
+                document.getElementById("username").placeholder = member.username || "기존 이름";
+                document.getElementById("email").placeholder = member.email || "기존 이메일";
+                document.getElementById("tel").placeholder = member.tel || "기존 전화번호";
+
+                // 실제 값도 설정
+                document.getElementById("username").value = member.username || "";
+                document.getElementById("email").value = member.email || "";
+                document.getElementById("tel").value = member.tel || "";
+
+                // 이미지 표시
+                if (member.image && member.image !== 'default.img') {
+                    document.getElementById("profileImg").src = `http://localhost:8090/profile/${member.image}`;
+                    console.log("프로필 이미지:", member.image);
+                }
+
+                console.log("회원정보 로드 완료");
+            })
+            .catch(err => {
+                console.error("회원 정보 조회 실패:", err);
+                alert("회원 정보를 불러오지 못했습니다 ❌");
+            });
     });
 
-    // ✅ 회원정보 로드 (API: /member/info)
-    async function loadMemberInfo() {
-        try {
-            const res = await fetchWithRefresh('/members/mypage', {
-                method: 'GET',
-                credentials: 'include'
-            });
+    // ✅ 이미지 미리보기
+    function previewImage(event) {
+        const file = event.target.files[0];
+        if (!file) return;
 
-            const data = await res.json();
+        console.log("선택된 이미지:", file.name, "크기:", file.size, "bytes");
 
-
-            const m = data.data;
-            document.getElementById('loginId').value = m.loginId;
-            document.getElementById('username').value = m.username;
-            document.getElementById('email').value = m.email;
-            document.getElementById('tel').value = m.tel;
-            document.getElementById('welcome-text').textContent = `${m.username} 님 환영합니다.`;
-            if (m.imageUrl) document.getElementById('profile-preview').src = m.imageUrl;
-
-        } catch (err) {
-            console.error(err);
-            alert('회원 정보를 불러오지 못했습니다. 다시 로그인해주세요.');
-        }
+        const reader = new FileReader();
+        reader.onload = e => {
+            document.getElementById("profileImg").src = e.target.result;
+            console.log("이미지 미리보기 완료");
+        };
+        reader.readAsDataURL(file);
     }
 
-    // ✅ 수정 요청 (API: /member/update)
-    document.getElementById('member-form').addEventListener('submit', async e => {
-        e.preventDefault();
-        const formData = new FormData(e.target);
+    // ✅ 회원정보 수정 요청 (이미지 포함)
+    async function updateMember() {
+        console.log("=== 수정 시작 ===");
+
+        const username = document.getElementById("username").value;
+        const email = document.getElementById("email").value;
+        const tel = document.getElementById("tel").value;
+
+        console.log("입력된 값:", { username, email, tel });
+
+        // 빈 값 체크
+        if (!username || !email || !tel) {
+            alert("모든 필드를 입력해주세요!");
+            return;
+        }
+
+        // ✅ FormData 생성
+        const formData = new FormData();
+        formData.append("username", username);
+        formData.append("email", email);
+        formData.append("tel", tel);
+
+        // ✅ 이미지 파일 추가 (선택 사항)
+        const imageFileInput = document.getElementById("imageFile");
+        if (imageFileInput && imageFileInput.files.length > 0) {
+            const imageFile = imageFileInput.files[0];
+            formData.append("imageFile", imageFile);
+            console.log("업로드할 이미지:", imageFile.name, "크기:", imageFile.size, "bytes");
+        } else {
+            console.log("이미지 변경 없음");
+        }
+
+        console.log("전송할 FormData:");
+        for (let pair of formData.entries()) {
+            console.log(pair[0] + ':', pair[1]);
+        }
 
         try {
-            const res = await fetchWithRefresh('/members/update', {
-                method: 'PUT',
+            const res = await fetch("/members/update", {
+                method: "PUT",
                 body: formData,
-                credentials: 'include'
+                credentials: "include"
             });
 
-            if (!res.ok) {
-                const msg = await res.text();
-                throw new Error(msg);
+            console.log("응답 상태:", res.status);
+
+            if (res.ok) {
+                const result = await res.json();
+                console.log("응답 데이터:", result);
+                alert("회원정보 수정 완료 ✅");
+                location.href = "/member/view/mypage";
+            } else {
+                const error = await res.json();
+                console.error("수정 실패:", error);
+                alert(`수정 실패: ${error.message || '알 수 없는 오류'}`);
             }
-
-            alert('회원정보가 수정되었습니다!');
-            location.href = '/member/view/mypage';
-
-        } catch (err) {
-            alert('수정 실패 ❌ : ' + err.message);
+        } catch (error) {
+            console.error("요청 실패:", error);
+            alert("수정 요청 중 오류 발생 ❌");
         }
-    });
-
-    // ✅ 페이지 로드 시 실행
-    loadMemberInfo();
+    }
 </script>
-
 </body>
 </html>

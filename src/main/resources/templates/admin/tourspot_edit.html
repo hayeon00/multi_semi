@@ -9,81 +9,262 @@
 
 <body>
 <header>
-    <div style="display: flex; align-items: center; gap: 20px;">
+    <div class="header-left">
         <img th:src="@{/images/logo.png}" alt="Logo">
         <div class="title">TRAVEL PLANING</div>
     </div>
-    <div>
-        <div style="text-align:right; font-size:14px; margin-bottom:5px;">
-            (관리자) 님 환영합니다.
+    <div class="header-right">
+        <div class="welcome-text">
+            <span class="admin-badge">관리자</span>님 환영합니다.
         </div>
-        <div class="nav">
-            <a th:href="@{/admin/view/members}">회원관리</a>
-            <a th:href="@{/admin/view/tourspot}">관광지관리</a>
-            <a th:href="@{/admin/view/dashboard}">관리자페이지</a>
-            <a th:href="@{/logout}">로그아웃</a>
-        </div>
+        <nav class="nav">
+            <a th:href="@{/admin/view/dashboard}" class="nav-link">
+                <span class="nav-icon">🏠</span>
+                <span>대시보드</span>
+            </a>
+            <a th:href="@{/admin/view/members}" class="nav-link">
+                <span class="nav-icon">👥</span>
+                <span>회원관리</span>
+            </a>
+            <a th:href="@{/admin/view/tourspot}" class="nav-link active">
+                <span class="nav-icon">🗺️</span>
+                <span>관광지관리</span>
+            </a>
+            <a th:href="@{/logout}" class="nav-link logout">
+                <span class="nav-icon">🚪</span>
+                <span>로그아웃</span>
+            </a>
+        </nav>
     </div>
 </header>
 
-
-
 <main>
-    <h2>관광지 수정</h2>
+    <div class="page-header">
+        <div class="breadcrumb">
+            <a th:href="@{/admin/view/tourspot}">관광지 관리</a>
+            <span class="separator">›</span>
+            <span class="current">관광지 수정</span>
+        </div>
+        <h2 class="page-title">
+            <span class="title-icon">✏️</span>
+            관광지 정보 수정
+        </h2>
+        <p class="page-desc">관광지의 상세 정보를 수정할 수 있습니다</p>
+    </div>
 
     <div class="edit-container">
-        <!-- ✅ 왼쪽 입력 폼 -->
-        <div class="form-left">
+        <!-- 왼쪽 입력 폼 -->
+        <div class="form-section form-left">
             <input type="hidden" id="spotId" th:value="${spot.id}">
 
-            <label>제목</label>
-            <input type="text" id="title" th:value="${spot.title}" required>
+            <div class="form-group">
+                <label class="form-label required">
+                    <span class="label-icon">📝</span>
+                    제목
+                </label>
+                <input type="text"
+                       id="title"
+                       class="form-input"
+                       th:value="${spot.title}"
+                       placeholder="관광지 제목을 입력하세요"
+                       required>
+            </div>
 
-            <label>주소</label>
-            <input type="text" id="address" th:value="${spot.address}" required>
+            <div class="form-group">
+                <label class="form-label required">
+                    <span class="label-icon">📍</span>
+                    주소
+                </label>
+                <input type="text"
+                       id="address"
+                       class="form-input"
+                       th:value="${spot.address}"
+                       placeholder="전체 주소를 입력하세요"
+                       required>
+            </div>
 
-            <label>전화번호</label>
-            <input type="text" id="tel" th:value="${spot.tel}">
+            <div class="form-group">
+                <label class="form-label">
+                    <span class="label-icon">📞</span>
+                    전화번호
+                </label>
+                <input type="text"
+                       id="tel"
+                       class="form-input"
+                       th:value="${spot.tel}"
+                       placeholder="연락 가능한 전화번호">
+            </div>
 
-            <label>설명</label>
-            <textarea id="description" th:text="${spot.description}"></textarea>
+            <div class="form-group">
+                <label class="form-label">
+                    <span class="label-icon">📄</span>
+                    설명
+                </label>
+                <textarea id="description"
+                          class="form-textarea"
+                          th:text="${spot.description}"
+                          placeholder="관광지에 대한 상세 설명을 입력하세요"></textarea>
+            </div>
 
-            <label>위도 (mapy)</label>
-            <input type="text" id="mapy" th:value="${spot.mapy}">
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">
+                        <span class="label-icon">🌍</span>
+                        위도 (Latitude)
+                    </label>
+                    <input type="text"
+                           id="mapy"
+                           class="form-input"
+                           th:value="${spot.mapy}"
+                           placeholder="예: 37.5665">
+                </div>
 
-            <label>경도 (mapx)</label>
-            <input type="text" id="mapx" th:value="${spot.mapx}">
+                <div class="form-group">
+                    <label class="form-label">
+                        <span class="label-icon">🌏</span>
+                        경도 (Longitude)
+                    </label>
+                    <input type="text"
+                           id="mapx"
+                           class="form-input"
+                           th:value="${spot.mapx}"
+                           placeholder="예: 126.9780">
+                </div>
+            </div>
 
-            <label>지역 코드</label>
-            <input type="number" id="areacode" th:value="${spot.areacode}">
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">
+                        <span class="label-icon">🏷️</span>
+                        지역 코드
+                    </label>
+                    <input type="number"
+                           id="areacode"
+                           class="form-input"
+                           th:value="${spot.areacode}"
+                           placeholder="지역 코드">
+                </div>
 
-            <label>시군구 코드</label>
-            <input type="number" id="sigungucode" th:value="${spot.sigungucode}">
+                <div class="form-group">
+                    <label class="form-label">
+                        <span class="label-icon">🏷️</span>
+                        시군구 코드
+                    </label>
+                    <input type="number"
+                           id="sigungucode"
+                           class="form-input"
+                           th:value="${spot.sigungucode}"
+                           placeholder="시군구 코드">
+                </div>
+            </div>
 
-            <label>행정동 코드</label>
-            <input type="text" id="lDongRegnCd" th:value="${spot.lDongRegnCd}">
+            <div class="form-group">
+                <label class="form-label">
+                    <span class="label-icon">🔢</span>
+                    행정동 코드
+                </label>
+                <input type="text"
+                       id="lDongRegnCd"
+                       class="form-input"
+                       th:value="${spot.lDongRegnCd}"
+                       placeholder="행정동 코드">
+            </div>
         </div>
 
-        <!-- ✅ 오른쪽 이미지 영역 -->
-        <div class="form-right">
-            <img id="previewImg" th:src="${spot.firstImage}" alt="관광지 이미지">
-            <br>
-            <input type="file" id="file" accept="image/*" onchange="previewImage(event)">
+        <!-- 오른쪽 이미지 영역 -->
+        <div class="form-section form-right">
+            <div class="image-section">
+                <label class="form-label">
+                    <span class="label-icon">🖼️</span>
+                    대표 이미지
+                </label>
+
+                <div class="image-preview-container">
+                    <img id="previewImg"
+                         th:src="${spot.firstImage}"
+                         alt="관광지 이미지"
+                         class="preview-image">
+                    <div class="image-overlay">
+                        <span class="overlay-text">클릭하여 이미지 변경</span>
+                    </div>
+                </div>
+
+                <div class="file-input-wrapper">
+                    <input type="file"
+                           id="file"
+                           class="file-input"
+                           accept="image/*"
+                           onchange="previewImage(event)">
+                    <label for="file" class="file-label">
+                        <span class="file-icon">📁</span>
+                        <span class="file-text">이미지 선택</span>
+                    </label>
+                </div>
+
+                <div class="image-info">
+                    <p class="info-text">
+                        <span class="info-icon">ℹ️</span>
+                        권장 크기: 800x600px 이상
+                    </p>
+                    <p class="info-text">
+                        <span class="info-icon">ℹ️</span>
+                        지원 형식: JPG, PNG, WEBP
+                    </p>
+                </div>
+            </div>
+
+            <!-- 통계 정보 카드 -->
+            <div class="stats-info-card">
+                <h3 class="stats-title">관광지 정보</h3>
+                <div class="stats-item">
+                    <span class="stats-label">관광지 ID</span>
+                    <span class="stats-value" th:text="${spot.id}">-</span>
+                </div>
+                <div class="stats-item">
+                    <span class="stats-label">추천 수</span>
+                    <span class="stats-value recommend" th:text="${spot.recCount}">0</span>
+                </div>
+                <div class="stats-item">
+                    <span class="stats-label">상태</span>
+                    <span class="stats-value"
+                          th:classappend="${spot.status == 'Y' ? 'status-active' : 'status-inactive'}"
+                          th:text="${spot.status == 'Y' ? '✓ 활성' : '✗ 비활성'}">
+                    </span>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div class="btn-box">
-        <button type="button" class="btn-save" onclick="updateSpot()">💾 저장</button>
-        <button type="button" class="btn-cancel" onclick="history.back()">취소</button>
+    <!-- 하단 버튼 -->
+    <div class="btn-container">
+        <button type="button" class="btn btn-save" onclick="updateSpot()">
+            <span class="btn-icon">💾</span>
+            <span>저장하기</span>
+        </button>
+        <button type="button" class="btn btn-cancel" onclick="confirmCancel()">
+            <span class="btn-icon">↩️</span>
+            <span>취소</span>
+        </button>
     </div>
 </main>
 
-<footer>© 2025 Travel Planing. All rights reserved.</footer>
+<footer>
+    <p>&copy; 2025 Travel Planing. All rights reserved.</p>
+</footer>
 
 <script>
+    // 이미지 미리보기
     function previewImage(event) {
         const file = event.target.files[0];
         if (!file) return;
+
+        // 파일 크기 체크 (5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            alert('⚠️ 파일 크기가 5MB를 초과합니다.');
+            event.target.value = '';
+            return;
+        }
+
         const reader = new FileReader();
         reader.onload = e => {
             document.getElementById("previewImg").src = e.target.result;
@@ -91,24 +272,56 @@
         reader.readAsDataURL(file);
     }
 
+    // 취소 확인
+    function confirmCancel() {
+        if (confirm('수정을 취소하시겠습니까?\n변경사항이 저장되지 않습니다.')) {
+            history.back();
+        }
+    }
+
+    // 관광지 정보 업데이트
     function updateSpot() {
+        // 필수 필드 검증
+        const title = document.getElementById("title").value.trim();
+        const address = document.getElementById("address").value.trim();
+
+        if (!title) {
+            alert('⚠️ 제목을 입력해주세요.');
+            document.getElementById("title").focus();
+            return;
+        }
+
+        if (!address) {
+            alert('⚠️ 주소를 입력해주세요.');
+            document.getElementById("address").focus();
+            return;
+        }
+
         const id = document.getElementById("spotId").value;
         const dto = {
-            title: document.getElementById("title").value,
-            address: document.getElementById("address").value,
-            tel: document.getElementById("tel").value,
-            description: document.getElementById("description").value,
-            mapx: parseFloat(document.getElementById("mapx").value),
-            mapy: parseFloat(document.getElementById("mapy").value),
-            areacode: parseInt(document.getElementById("areacode").value),
-            sigungucode: parseInt(document.getElementById("sigungucode").value),
-            lDongRegnCd: document.getElementById("lDongRegnCd").value
+            title: title,
+            address: address,
+            tel: document.getElementById("tel").value.trim(),
+            description: document.getElementById("description").value.trim(),
+            mapx: parseFloat(document.getElementById("mapx").value) || null,
+            mapy: parseFloat(document.getElementById("mapy").value) || null,
+            areacode: parseInt(document.getElementById("areacode").value) || null,
+            sigungucode: parseInt(document.getElementById("sigungucode").value) || null,
+            lDongRegnCd: document.getElementById("lDongRegnCd").value.trim()
         };
 
         const file = document.getElementById("file").files[0];
         const formData = new FormData();
         formData.append("dto", new Blob([JSON.stringify(dto)], { type: "application/json" }));
-        if (file) formData.append("file", file);
+        if (file) {
+            formData.append("file", file);
+        }
+
+        // 로딩 표시
+        const saveBtn = document.querySelector('.btn-save');
+        const originalText = saveBtn.innerHTML;
+        saveBtn.innerHTML = '<span>저장 중...</span>';
+        saveBtn.disabled = true;
 
         fetch(`/admin/tourspot/${id}`, {
             method: "PUT",
@@ -116,14 +329,36 @@
         })
             .then(res => {
                 if (res.ok) {
-                    alert("수정 완료 ✅");
+                    alert("✅ 수정이 완료되었습니다!");
                     location.href = "/admin/view/tourspot";
                 } else {
-                    alert("수정 실패 ❌");
+                    alert("❌ 수정에 실패했습니다. 다시 시도해주세요.");
+                    saveBtn.innerHTML = originalText;
+                    saveBtn.disabled = false;
                 }
             })
-            .catch(() => alert("서버 오류 ❌"));
+            .catch(err => {
+                console.error("서버 오류:", err);
+                alert("❌ 서버 오류가 발생했습니다.");
+                saveBtn.innerHTML = originalText;
+                saveBtn.disabled = false;
+            });
     }
+
+    // 페이지 나갈 때 경고
+    let formChanged = false;
+    document.querySelectorAll('input, textarea').forEach(element => {
+        element.addEventListener('change', () => {
+            formChanged = true;
+        });
+    });
+
+    window.addEventListener('beforeunload', (e) => {
+        if (formChanged) {
+            e.preventDefault();
+            e.returnValue = '';
+        }
+    });
 </script>
 </body>
 </html>

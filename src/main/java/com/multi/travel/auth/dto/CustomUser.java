@@ -32,6 +32,12 @@ public class CustomUser implements UserDetails {
 
     @Override
     public String getUsername() {
+        // Spring Security에서 사용하는 username은 우리 시스템의 userId와 동일하게 처리
+        return getUserId();
+    }
+
+
+    public String getUserId() {
         return userId;
     } // 아이디르 반환하여 Spring Security에서 로그인 ID로 사용
 
