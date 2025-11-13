@@ -36,7 +36,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.HashMap;
@@ -77,7 +76,6 @@ public class AccService {
     }
 
 
-
     public AccDTO getAccDetail(@Valid long id, CustomUser customUser) {
         Acc acc;
         if (RoleUtils.hasRole(customUser, RoleUtils.ADMIN)) {
@@ -87,7 +85,7 @@ public class AccService {
             acc = accRepository.findByIdAndStatus(id, "Y")
                     .orElseThrow(() -> new AccommodationNotFound(id));
         }
-        if(acc.getDescription() == null || acc.getHomepage() == null){
+        if (acc.getDescription() == null || acc.getHomepage() == null) {
             apiService.insertDetail(acc.getContentId(), acc.getCategory().getCatCode());
         }
 
@@ -214,12 +212,6 @@ public class AccService {
         }
         return AccEntityToDTO(acc);
     }
-
-
-
-
-
-
 
 
     private static List<ResDistanceAccDTO> convertToResDistanceAccDTO(List<AccHasDistanceProjection> lists) {

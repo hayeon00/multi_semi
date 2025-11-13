@@ -34,7 +34,7 @@ public class AccController {
             @RequestParam(defaultValue = "areacode") String sort,
             @RequestParam(defaultValue = "10") int size,
             @AuthenticationPrincipal CustomUser customUser
-            ) {
+    ) {
         return ResponseEntity.ok(new ResponseDto(HttpStatus.OK, "숙소 목록 조회 성공", accService.getAccList(page, size, sort, customUser)));
     }
 
