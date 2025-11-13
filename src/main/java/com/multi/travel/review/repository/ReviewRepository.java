@@ -14,6 +14,7 @@ import org.springframework.stereotype.Repository;
  * @filename : ReviewRepository
  * @since : 2025. 11. 9. 일요일
  */
+
 @Repository
 public interface ReviewRepository extends JpaRepository<Review, Long> {
 

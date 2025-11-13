@@ -50,9 +50,19 @@ public class AccController {
     public ResponseEntity<ResponseDto> getAccSortByDistance(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam @Valid long id
+            @RequestParam @Valid long id,
+            @AuthenticationPrincipal CustomUser customUser
     ) {
-        return ResponseEntity.ok(new ResponseDto(HttpStatus.OK, "가까운 거리 순 정렬 성공", accService.getAccSortByDistance(page, size, id)));
+        return ResponseEntity.ok(new ResponseDto(HttpStatus.OK, "가까운 거리 순 정렬 성공", accService.getAccSortByDistance(page, size, id, customUser)));
     }
 
+    /** 지도용 숙소 목록 */
+    @GetMapping("/simple")
+    public ResponseEntity<ResponseDto> getAccSimpleList(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(
+                new ResponseDto(HttpStatus.OK, "숙소 간단 목록 조회 성공", accService.getAccSimpleList(page, size))
+        );
+    }
 }
