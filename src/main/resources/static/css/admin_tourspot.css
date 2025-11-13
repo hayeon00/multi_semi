@@ -1,0 +1,205 @@
+/* ======================
+   HEADER
+====================== */
+/* ✅ 관광지 관리 페이지와 동일하게 header 스타일 통일 */
+header {
+    background-color: #ddd;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 40px;
+    border-bottom: 2px solid #ccc;
+}
+
+header img {
+    width: 80px;
+    height: 80px;
+}
+
+header .title {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+header .nav {
+    display: flex;
+    gap: 20px;
+    font-size: 15px;
+}
+
+header .nav a {
+    text-decoration: none;
+    color: black;
+}
+
+/* 관리자 메뉴 영역 */
+.admin-nav {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    line-height: 1.4;
+}
+
+.admin-nav .welcome-text {
+    font-size: 14px;
+    margin-bottom: 4px;
+    color: #333;
+}
+
+.admin-nav .menu-links a {
+    margin-left: 8px;
+    text-decoration: none;
+    color: #222;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.admin-nav .menu-links a:hover {
+    color: #000;
+    text-decoration: underline;
+}
+
+
+main {
+    width: 90%;
+    margin: 40px auto;
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 8px #ccc;
+}
+
+h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+/* ✅ 버튼 스타일 */
+.btn-action {
+    background-color: #f2f2f2;
+    color: #333;
+    border: 1px solid #bbb;
+    border-radius: 6px;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 600;
+}
+
+.btn-action:hover {
+    background-color: #d9d9d9;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: center;
+}
+
+th, td {
+    border: 1px solid #ccc;
+    padding: 10px;
+}
+
+th {
+    background-color: #f8f8f8;
+}
+
+.add-btn {
+    float: right;
+    background-color: #555;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    cursor: pointer;
+}
+
+.add-btn:hover {
+    background-color: #333;
+}
+
+/* ✅ 검색창 */
+.search-box {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.search-box input {
+    width: 260px;
+    padding: 8px 12px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background-color: #fafafa;
+}
+
+.btn-search, .btn-reset {
+    padding: 8px 14px;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 6px;
+    border: 1px solid #bbb;
+    background-color: #f2f2f2;
+    color: #333;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-search:hover, .btn-reset:hover {
+    background-color: #d9d9d9;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    align-items: center;
+    gap: 5px;
+}
+
+.pagination a {
+    padding: 5px 10px;
+    border-radius: 5px;
+    color: black;
+    text-decoration: none;
+}
+
+.pagination .active {
+    background-color: black;
+    color: white;
+}
+
+footer {
+    text-align: center;
+    color: gray;
+    margin-top: 20px;
+    font-size: 13px;
+}
+
+/* ✅ 클릭 가능한 행 효과 */
+.clickable-row {
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+/* 마우스 올렸을 때 */
+.clickable-row:hover {
+    background-color: #f3f7ff; /* 연한 파란색 느낌 */
+}
+
+/* 클릭할 때 (눌림 효과) */
+.clickable-row:active {
+    transform: scale(0.99);
+    background-color: #e7efff;
+}
+
+.btn-action {
+    position: relative;
+    z-index: 2; /* hover 색상 위로 뜨게 */
+}
+

@@ -3,57 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <title>관리자 | 관광지 목록</title>
+
+    <!-- CSS -->
     <link rel="stylesheet" th:href="@{/css/admin.css}">
-    <style>
-        body { background-color: #fffbe9; font-family: 'Noto Sans KR', sans-serif; }
-        header {
-            background-color: #ddd;
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 20px 40px; border-bottom: 2px solid #ccc;
-        }
-        header img { width: 80px; height: 80px; }
-        header .title { font-size: 24px; font-weight: bold; }
-        header .nav {
-            display: flex; gap: 20px; font-size: 15px;
-        }
-        header .nav a { text-decoration: none; color: black; }
-        main {
-            width: 90%; margin: 40px auto; background-color: white;
-            padding: 20px; border-radius: 10px; box-shadow: 0 0 8px #ccc;
-        }
-        h2 { text-align: center; margin-bottom: 20px; }
-        table {
-            width: 100%; border-collapse: collapse; text-align: center;
-        }
-        th, td {
-            border: 1px solid #ccc; padding: 10px;
-        }
-        th { background-color: #f8f8f8; }
-        .add-btn {
-            float: right; background-color: #333; color: white; border: none;
-            padding: 8px 12px; border-radius: 6px; margin-bottom: 10px;
-        }
-        .delete-btn {
-            background-color: #1200ff; color: white;
-            border: none; padding: 5px 10px; border-radius: 4px;
-            cursor: pointer;
-        }
-        .pagination {
-            display: flex; justify-content: center; margin-top: 20px;
-            align-items: center; gap: 5px;
-        }
-        .pagination a {
-            padding: 5px 10px; border-radius: 5px; color: black; text-decoration: none;
-        }
-        .pagination .active {
-            background-color: black; color: white;
-        }
-        footer {
-            text-align: center; color: gray; margin-top: 20px;
-            font-size: 13px;
-        }
-    </style>
+    <link rel="stylesheet" th:href="@{/css/admin_tourspot.css}">
 </head>
+
 <body>
 <header>
     <div style="display: flex; align-items: center; gap: 20px;">
@@ -67,96 +22,174 @@
         <div class="nav">
             <a th:href="@{/admin/view/members}">회원관리</a>
             <a th:href="@{/admin/view/tourspot}">관광지관리</a>
-            <a th:href="@{/mypage}">마이페이지</a>
+            <a th:href="@{/mypage}">관리자페이지</a>
             <a th:href="@{/logout}">로그아웃</a>
         </div>
     </div>
 </header>
 
 <main>
+
+    <!-- ✅ 검색 영역 -->
+    <div style="margin: 20px 0; text-align: center;">
+        <input type="text" id="searchInput" placeholder="관광지 제목으로 검색..."
+               style="padding: 6px 10px; width: 250px;">
+        <button onclick="searchTourSpots()">검색</button>
+        <button onclick="location.href='/admin/view/tourspot'">전체 보기</button>
+    </div>
+
     <!-- ✅ 관광지 추가 버튼 -->
-    <button class="add-btn" th:onclick="'location.href=\'/admin/view/tourspot/add\''">관광지 추가</button>
+    <div style="text-align: right; margin: 20px;">
+        <button class="add-btn" th:onclick="'location.href=\'/admin/view/tourspot/add\''">관광지 추가</button>
+    </div>
 
-    <h2>관광지 목록</h2>
+    <h2 style="text-align: center;">관광지 목록</h2>
 
-    <table>
+    <table id="tourspotTable">
         <thead>
         <tr>
             <th>번호</th>
+            <th>대표 이미지</th>
             <th>제목</th>
             <th>주소</th>
-            <th>전화번호</th>
+            <th>추천 수</th>
             <th>상태</th>
-            <th>삭제</th>
+            <th>관리</th>
         </tr>
         </thead>
         <tbody>
-        <!-- ✅ DTO 기반으로 출력 -->
-        <tr th:each="spot, iterStat : ${tourspotList}">
+        <tr th:each="spot, iterStat : ${tourspotList}"
+            th:onclick="'location.href=\'/admin/edit/' + ${spot.id} + '\';'"
+            class="clickable-row">
             <td th:text="${iterStat.count}"></td>
+            <td><img th:src="${spot.firstImage}" alt="이미지" width="80" height="60"></td>
             <td th:text="${spot.title}">제목</td>
             <td th:text="${spot.address}">주소</td>
-            <td th:text="${spot.tel}">전화번호</td>
+            <td th:text="${spot.recCount}">추천 수</td>
             <td th:text="${spot.status}">상태</td>
             <td>
-                <button class="delete-btn"
-                        th:onclick="'deleteTourSpot(' + ${spot.id} + ')'">
-                    Delete
+                <button class="btn-action"
+                        th:if="${spot.status == 'Y'}"
+                        th:onclick="'event.stopPropagation(); deactivateTourSpot(' + ${spot.id} + ');'">
+                    🗑 비활성화
+                </button>
+                <button class="btn-action"
+                        th:if="${spot.status == 'N'}"
+                        th:onclick="'event.stopPropagation(); activateTourSpot(' + ${spot.id} + ');'">
+                    ♻ 복구
                 </button>
             </td>
         </tr>
+
         <tr th:if="${#lists.isEmpty(tourspotList)}">
-            <td colspan="6">등록된 관광지가 없습니다.</td>
+            <td colspan="7">등록된 관광지가 없습니다.</td>
         </tr>
         </tbody>
     </table>
 
+    <!-- ✅ 페이지네이션 -->
     <div class="pagination">
-        <!-- 이전 페이지 -->
         <a th:if="${currentPage > 0}"
-           th:href="@{/admin/view/tourspot(page=${currentPage - 1})}">
-            &lt; Previous
-        </a>
+           th:href="@{/admin/view/tourspot(page=${currentPage - 1})}">&lt; 이전</a>
 
-        <!-- 페이지 번호 (10개씩 표시) -->
         <a th:each="i : ${#numbers.sequence(startPage, endPage - 1)}"
            th:href="@{/admin/view/tourspot(page=${i})}"
            th:text="${i + 1}"
-           th:classappend="${i == currentPage} ? 'active' : ''">
-        </a>
+           th:classappend="${i == currentPage} ? 'active' : ''"></a>
 
-
-        <!-- 다음 페이지 -->
         <a th:if="${currentPage + 1 < totalPages}"
-           th:href="@{/admin/view/tourspot(page=${currentPage + 1})}">
-            Next &gt;
-        </a>
+           th:href="@{/admin/view/tourspot(page=${currentPage + 1})}">다음 &gt;</a>
     </div>
 
-
-    <footer>
-    </footer>
+    <footer>© 2025 Travel Planing. All rights reserved.</footer>
 </main>
 
+<!-- ✅ 스크립트 -->
 <script>
-    // ✅ 삭제 API
-    function deleteTourSpot(id) {
-        if (confirm("정말 삭제하시겠습니까?")) {
-            fetch(`/admin/tourspot/${id}`, {
-                method: 'DELETE',
-                headers: {'Content-Type': 'application/json'}
-            })
-                .then(res => {
-                    if (res.ok) {
-                        alert("삭제되었습니다.");
-                        location.reload();
-                    } else {
-                        alert("삭제 실패");
-                    }
-                })
-                .catch(() => alert("서버 오류"));
+    // ✅ 서버 yml에 지정한 이미지 기본 URL (환경에 맞게 수정)
+    const IMAGE_BASE_URL = "http://localhost:8090/reviewimgs/";
+
+    async function searchTourSpots() {
+        const keyword = document.getElementById("searchInput").value.trim();
+        if (!keyword) {
+            alert("검색어를 입력해주세요!");
+            return;
+        }
+
+        try {
+            const response = await fetch(`/admin/tourspot/search?title=${encodeURIComponent(keyword)}`);
+            const data = await response.json();
+
+            const tourList = data.data || [];
+            const tableBody = document.querySelector("#tourspotTable tbody");
+            tableBody.innerHTML = "";
+
+            if (tourList.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="7">검색 결과가 없습니다.</td></tr>`;
+                return;
+            }
+
+            tourList.forEach((spot, index) => {
+                // ✅ 이미지 경로 보정 로직
+                let imageSrc = "";
+                if (!spot.firstImage) {
+                    imageSrc = "/images/no-image.png";
+                } else if (spot.firstImage.startsWith("http")) {
+                    imageSrc = spot.firstImage;
+                } else {
+                    imageSrc = IMAGE_BASE_URL + spot.firstImage;
+                }
+
+                const row = document.createElement("tr");
+                row.classList.add("clickable-row");
+                row.onclick = () => location.href = `/admin/edit/${spot.id}`;
+
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td><img src="${imageSrc}" alt="이미지" width="80" height="60"></td>
+                    <td>${spot.title}</td>
+                    <td>${spot.address}</td>
+                    <td>${spot.recCount || 0}</td>
+                    <td>${spot.status}</td>
+                    <td>
+                        ${spot.status === 'Y'
+                    ? `<button class="btn-action" onclick="event.stopPropagation(); deactivateTourSpot(${spot.id});">🗑 비활성화</button>`
+                    : `<button class="btn-action" onclick="event.stopPropagation(); activateTourSpot(${spot.id});">♻ 복구</button>`}
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+        } catch (err) {
+            console.error("서버 통신 오류:", err);
+            alert("검색 중 오류가 발생했습니다.");
+        }
+    }
+
+    // ✅ 관광지 비활성화
+    async function deactivateTourSpot(id) {
+        if (!confirm("이 관광지를 비활성화하시겠습니까?")) return;
+        const res = await fetch(`/admin/tourspot/${id}/deactivate`, { method: "PUT" });
+        if (res.ok) {
+            alert("비활성화 완료!");
+            location.reload();
+        } else {
+            alert("처리 중 오류가 발생했습니다.");
+        }
+    }
+
+    // ✅ 관광지 복구
+    async function activateTourSpot(id) {
+        if (!confirm("이 관광지를 복구하시겠습니까?")) return;
+        const res = await fetch(`/admin/tourspot/${id}/activate`, { method: "PUT" });
+        if (res.ok) {
+            alert("복구 완료!");
+            location.reload();
+        } else {
+            alert("처리 중 오류가 발생했습니다.");
         }
     }
 </script>
+
 </body>
 </html>

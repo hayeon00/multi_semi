@@ -1,6 +1,7 @@
 package com.multi.travel.admin.controller;
 
 import com.multi.travel.admin.controller.dto.TourSpotReqDto;
+import com.multi.travel.admin.controller.dto.TourSpotResDto;
 import com.multi.travel.admin.service.AdminService;
 import com.multi.travel.common.ResponseDto;
 import com.multi.travel.member.service.MemberService;
@@ -15,6 +16,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * 관리자 페이지 통합 컨트롤러
@@ -43,6 +45,8 @@ public class AdminController {
     public String memberListPage() {
         return "admin/member-list"; // → templates/admin/member-courseReviewList.html
     }
+
+
 
     /** 관리자 관광지 목록 페이지 */
     @GetMapping("/view/tourspot")
@@ -75,6 +79,21 @@ public class AdminController {
 
         return "admin/tourspot_list"; // → templates/admin/tourspot_list.html
     }
+
+    @ResponseBody
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/tourspot/search")
+    public ResponseEntity<ResponseDto> searchTourSpotByTitle(@RequestParam String title) {
+        return ResponseEntity.ok(
+                new ResponseDto(
+                        HttpStatus.OK,
+                        "검색 성공",
+                        adminService.searchTourSpotByTitle(title)   // ← 방금 만든 DTO 리스트 반환
+                )
+        );
+    }
+
+
 
     /** 관리자 관광지 추가 페이지 */
     @GetMapping("/view/tourspot/add")
@@ -123,6 +142,23 @@ public class AdminController {
         return ResponseEntity.ok().build();
     }
 
+    @PutMapping("/tourspot/{id}/deactivate")
+    @ResponseBody
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ResponseDto> deactivateTourSpot(@PathVariable Long id) {
+        adminService.updateSpotStatus(id, "N");
+        return ResponseEntity.ok(new ResponseDto(HttpStatus.OK, "관광지 비활성화 성공", null));
+    }
+
+    @PutMapping("/tourspot/{id}/activate")
+    @ResponseBody
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ResponseDto> activateTourSpot(@PathVariable Long id) {
+        adminService.updateSpotStatus(id, "Y");
+        return ResponseEntity.ok(new ResponseDto(HttpStatus.OK, "관광지 복구 성공", null));
+    }
+
+
     /** 관광지 추가 */
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/tourspot")
@@ -144,19 +180,28 @@ public class AdminController {
         );
     }
 
-    /** 관광지 수정 */
-    @ResponseBody
+    @PutMapping(value = "/tourspot/{id}", consumes = {"multipart/form-data"})
     @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping("/tourspot/{id}")
+    @ResponseBody
     public ResponseEntity<ResponseDto> updateTourSpot(
             @PathVariable Long id,
-            @RequestBody TourSpotReqDto dto
+            @RequestPart("dto") TourSpotReqDto dto,
+            @RequestPart(value = "file", required = false) MultipartFile file
     ) {
-        adminService.updateSpot(id, dto);
-        return ResponseEntity.ok(
-                new ResponseDto(HttpStatus.OK, "관광지 수정 완료", null)
-        );
+        adminService.updateSpot(id, dto, file);
+        return ResponseEntity.ok(new ResponseDto(HttpStatus.OK, "관광지 수정 완료", null));
     }
+
+
+
+    @GetMapping("/edit/{id}")
+    public String editTourSpotView(@PathVariable Long id, Model model) {
+        TourSpotResDto spot = adminService.getSpotDetail(id);
+        model.addAttribute("spot", spot);
+        return "admin/tourspot_edit"; // ✅ templates/admin/tourspot_edit.html
+    }
+
+
 
     /** 관광지 전체 조회 (JSON API) */
     @ResponseBody

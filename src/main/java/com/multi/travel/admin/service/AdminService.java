@@ -1,7 +1,8 @@
 package com.multi.travel.admin.service;
 
 import com.multi.travel.admin.controller.dto.TourSpotReqDto;
-import com.multi.travel.admin.repository.TourSpotRepository;
+import com.multi.travel.admin.controller.dto.TourSpotResDto;
+import com.multi.travel.admin.controller.dto.TourSpotSimpleResDto;
 import com.multi.travel.common.exception.TourSpotNotFoundException;
 import com.multi.travel.common.util.FileUploadUtils;
 import com.multi.travel.tourspot.dto.TourSpotDTO;
@@ -41,36 +42,24 @@ public class AdminService {
 
     @Value("${image.tourspot.image-url}")
     private String IMAGE_URL;
-    private final TourSpotRepository tourSpotRepository;
 
     private final TspRepository tspRepository;
 
     @Transactional
     public void insertTourSpot(TourSpotReqDto dto) {
-
         MultipartFile imageFile = dto.getFirstImageFile();
         String savedFileName = null;
 
         try {
-            // ✅ 이미지 파일이 있을 경우
             if (imageFile != null && !imageFile.isEmpty()) {
-
-                // 확장자 추출 (.png, .jpg 등)
                 String extension = imageFile.getOriginalFilename()
                         .substring(imageFile.getOriginalFilename().lastIndexOf("."));
-
-                // 관광지 제목 기반 + UUID 조합 파일명 생성
                 String uniqueFileName = dto.getTitle().replaceAll("\\s+", "_")
                         + "_" + UUID.randomUUID().toString().replace("-", "") + extension;
-
-                // ✅ 파일 저장 (FileUploadUtils 활용)
                 savedFileName = FileUploadUtils.saveFile(IMAGE_DIR, uniqueFileName, imageFile);
-
-                log.info("[insertTourSpot] 이미지 업로드 성공: {}", savedFileName);
             }
 
-            // ✅ 관광지 엔티티 생성
-            TourSpot tourSpot = TourSpot.builder()
+            TourSpot spot = TourSpot.builder()
                     .title(dto.getTitle())
                     .description(dto.getDescription())
                     .address(dto.getAddress())
@@ -80,54 +69,121 @@ public class AdminService {
                     .areacode(dto.getAreacode())
                     .sigungucode(dto.getSigungucode())
                     .lDongRegnCd(dto.getLDongRegnCd())
-                    .firstImage(savedFileName)     // ✅ 업로드된 이미지명 저장
+                    .firstImage(savedFileName != null ? IMAGE_URL + savedFileName : null)
                     .status("Y")
                     .recCount(0)
                     .build();
 
-            tourSpotRepository.save(tourSpot);
-            log.info("[insertTourSpot] 관광지 등록 완료: {}", tourSpot.getTitle());
+            tspRepository.save(spot);
 
         } catch (IOException e) {
-            if (savedFileName != null) {
+            if (savedFileName != null)
                 FileUploadUtils.deleteFile(IMAGE_DIR, savedFileName);
-            }
-            throw new RuntimeException("관광지 이미지 저장 실패", e);
+            throw new RuntimeException("이미지 저장 실패", e);
         }
+
     }
 
     public void deleteSpot(Long id) {
-        TourSpot tourSpot = tourSpotRepository.findById(id)
+        TourSpot tourSpot = tspRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 관광지입니다."));
 
         tourSpot.setStatus("N");
-        tourSpotRepository.save(tourSpot);
+        tspRepository.save(tourSpot);
 
     }
 
+    /**
+     * ✅ 관광지 상태 변경 (비활성화/복구)
+     * @param id 관광지 ID
+     * @param status 변경할 상태 ("Y" or "N")
+     */
     @Transactional
-    public void updateSpot(Long id, TourSpotReqDto dto) {
-
-        // 1️⃣ 기존 관광지 조회
-        TourSpot tourSpot = tourSpotRepository.findById(id)
+    public void updateSpotStatus(Long id, String status) {
+        TourSpot tourSpot = tspRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 관광지입니다."));
 
-        // 2️⃣ 변경할 필드 갱신
-        tourSpot.setTitle(dto.getTitle());
-        tourSpot.setDescription(dto.getDescription());
-        tourSpot.setAddress(dto.getAddress());
-        tourSpot.setTel(dto.getTel());
-        tourSpot.setMapx(dto.getMapx());
-        tourSpot.setMapy(dto.getMapy());
-        tourSpot.setAreacode(dto.getAreacode());
-        tourSpot.setSigungucode(dto.getSigungucode());
-        tourSpot.setLDongRegnCd(dto.getLDongRegnCd());
-        tourSpot.setStatus("Y"); // 수정 시 다시 활성화 상태로
+        tourSpot.setStatus(status);  // 상태 변경
+        tspRepository.save(tourSpot);
 
-
-        // 3️⃣ save 호출 → 변경 감지(Dirty Checking)로 update SQL 자동 반영
-        tourSpotRepository.save(tourSpot);
+        log.info("[AdminService] 관광지 상태 변경 완료 → id: {}, status: {}", id, status);
     }
+
+    /**
+     * 관광지 수정 (이미지 교체 포함)
+     */
+    @Transactional
+    public void updateSpot(Long id, TourSpotReqDto dto, MultipartFile file) {
+
+        TourSpot tourSpot = tspRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 관광지입니다."));
+
+        String savedFileName = null;
+        try {
+            // 기존 이미지 파일명 (URL or 파일명)
+            String oldImage = tourSpot.getFirstImage();
+
+            // ✅ 기본 필드 업데이트
+            tourSpot.setTitle(dto.getTitle());
+            tourSpot.setDescription(dto.getDescription());
+            tourSpot.setAddress(dto.getAddress());
+            tourSpot.setTel(dto.getTel());
+            tourSpot.setMapx(dto.getMapx());
+            tourSpot.setMapy(dto.getMapy());
+            tourSpot.setAreacode(dto.getAreacode());
+            tourSpot.setSigungucode(dto.getSigungucode());
+            tourSpot.setLDongRegnCd(dto.getLDongRegnCd());
+            tourSpot.setStatus("Y");
+
+            // ✅ 새 이미지 업로드가 있을 경우
+            if (file != null && !file.isEmpty()) {
+
+                // 확장자 추출
+                String extension = file.getOriginalFilename()
+                        .substring(file.getOriginalFilename().lastIndexOf("."));
+
+                // 관광지명 기반 유니크 파일명 생성
+                String uniqueFileName = dto.getTitle().replaceAll("\\s+", "_")
+                        + "_" + UUID.randomUUID().toString().replace("-", "")
+                        + extension;
+
+                // ✅ 새 파일 저장
+                savedFileName = FileUploadUtils.saveFile(IMAGE_DIR, uniqueFileName, file);
+
+                // ✅ 기존 이미지 삭제 (URL → 파일명 변환)
+                if (oldImage != null && !oldImage.isEmpty()) {
+                    String oldFileName = oldImage.replace(IMAGE_URL, "");
+                    FileUploadUtils.deleteFile(IMAGE_DIR, oldFileName);
+                    log.info("[updateSpot] 기존 이미지 삭제: {}", oldFileName);
+                }
+
+                // ✅ DB에는 접근 가능한 URL 형태로 저장
+                tourSpot.setFirstImage(IMAGE_URL + savedFileName);
+                log.info("[updateSpot] 새 이미지 저장: {}", savedFileName);
+
+            } else {
+                // ✅ 이미지 변경 없음 — 기존 URL 그대로 유지
+                tourSpot.setFirstImage(oldImage);
+            }
+
+            // ✅ 변경 감지로 UPDATE 반영
+            tspRepository.save(tourSpot);
+
+        } catch (IOException e) {
+            // 실패 시 임시로 저장된 이미지 삭제
+            if (savedFileName != null) {
+                FileUploadUtils.deleteFile(IMAGE_DIR, savedFileName);
+            }
+            log.error("[updateSpot] 이미지 저장 중 오류 발생", e);
+            throw new RuntimeException("관광지 이미지 저장 실패", e);
+        }
+
+        log.info("[updateSpot] 관광지 수정 완료: {} / {}", tourSpot.getId(), tourSpot.getFirstImage());
+    }
+
+
+
+
 
 
     /** ✅ 전체 관광지 조회 (status 관계없이 모두) */
@@ -177,5 +233,53 @@ public class AdminService {
                 .build();
     }
 
+    public List<TourSpotSimpleResDto> searchTourSpotByTitle(String title) {
+        Pageable pageable = PageRequest.of(0, 50);
+        Page<TourSpot> spotPage = tspRepository.findByTitleContainingIgnoreCase(title, pageable);
+        List<TourSpot> spots = spotPage.getContent();
 
+        return spots.stream()
+                .map(spot -> TourSpotSimpleResDto.builder()
+                        .id(spot.getId())
+                        .title(spot.getTitle())
+                        .address(spot.getAddress())
+                        .tel(spot.getTel())
+                        .status(spot.getStatus())
+
+                        // ✅ 핵심: 이미지 절대 경로로 변환
+                        .firstImage(
+                                spot.getFirstImage() != null && !spot.getFirstImage().isBlank()
+                                        ? (spot.getFirstImage().startsWith("http")
+                                        ? spot.getFirstImage()
+                                        : IMAGE_URL + spot.getFirstImage())
+                                        : IMAGE_URL + "no-image.png"
+                        )
+                        .recCount(spot.getRecCount() != null ? spot.getRecCount() : 0)
+                        .build()
+                )
+                .collect(Collectors.toList());
+    }
+
+
+    @Transactional(readOnly = true)
+    public TourSpotResDto getSpotDetail(Long id) {
+        TourSpot tourSpot = tspRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 관광지입니다."));
+
+        return TourSpotResDto.builder()
+                .id(tourSpot.getId())
+                .title(tourSpot.getTitle())
+                .description(tourSpot.getDescription())
+                .address(tourSpot.getAddress())
+                .tel(tourSpot.getTel())
+                .mapx(tourSpot.getMapx())
+                .mapy(tourSpot.getMapy())
+                .areacode(tourSpot.getAreacode())
+                .sigungucode(tourSpot.getSigungucode())
+                .lDongRegnCd(tourSpot.getLDongRegnCd())
+                .recCount(tourSpot.getRecCount())
+                .status(tourSpot.getStatus())
+                .firstImage(tourSpot.getFirstImage())
+                .build();
+    }
 }

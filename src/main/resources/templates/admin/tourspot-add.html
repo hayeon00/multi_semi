@@ -2,173 +2,126 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>관리자 관광지 추가 | Travel Planing</title>
-    <link th:href="@{/css/admin.css}" rel="stylesheet">
-    <style>
-        body {
-            background-color: #fffce6;
-            font-family: 'Pretendard', sans-serif;
-        }
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background-color: #e0e0e0;
-            padding: 10px 30px;
-        }
-        .admin-container {
-            display: flex;
-            justify-content: center;
-            margin-top: 20px;
-        }
-        form {
-            display: flex;
-            flex-direction: row;
-            gap: 40px;
-            background: white;
-            padding: 40px;
-            border-radius: 8px;
-            box-shadow: 0 0 8px rgba(0,0,0,0.1);
-        }
-        .left, .right {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        input, textarea {
-            width: 300px;
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-        }
-        textarea {
-            height: 100px;
-        }
-        .btns {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 20px;
-        }
-        button {
-            background-color: #efefef;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            padding: 8px 20px;
-            cursor: pointer;
-        }
-        .preview img {
-            width: 250px;
-            height: 150px;
-            border-radius: 8px;
-            object-fit: cover;
-            border: 1px solid #ddd;
-        }
-        .switch {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-    </style>
+    <title>관리자 관광지 추가 | Travel Planning</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <link rel="stylesheet" th:href="@{/css/admin_tourspot_add.css}">
 </head>
 
 <body>
 <header>
-    <div>
-        <img th:src="@{/images/logo.png}" alt="Logo" style="width:40px; vertical-align: middle;">
-        <span style="font-weight:bold; font-size:20px;">TRAVEL PLANING</span>
+    <div style="display: flex; align-items: center; gap: 20px;">
+        <img th:src="@{/images/logo.png}" alt="Logo">
+        <div class="title">TRAVEL PLANNING</div>
     </div>
     <div>
-        <span>{관리자} 님 환영합니다.</span> |
-        <a th:href="@{/}">Home</a> |
-        <a th:href="@{/mypage}">마이페이지</a> |
-        <a th:href="@{/logout}">로그아웃</a>
+        <div style="text-align:right; font-size:14px; margin-bottom:5px;">
+            (관리자) 님 환영합니다.
+        </div>
+        <div class="nav">
+            <a th:href="@{/admin/view/members}">회원관리</a>
+            <a th:href="@{/admin/view/tourspot}">관광지관리</a>
+            <a th:href="@{/admin/view/dashboard}">관리자페이지</a>
+            <a th:href="@{/logout}">로그아웃</a>
+        </div>
     </div>
 </header>
 
-<main class="admin-container">
-    <form id="tourspotForm" onsubmit="return submitForm(event)">
+<main>
+    <h2>관리자 관광지 추가</h2>
+
+    <form id="addForm" enctype="multipart/form-data">
         <div class="left">
-            <label>Adress</label>
-            <input type="text" id="address" placeholder="주소를 입력하세요" required>
 
             <label>Title</label>
-            <input type="text" id="title" placeholder="제목을 입력하세요" required>
+            <input type="text" id="title" name="title" placeholder="제목을 입력하세요" required>
+
+            <label>Address</label>
+            <input type="text" id="address" name="address" placeholder="주소를 입력하세요" required>
 
             <label>AreaCode</label>
-            <input type="text" id="areacode" placeholder="지역코드를 입력하세요">
+            <input type="text" id="areacode" name="areacode" placeholder="지역코드를 입력하세요">
 
-            <label>SIGUNGUCODE</label>
-            <input type="text" id="sigungucode" placeholder="시군구 코드를 입력하세요">
+            <label>SigunguCode</label>
+            <input type="text" id="sigungucode" name="sigungucode" placeholder="시군구 코드를 입력하세요">
 
-            <label>TEL</label>
-            <input type="text" id="tel" placeholder="전화번호를 입력하세요">
+            <label>Tel</label>
+            <input type="text" id="tel" name="tel" placeholder="전화번호를 입력하세요">
 
             <div class="switch">
                 <label>Status</label>
-                <input type="checkbox" id="status" checked>
+                <input type="checkbox" id="status" name="status" checked>
             </div>
         </div>
 
         <div class="right">
             <label>관광지 이미지</label>
-            <input type="file" id="imageInput" accept="image/*" onchange="previewImage(event)">
+            <input type="file" id="imageInput" name="firstImageFile" accept="image/*" onchange="previewImage(event)">
             <div class="preview">
                 <img id="preview" th:src="@{/images/sample.png}" alt="preview">
             </div>
 
-            <label>Desc</label>
-            <textarea id="description" placeholder="상세설명을 입력하세요"></textarea>
-
-            <div class="btns">
-                <button type="submit">등록</button>
-                <button type="button" onclick="window.history.back()">뒤로가기</button>
-            </div>
+            <label>Description</label>
+            <textarea id="description" name="description" placeholder="상세설명을 입력하세요"></textarea>
         </div>
     </form>
+
+    <div class="btns">
+        <button type="button" onclick="submitAdd()">등록</button>
+        <button type="button" onclick="window.history.back()">뒤로가기</button>
+    </div>
 </main>
 
+<footer>
+    © 2025 Travel Planning. All rights reserved.
+</footer>
+
 <script>
-    async function submitForm(event) {
-        event.preventDefault();
-
-        const dto = {
-            title: document.getElementById('title').value,
-            description: document.getElementById('description').value,
-            address: document.getElementById('address').value,
-            tel: document.getElementById('tel').value,
-            areacode: document.getElementById('areacode').value,
-            sigungucode: document.getElementById('sigungucode').value,
-            status: document.getElementById('status').checked ? "Y" : "N"
-        };
-
-        const res = await fetch("/admin/tourspot", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            credentials: "include",
-            body: JSON.stringify(dto)
-        });
-
-        if (res.ok) {
-            alert("관광지 등록 성공!");
-            location.href = "/admin/view/tourspot/list";
-        } else {
-            alert("등록 실패: " + res.status);
-        }
-    }
-
+    // ✅ 이미지 미리보기
     function previewImage(event) {
         const file = event.target.files[0];
         if (file) {
             const reader = new FileReader();
-            reader.onload = e => {
-                document.getElementById('preview').src = e.target.result;
-            };
+            reader.onload = e => document.getElementById("preview").src = e.target.result;
             reader.readAsDataURL(file);
         }
     }
-</script>
 
+    // ✅ 관광지 등록 요청
+    async function submitAdd() {
+        const formData = new FormData();
+
+        // DTO 필드명과 동일하게 append
+        formData.append("title", document.getElementById("title").value);
+        formData.append("description", document.getElementById("description").value);
+        formData.append("address", document.getElementById("address").value);
+        formData.append("tel", document.getElementById("tel").value);
+        formData.append("areacode", document.getElementById("areacode").value);
+        formData.append("sigungucode", document.getElementById("sigungucode").value);
+        formData.append("status", document.getElementById("status").checked ? "Y" : "N");
+
+        const file = document.getElementById("imageInput").files[0];
+        if (file) {
+            formData.append("firstImageFile", file);  // TourSpotReqDto의 MultipartFile 필드명과 동일해야 함
+        }
+
+        try {
+            const res = await fetch("/admin/tourspot", {
+                method: "POST",
+                body: formData,
+                credentials: "include"
+            });
+
+            if (res.ok) {
+                alert("✅ 관광지 등록 성공!");
+                location.href = "/admin/view/tourspot";
+            } else {
+                const msg = await res.text();
+                alert("❌ 등록 실패: " + msg);
+            }
+        } catch (err) {
+            alert("❌ 네트워크 오류: " + err.message);
+        }
+    }
+</script>
 </body>
 </html>

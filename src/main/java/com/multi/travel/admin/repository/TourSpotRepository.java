@@ -3,6 +3,8 @@ package com.multi.travel.admin.repository;
 import com.multi.travel.tourspot.entity.TourSpot;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
+
 /**
  * Please explain the class!!!
  *
@@ -12,4 +14,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
  */
 public interface TourSpotRepository extends JpaRepository<TourSpot,Long> {
 
+    List<TourSpot> findByTitleContainingIgnoreCase(String title);
 }

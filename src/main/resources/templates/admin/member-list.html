@@ -7,20 +7,23 @@
 </head>
 <body>
 <header>
-    <div class="logo">
+    <div style="display: flex; align-items: center; gap: 20px;">
         <img th:src="@{/images/logo.png}" alt="Logo">
-        <span class="title">TRAVEL PLANING</span>
+        <div class="title">TRAVEL PLANING</div>
     </div>
-
-    <nav class="admin-nav">
-        <div class="welcome-text">관리자 님 환영합니다.</div>
-        <div class="menu-links">
-            <a th:href="@{/}">Home</a>
-            <a th:href="@{/mypage}">관리자페이지</a>
+    <div>
+        <div style="text-align:right; font-size:14px; margin-bottom:5px;">
+            (관리자) 님 환영합니다.
+        </div>
+        <div class="nav">
+            <a th:href="@{/admin/view/members}">회원관리</a>
+            <a th:href="@{/admin/view/tourspot}">관광지관리</a>
+            <a th:href="@{/admin/view/dashboard}">관리자페이지</a>
             <a th:href="@{/logout}">로그아웃</a>
         </div>
-    </nav>
+    </div>
 </header>
+
 
 <main>
     <div class="admin-container">
