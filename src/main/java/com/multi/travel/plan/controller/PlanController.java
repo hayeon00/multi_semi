@@ -31,7 +31,7 @@ public class PlanController {
                                                   @AuthenticationPrincipal CustomUser user) {
 
         // 로그인 정보에서 email(=loginId)을 가져와 memberId에 세팅
-        dto.setMemberId(user.getEmail());
+        dto.setMemberId(user.getUserId());
 
         // 임시 관광지 ID 강제 설정 (아직 상세페이지 미구현이므로)
         if (dto.getTourSpotId() == null) {

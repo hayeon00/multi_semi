@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>코스 구성 선택 | Travel Planning</title>
+  <style>
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      margin: 0;
+      background-color: #f9f9f9;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #d9d9d9;
+      padding: 15px 30px;
+    }
+    .logo { font-weight: bold; }
+    .title { font-size: 1.5rem; font-weight: bold; }
+    nav a {
+      margin-left: 10px;
+      color: black;
+      text-decoration: none;
+    }
+    main {
+      max-width: 900px;
+      margin: 60px auto;
+      text-align: center;
+    }
+    .card-container {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      flex-wrap: wrap;
+    }
+    .card {
+      width: 250px;
+      height: 180px;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Logo</div>
+  <div class="title">TRAVEL PLANNING</div>
+  <div class="menu">
+    <span>{사용자} 님 환영합니다.</span>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/mypage">마이페이지</a>
+      <a href="/logout">로그아웃</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <h2>여행 계획을 어떻게 구성하시겠어요?</h2>
+  <div class="card-container">
+    <div class="card" id="ai">🤖 AI로 코스 구성하기</div>
+    <div class="card" id="manual">✏️ 직접 코스 구성하기</div>
+    <div class="card" id="select">📋 기존 코스에서 선택하기</div>
+  </div>
+</main>
+
+<script th:inline="javascript">
+  const planId = /*[[${planId}]]*/ 0;
+
+  document.getElementById("ai").onclick = () => {
+    location.href = `/ai/courses/plan/${planId}`;
+  };
+  document.getElementById("manual").onclick = () => {
+    location.href = `/courses/view/create?planId=${planId}`;
+  };
+  document.getElementById("select").onclick = () => {
+    location.href = `/courses/view/list?planId=${planId}`;
+  };
+</script>
+
+</body>
+</html>
