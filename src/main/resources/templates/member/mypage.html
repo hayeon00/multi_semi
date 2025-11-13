@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>마이페이지 | Travel Planning</title>
+    <link rel="stylesheet" th:href="@{/css/mypage.css}">
+</head>
+<body>
+<header class="header">
+    <div class="logo-area">
+        <img th:src="@{/images/logo.png}" alt="Logo" class="logo">
+        <span class="title">TRAVEL PLANNING</span>
+    </div>
+
+    <div class="user-menu">
+        <span class="welcome-text" id="welcome-text">로그인 정보를 불러오는 중...</span>
+        <nav>
+            <a th:href="@{/}">Home</a>
+            <a th:href="@{/member/view/mypage}">마이페이지</a>
+            <a th:href="@{/logout}">로그아웃</a>
+        </nav>
+    </div>
+</header>
+
+<main class="mypage-container">
+    <!-- 왼쪽 프로필 영역 -->
+    <section class="profile">
+        <img id="profile-img" src="/images/profile-sample.jpg" alt="프로필 이미지" class="profile-img">
+        <h2 id="username">회원 이름</h2>
+        <p class="user-id" id="loginId">@아이디</p>
+        <p class="user-email" id="email">email@example.com</p>
+
+        <button class="btn-edit" onclick="location.href='/member/view/edit'">프로필 수정</button>
+        <button class="btn-review" onclick="location.href='/review/my'">내가 쓴 리뷰보기</button>
+    </section>
+
+    <!-- 오른쪽 최근 계획 -->
+    <section class="plan-section">
+        <div class="plan-header">
+            <h3>최근 내 계획</h3>
+        </div>
+
+        <div class="plan-list" id="plan-list">
+            <p class="no-plan">여행 계획을 불러오는 중...</p>
+        </div>
+    </section>
+</main>
+
+<footer>
+    &copy; 2025 Travel Planning. All rights reserved.
+</footer>
+
+<script th:src="@{/js/common.js}"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", async () => {
+        try {
+            // ✅ 1. 로그인한 회원 정보 가져오기
+            const memberRes = await fetchWithRefresh("/members/mypage", {
+                method: "GET",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include"
+            });
+
+            if (!memberRes.ok) {
+                alert("로그인이 필요합니다.");
+                location.href = "/login";
+                return;
+            }
+
+            const memberResult = await memberRes.json();
+            const member = memberResult.data;
+
+            // ✅ 2. 화면에 회원 정보 표시
+            document.getElementById("welcome-text").textContent = `${member.username} 님 환영합니다.`;
+            document.getElementById("username").textContent = member.username;
+            document.getElementById("loginId").textContent = `@${member.loginId}`;
+            document.getElementById("email").textContent = member.email;
+
+            const imgTag = document.getElementById("profile-img");
+            imgTag.src = member.imageUrl ? member.imageUrl : "/images/profile-sample.jpg";
+
+            // ✅ 3. 최근 여행 계획 목록 불러오기
+            const planRes = await fetchWithRefresh("/members/plans", {
+                method: "GET",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include"
+            });
+
+            const planResult = await planRes.json();
+            const list = document.getElementById("plan-list");
+
+            if (planRes.ok && planResult.status === 200) {
+                const plans = planResult.data;
+                if (plans.length === 0) {
+                    list.innerHTML = `<p class="no-plan">아직 작성한 여행 계획이 없습니다.</p>`;
+                } else {
+                    list.innerHTML = plans.map(plan => `
+          <div class="plan-item">
+            <div class="plan-title">${plan.title}</div>
+            <button class="btn-review-small" onclick="location.href='/review/${plan.id}'">리뷰</button>
+          </div>
+        `).join("");
+                }
+            } else {
+                list.innerHTML = `<p class="no-plan">여행 계획을 불러올 수 없습니다.</p>`;
+            }
+
+        } catch (err) {
+            console.error("서버 통신 오류:", err);
+            document.getElementById("plan-list").innerHTML =
+                `<p class="no-plan">서버 오류로 데이터를 불러올 수 없습니다.</p>`;
+        }
+    });
+</script>
+</body>
+</html>

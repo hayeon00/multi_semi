@@ -3,46 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <title>회원정보 수정 | TRAVEL PLANING</title>
-    <!-- 공통 CSS (네비게이션, 푸터 등) -->
     <link th:href="@{/css/common.css}" rel="stylesheet">
-    <!-- 회원정보 수정 전용 CSS -->
     <link th:href="@{/css/member-edit.css}" rel="stylesheet">
-
-    <!-- ✅ 자동 토큰 재발급 공통 JS -->
     <script src="/js/common.js"></script>
 </head>
 
 <body>
-<!-- ======================
-     헤더 영역
-====================== -->
 <header>
     <div class="logo">
         <img th:src="@{/images/logo.png}" alt="Logo">
         <span class="title">TRAVEL PLANING</span>
     </div>
 
-    <div>
-        <span th:text="${member.username} + ' 님 환영합니다.'"></span>
+    <div id="header-user-info">
+        <!-- JS로 로그인 사용자명 채움 -->
+        <span id="welcome-text">로그인 정보를 불러오는 중...</span>
         &nbsp;&nbsp;
         <nav>
             <a th:href="@{/}">Home</a> |
-            <a th:href="@{/mypage}">마이페이지</a> |
+            <a th:href="@{/member/view/mypage}">마이페이지</a> |
             <a th:href="@{/logout}">로그아웃</a>
         </nav>
     </div>
 </header>
 
-<!-- ======================
-     메인 콘텐츠
-====================== -->
 <main>
-    <form th:object="${member}" class="member-form" enctype="multipart/form-data">
+    <form id="member-form" class="member-form" enctype="multipart/form-data">
 
-        <!-- ✅ 왼쪽 프로필 영역 (div로 묶기!) -->
         <div class="left-section">
-            <img th:src="${member.imageUrl != null ? member.imageUrl : '/images/default-profile.png'}"
-                 alt="프로필 사진" class="profile-img" id="profile-preview">
+            <img src="/images/default-profile.png"
+                 alt="프로필 사진"
+                 class="profile-img"
+                 id="profile-preview">
 
             <label class="photo-btn">
                 프로필사진 수정
@@ -50,27 +42,25 @@
             </label>
         </div>
 
-        <!-- 오른쪽: 회원정보 입력 -->
         <div class="right-section">
-
             <div class="form-group">
                 <label for="loginId">아이디 (로그인 ID)</label>
-                <input type="text" th:field="*{loginId}" id="loginId" readonly>
+                <input type="text" name="loginId" id="loginId" readonly>
             </div>
 
             <div class="form-group">
                 <label for="username">이름</label>
-                <input type="text" th:field="*{username}" id="username" placeholder="이름을 입력하세요">
+                <input type="text" name="username" id="username" placeholder="이름을 입력하세요">
             </div>
 
             <div class="form-group">
                 <label for="email">이메일</label>
-                <input type="email" th:field="*{email}" id="email" readonly>
+                <input type="email" name="email" id="email" readonly>
             </div>
 
             <div class="form-group">
                 <label for="tel">전화번호</label>
-                <input type="text" th:field="*{tel}" id="tel" placeholder="전화번호를 입력하세요">
+                <input type="text" name="tel" id="tel" placeholder="전화번호를 입력하세요">
             </div>
 
             <div class="form-group">
@@ -80,55 +70,78 @@
 
             <div class="btn-group">
                 <button type="submit" class="btn submit">수정완료</button>
-                <button type="button" class="btn cancel" onclick="location.href='/mypage'">뒤로가기</button>
+                <button type="button" class="btn cancel" onclick="location.href='/member/view/mypage'">뒤로가기</button>
             </div>
         </div>
     </form>
 </main>
 
-<!-- ======================
-     푸터
-====================== -->
 <footer>
     <p>© 2025 TRAVEL PLANING</p>
 </footer>
 
-<!-- ======================
-     JS 로직
-====================== -->
 <script>
-    // 🔹 프로필 이미지 미리보기 기능
-    document.getElementById('profileImage').addEventListener('change', function (e) {
+    // ✅ 프로필 이미지 미리보기
+    document.getElementById('profileImage').addEventListener('change', e => {
         const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function (event) {
-                document.getElementById('profile-preview').src = event.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = ev => document.getElementById('profile-preview').src = ev.target.result;
+        reader.readAsDataURL(file);
     });
 
-    // 🔹 PUT 요청으로 회원정보 수정 (401 자동재발급 포함)
-    document.querySelector('.member-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
+    // ✅ 회원정보 로드 (API: /member/info)
+    async function loadMemberInfo() {
+        try {
+            const res = await fetchWithRefresh('/members/mypage', {
+                method: 'GET',
+                credentials: 'include'
+            });
 
+            const data = await res.json();
+
+
+            const m = data.data;
+            document.getElementById('loginId').value = m.loginId;
+            document.getElementById('username').value = m.username;
+            document.getElementById('email').value = m.email;
+            document.getElementById('tel').value = m.tel;
+            document.getElementById('welcome-text').textContent = `${m.username} 님 환영합니다.`;
+            if (m.imageUrl) document.getElementById('profile-preview').src = m.imageUrl;
+
+        } catch (err) {
+            console.error(err);
+            alert('회원 정보를 불러오지 못했습니다. 다시 로그인해주세요.');
+        }
+    }
+
+    // ✅ 수정 요청 (API: /member/update)
+    document.getElementById('member-form').addEventListener('submit', async e => {
+        e.preventDefault();
         const formData = new FormData(e.target);
 
-        const response = await fetchWithRefresh('/members/update', {
-            method: 'PUT',
-            body: formData,
-            credentials: 'include'
-        });
+        try {
+            const res = await fetchWithRefresh('/members/update', {
+                method: 'PUT',
+                body: formData,
+                credentials: 'include'
+            });
 
-        if (response.ok) {
-            alert("회원정보가 수정되었습니다!");
-            location.href = "/mypage";
-        } else {
-            const msg = await response.text();
-            alert("수정 실패 ❌ : " + msg);
+            if (!res.ok) {
+                const msg = await res.text();
+                throw new Error(msg);
+            }
+
+            alert('회원정보가 수정되었습니다!');
+            location.href = '/member/view/mypage';
+
+        } catch (err) {
+            alert('수정 실패 ❌ : ' + err.message);
         }
     });
+
+    // ✅ 페이지 로드 시 실행
+    loadMemberInfo();
 </script>
 
 </body>
