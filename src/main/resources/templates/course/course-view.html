@@ -1,21 +1,22 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <title>내가 쓴 리뷰</title>
-    <link rel="stylesheet" th:href="@{/css/common.css}">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <meta charset="UTF-8">
+  <title>코스 상세보기</title>
+  <link rel="stylesheet" th:href="@{/css/common.css}">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script th:src="@{|https://dapi.kakao.com/v2/maps/sdk.js?appkey=${kakaoKey}&autoload=false|}"></script>
 </head>
 <body>
 <header>
-    <div class="header-container">
-        <div class="logo">TRAVEL PLANING</div>
-        <nav>
-            <a href="/">Home</a>
-            <a href="/mypage">마이페이지</a>
-            <a href="/logout">로그아웃</a>
-        </nav>
-    </div>
+  <div class="header-container">
+    <div class="logo">TRAVEL PLANNING</div>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/mypage">마이페이지</a>
+      <a href="/logout">로그아웃</a>
+    </nav>
+  </div>
 </header>
 
 <main>
@@ -26,75 +27,152 @@
     </div>
 </main>
 
-<script th:src="@{/js/common.js}"></script>
-<script>
-    let currentPage = 0;
+<script th:inline="javascript">
+  const courseId = [[${courseId}]];
+  const loginUserId = [[${loginUserId}]]; // 로그인 사용자 ID (백엔드에서 전달)
 
-    async function loadMyReviews(page = 0) {
-        try {
-            const res = await fetchWithRefresh(`/reviews/my?page=${page}`, {
-                method: 'GET',
-                credentials: 'include'
+  $(document).ready(function() {
+    loadCourseDetail();
+  });
+
+  /** 코스 상세 데이터 로드 */
+  function loadCourseDetail() {
+    $.ajax({
+      url: `/courses/${courseId}`,
+      type: 'GET',
+      success: function(res) {
+        const course = res.data;
+        $('#recCount').text(course.recCount ?? 0);
+        renderDays(course.items);
+        renderMap(course.items);
+
+        // ✅ 버튼은 생성자 ID를 기준으로 동적 구성
+        setupButtons(course.creatorUserId);
+      },
+      error: function(err) {
+        console.error("코스 불러오기 실패:", err);
+      }
+    });
+  }
+
+  /** 일차별 탭 및 리스트 표시 */
+  function renderDays(items) {
+    const dayTabs = $('#dayTabs');
+    const dayContent = $('#dayContent');
+    dayTabs.empty();
+    dayContent.empty();
+
+    const days = [...new Set(items.map(i => i.dayNo))].sort((a,b)=>a-b);
+
+    days.forEach(dayNo => {
+      const tab = $(`<button>${dayNo}일차</button>`);
+      tab.click(() => showDay(dayNo, items));
+      dayTabs.append(tab);
+    });
+
+    if (days.length > 0) showDay(days[0], items);
+  }
+
+  /** 일차별 장소 리스트 표시 */
+  function showDay(dayNo, items) {
+    const list = $('#dayContent');
+    list.empty();
+
+    items
+            .filter(i => i.dayNo === dayNo)
+            .forEach(i => {
+              list.append(`<div class="place-item">• ${i.categoryName ?? '장소'} (ID: ${i.placeId})</div>`);
             });
-            const result = await res.json();
-            const reviews = result.content;
-            const container = document.getElementById('myReviewList');
-            container.innerHTML = "";
+  }
 
-            if (!reviews || reviews.length === 0) {
-                container.innerHTML = `<p style="text-align:center; color:#999;">작성한 리뷰가 없습니다.</p>`;
-                document.getElementById("pagination").innerHTML = "";
-                return;
-            }
+  /** 지도 표시 */
+  function renderMap(items) {
+    kakao.maps.load(function() {
+      const mapContainer = document.getElementById('map');
+      const mapOption = {
+        center: new kakao.maps.LatLng(37.566826, 126.9786567),
+        level: 7
+      };
+      const map = new kakao.maps.Map(mapContainer, mapOption);
 
-            reviews.forEach(r => {
-                const div = document.createElement("div");
-                div.style = "background:#fafafa; border-radius:10px; padding:20px; margin-bottom:20px; box-shadow:0 0 6px rgba(0,0,0,0.05);";
-                div.innerHTML = `
-                    <h3 style="margin:0 0 10px; color:#2c3e50;">${r.title}</h3>
-                    <p>${r.content}</p>
-                    <p style="color:#f39c12; font-weight:bold;">★ ${r.rating} / 5</p>
-                    <p style="font-size: 14px; color: #888;">작성자: ${r.writer}</p>
-                `;
-                container.appendChild(div);
-            });
+      const bounds = new kakao.maps.LatLngBounds();
 
-            renderPagination(result.totalPages, result.number);
-        } catch (e) {
-            console.error("리뷰 로딩 실패:", e);
-            document.getElementById('myReviewList').innerHTML = `<p style="text-align:center; color:#f00;">리뷰를 불러오는 중 오류가 발생했습니다.</p>`;
+      items.forEach(i => {
+        if (i.mapy && i.mapx) {
+          const pos = new kakao.maps.LatLng(parseFloat(i.mapy), parseFloat(i.mapx));
+          const marker = new kakao.maps.Marker({ map, position: pos });
+          bounds.extend(pos);
         }
+      });
+
+      if (!bounds.isEmpty()) map.setBounds(bounds);
+    });
+  }
+
+  /** 버튼 구성 */
+  function setupButtons(creatorUserId) {
+    const btnArea = $('#actionButtons');
+    btnArea.empty();
+
+    // 목록으로 돌아가기
+    const backBtn = $('<button>목록으로</button>').click(() => {
+      location.href = '/courses/view/list';
+    });
+    btnArea.append(backBtn);
+
+    if (creatorUserId && creatorUserId === loginUserId) {
+      btnArea.append(`<button onclick="location.href='/courses/view/edit?planId=${courseId}'">코스 수정하기</button>`);
+      btnArea.append(`<button onclick="deleteCourse(${courseId})">코스 삭제하기</button>`);
+    } else {
+      btnArea.append(`<button onclick="addPlan(${courseId})">계획 추가하기</button>`);
     }
 
-    function renderPagination(totalPages, current) {
-        const pagination = document.getElementById("pagination");
-        pagination.innerHTML = "";
-        currentPage = current;
+  /** 추천 토글 */
+  $('#recBtn').click(function() {
+    $.ajax({
+      url: `/recommend/toggle`,
+      type: 'GET',
+      data: {
+        userId: loginUserId,
+        targetId: courseId,
+        catCode: 'crs'
+      },
+      success: function(res) {
+        const status = res.data.status;
+        const isLiked = status === 'Y';
+        $('#recBtn').html(isLiked ? '❤️' : '🤍');
+        $('#recCount').text(function(_, old) {
+          const count = parseInt(old);
+          return isLiked ? count + 1 : count - 1;
+        });
+      },
+      error: function(err) {
+        console.error("추천 토글 실패:", err);
+      }
+    });
+  });
 
-        if (totalPages <= 1) return;
+  /** 코스 삭제 (Soft Delete) */
+  function deleteCourse(id) {
+    if (!confirm('정말 삭제하시겠습니까?')) return;
+    $.ajax({
+      url: `/courses/${id}`,
+      type: 'DELETE',
+      success: function() {
+        alert('삭제되었습니다.');
+        location.href = '/courses';
+      },
+      error: function(err) {
+        console.error("삭제 실패:", err);
+        alert('삭제 중 오류가 발생했습니다.');
+      }
+    });
+  }
 
-        const prevBtn = document.createElement("button");
-        prevBtn.textContent = "« 이전";
-        prevBtn.disabled = currentPage === 0;
-        prevBtn.onclick = () => loadMyReviews(currentPage - 1);
-        pagination.appendChild(prevBtn);
-
-        for (let i = 0; i < totalPages; i++) {
-            const pageBtn = document.createElement("button");
-            pageBtn.textContent = i + 1;
-            pageBtn.style = `margin: 0 3px; padding: 5px 10px; border-radius: 6px; border: 1px solid #ccc; background: ${i === currentPage ? '#007bff' : 'white'}; color: ${i === currentPage ? 'white' : '#000'}; cursor: pointer;`;
-            pageBtn.onclick = () => loadMyReviews(i);
-            pagination.appendChild(pageBtn);
-        }
-
-        const nextBtn = document.createElement("button");
-        nextBtn.textContent = "다음 »";
-        nextBtn.disabled = currentPage >= totalPages - 1;
-        nextBtn.onclick = () => loadMyReviews(currentPage + 1);
-        pagination.appendChild(nextBtn);
-    }
-
-    window.onload = () => loadMyReviews(0);
+  /** 계획에 추가 */
+  function addPlan(id) {
+    alert(`${id}번 코스를 계획에 추가합니다.`);
+  }
 </script>
 </body>
 </h

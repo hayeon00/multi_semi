@@ -69,4 +69,15 @@ public class TspController {
 
         return ResponseEntity.ok(new ResponseDto(HttpStatus.OK, "success", tspService.getTspSortByDistance(page, size, id)));
     }
+
+    /** 지도용 관광지 목록 */
+    @GetMapping("/simple")
+    public ResponseEntity<ResponseDto> getTspSimpleList(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(
+                new ResponseDto(HttpStatus.OK, "관광지 간단 목록 조회 성공", tspService.getTspSimpleList(page, size))
+        );
+    }
+
 }

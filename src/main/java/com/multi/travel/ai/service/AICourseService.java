@@ -197,6 +197,24 @@ public class AICourseService {
                 .flatMap(day -> day.getItems().stream()
                         .map(item -> {
                             item.setDayNo(day.getDayNo());
+
+                            // categoryCode가 비어있을 경우, type으로부터 보정
+                            String code = item.getCategoryCode();
+                            if (code == null || code.isBlank()) {
+                                try {
+                                    // 리플렉션을 써서 type 필드가 존재하면 읽기
+                                    var field = item.getClass().getDeclaredField("type");
+                                    field.setAccessible(true);
+                                    Object typeVal = field.get(item);
+                                    if (typeVal != null) {
+                                        String type = typeVal.toString().toLowerCase();
+                                        code = type.contains("acc") ? "acc" : "tsp";
+                                    }
+                                } catch (NoSuchFieldException | IllegalAccessException ignored) {}
+                            }
+                            if (code == null) code = "tsp"; // 완전 기본값
+                            item.setCategoryCode(code);
+
                             return item;
                         }))
                 .collect(Collectors.toList());

@@ -146,16 +146,38 @@
   tourSpotInput.value = defaultSpotId;
   startLocationInput.value = defaultSpotName;
 
+  // 날짜 유효성 검사 로직 추가
+  const startDateInput = document.getElementById("startDate");
+  const endDateInput = document.getElementById("endDate");
+
+  function validateDates() {
+    const start = startDateInput.value;
+    const end = endDateInput.value;
+
+    if (start && end && start > end) {
+      alert("종료일은 시작일 이후여야 합니다.");
+      endDateInput.value = "";     // 잘못 입력된 종료일 초기화
+      return false;
+    }
+    return true;
+  }
+
+  startDateInput.addEventListener("change", validateDates);
+  endDateInput.addEventListener("change", validateDates);
+
   // 폼 제출
   document.getElementById("planForm").addEventListener("submit", async (e) => {
     e.preventDefault();
+
+    // 제출 시에도 날짜 유효성 검사 (안전성 ↑)
+    if (!validateDates()) return;
 
     const dto = {
       tourSpotId: parseInt(tourSpotInput.value),
       title: document.getElementById("title").value,
       numberOfPeople: parseInt(document.getElementById("numberOfPeople").value),
-      startDate: document.getElementById("startDate").value,
-      endDate: document.getElementById("endDate").value
+      startDate: startDateInput.value,
+      endDate: endDateInput.value
     };
 
     console.log("[DEBUG] 요청 JSON:", dto);
