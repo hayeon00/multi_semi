@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <title>회원 관리 | Travel Planing</title>
     <link th:href="@{/css/admin.css}" rel="stylesheet">
-    <!-- ✅ 공통 JS 유틸 (fetchWithRefresh 함수 들어있는 파일) -->
-
 </head>
 <body>
 <header>
@@ -18,7 +16,7 @@
         <div class="welcome-text">관리자 님 환영합니다.</div>
         <div class="menu-links">
             <a th:href="@{/}">Home</a>
-            <a th:href="@{/mypage}">마이페이지</a>
+            <a th:href="@{/mypage}">관리자페이지</a>
             <a th:href="@{/logout}">로그아웃</a>
         </div>
     </nav>
@@ -32,6 +30,14 @@
         </aside>
 
         <section class="admin-content">
+
+            <!-- ✅ 검색 영역 -->
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="아이디로 검색..." onkeydown="if(event.key==='Enter') searchMember();" />
+                <button class="btn-search" onclick="searchMember()">검색</button>
+                <button class="btn-reset" onclick="loadMembers()">전체 보기</button>
+            </div>
+
             <table id="memberTable" border="1" cellpadding="10">
                 <thead>
                 <tr>
@@ -42,7 +48,7 @@
                     <th>전화번호</th>
                     <th>권한</th>
                     <th>상태</th>
-                    <th>삭제</th>
+                    <th>관리</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -59,12 +65,10 @@
 
 <script th:src="@{/js/common.js}"></script>
 
-
 <script>
-    // ✅ 기존 fetch → fetchWithRefresh()로 변경
+    // ✅ 회원 목록 불러오기
     async function loadMembers() {
         try {
-            console.log("나패치하러 들어간다");
             const response = await fetchWithRefresh("/admin/members", {
                 method: "GET",
                 headers: { "Content-Type": "application/json" },
@@ -77,41 +81,104 @@
             }
 
             const result = await response.json();
-            const tbody = document.querySelector("#memberTable tbody");
-            tbody.innerHTML = "";
-
-            result.data.forEach(member => {
-                const tr = document.createElement("tr");
-                tr.innerHTML = `
-                    <td>${member.id}</td>
-                    <td>${member.loginId}</td>
-                    <td>${member.username}</td>
-                    <td>${member.email}</td>
-                    <td>${member.tel}</td>
-                    <td>${member.role}</td>
-                    <td>${member.status}</td>
-                    <td><button onclick="deleteMember(${member.id})">🗑 Delete</button></td>
-                `;
-                tbody.appendChild(tr);
-            });
+            renderMembers(result.data);
         } catch (error) {
-            console.error("오류 발생:", error);
+            console.error("🚨 오류 발생:", error);
         }
     }
 
-    async function deleteMember(id) {
-        if (!confirm("정말 삭제하시겠습니까?")) return;
+    // ✅ 회원 목록 렌더링
+    function renderMembers(members) {
+        const tbody = document.querySelector("#memberTable tbody");
+        tbody.innerHTML = "";
 
-        const response = await fetchWithRefresh(`/admin/members/${id}`, {
-            method: "DELETE",
+        if (!members || members.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;">조회된 회원이 없습니다.</td></tr>`;
+            return;
+        }
+
+        members.forEach(member => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td>${member.id}</td>
+                <td>${member.loginId}</td>
+                <td>${member.username}</td>
+                <td>${member.email}</td>
+                <td>${member.tel}</td>
+                <td>${member.role}</td>
+                <td>${member.status}</td>
+                <td>
+                    ${
+                member.status === "Y"
+                    ? `<button class="btn-action btn-deactivate" onclick="deactivateMember(${member.id})">🗑 비활성화</button>`
+                    : `<button class="btn-action btn-activate" onclick="activateMember(${member.id})">🔄 복구</button>`
+            }
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    // ✅ 아이디로 회원 검색
+    async function searchMember() {
+        const keyword = document.getElementById("searchInput").value.trim();
+        if (!keyword) {
+            alert("검색할 아이디를 입력해주세요.");
+            return;
+        }
+
+        try {
+            const response = await fetchWithRefresh(`/admin/members?loginId=${encodeURIComponent(keyword)}`, {
+                method: "GET",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include"
+            });
+
+            if (!response.ok) {
+                alert("검색 실패 ❌ (권한 또는 서버 오류)");
+                return;
+            }
+
+            const result = await response.json();
+            const members = Array.isArray(result.data) ? result.data : [result.data];
+            renderMembers(members);
+        } catch (error) {
+            console.error("🚨 검색 오류:", error);
+            alert("검색 중 오류가 발생했습니다.");
+        }
+    }
+
+    // ✅ 회원 비활성화 (Y → N)
+    async function deactivateMember(id) {
+        if (!confirm("정말로 이 회원을 비활성화하시겠습니까?")) return;
+
+        const response = await fetchWithRefresh(`/admin/members/${id}/deactivate`, {
+            method: "PUT",
             credentials: "include"
         });
 
         if (response.ok) {
-            alert("회원이 삭제되었습니다.");
+            alert("회원이 비활성화되었습니다.");
             loadMembers();
         } else {
-            alert("삭제 실패 ❌ (권한 또는 서버 오류)");
+            alert("비활성화 실패 ❌ (권한 또는 서버 오류)");
+        }
+    }
+
+    // ✅ 회원 복구 (N → Y)
+    async function activateMember(id) {
+        if (!confirm("이 회원을 다시 활성화하시겠습니까?")) return;
+
+        const response = await fetchWithRefresh(`/admin/members/${id}/activate`, {
+            method: "PUT",
+            credentials: "include"
+        });
+
+        if (response.ok) {
+            alert("회원이 복구되었습니다.");
+            loadMembers();
+        } else {
+            alert("복구 실패 ❌ (권한 또는 서버 오류)");
         }
     }
 

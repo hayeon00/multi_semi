@@ -86,11 +86,15 @@ public class AdminController {
     // ✅ [2] REST API (데이터 처리)
     // -----------------------------------------------------------------------
 
-    /** 전체 회원 조회 */
+    @GetMapping("/members")
     @ResponseBody
     @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/members")
-    public ResponseEntity<ResponseDto> getMembers() {
+    public ResponseEntity<ResponseDto> getMembers(@RequestParam(required = false) String loginId) {
+        if (loginId != null && !loginId.isEmpty()) {
+            return ResponseEntity.ok(
+                    new ResponseDto(HttpStatus.OK, "회원 검색 성공", memberService.findByLoginId(loginId))
+            );
+        }
         return ResponseEntity.ok(
                 new ResponseDto(HttpStatus.OK, "전체 회원 조회 성공", memberService.findAll())
         );
@@ -105,6 +109,18 @@ public class AdminController {
         return ResponseEntity.ok(
                 new ResponseDto(HttpStatus.OK, "회원 삭제 성공", null)
         );
+    }
+
+    @PutMapping("/members/{id}/deactivate")
+    public ResponseEntity<Void> deactivateMember(@PathVariable Long id) {
+        memberService.updateStatus(id, "N");
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/members/{id}/activate")
+    public ResponseEntity<Void> activateMember(@PathVariable Long id) {
+        memberService.updateStatus(id, "Y");
+        return ResponseEntity.ok().build();
     }
 
     /** 관광지 추가 */
