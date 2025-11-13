@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>코스 수정</title>
+  <title>코스 수동 생성</title>
   <script th:src="@{|https://dapi.kakao.com/v2/maps/sdk.js?appkey=${kakaoKey}&autoload=false|}"></script>
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
@@ -64,7 +64,6 @@
       box-shadow: 0 0 8px rgba(0,0,0,0.1);
     }
 
-    /* 너비 확장 및 균형 조정 */
     .left-panel {
       width: 320px;
       height: 550px;
@@ -84,7 +83,6 @@
     #placeList { flex: 1; overflow-y: auto; }
     #pagination { flex-shrink: 0; margin-top: 10px; text-align: center; }
 
-    /* 검색창 */
     .search-box { display: flex; margin-bottom: 10px; }
     .search-box input {
       flex: 1;
@@ -93,7 +91,6 @@
       border: 1px solid #ccc;
     }
 
-    /* 탭 버튼 */
     .tab-menu button {
       margin: 5px 3px;
       padding: 5px 10px;
@@ -104,7 +101,6 @@
     }
     .tab-menu button.active { background: #000; color: #fff; }
 
-    /* 관광지 목록 아이템 */
     .place-item {
       background: #fff;
       border-radius: 10px;
@@ -117,7 +113,6 @@
     }
     .place-item:hover { background: #eef2ff; }
 
-    /* 일차 탭 */
     .day-tabs { display: flex; justify-content: center; margin-bottom: 10px; flex-wrap: wrap; }
     .day-tabs button {
       border: none;
@@ -128,7 +123,6 @@
     }
     .day-tabs button.active { background: #000; color: white; }
 
-    /* 코스 리스트 */
     .course-item {
       background: #fff;
       border-radius: 10px;
@@ -143,7 +137,6 @@
     .delete-btn { display: none; color: red; cursor: pointer; font-size: 14px; }
     .course-item:hover .delete-btn { display: inline; }
 
-    /* 버튼 영역 */
     .button-area {
       text-align: center;
       margin-top: 20px;
@@ -159,7 +152,6 @@
     .btn-primary { background: #000; color: #fff; }
     .btn-secondary { background: #ccc; color: #333; }
 
-    /* 페이지네이션 (줄바꿈 방지 + 정렬 고정) */
     #pagination {
       display: flex;
       justify-content: center;
@@ -186,7 +178,6 @@
     #pagination button.active { background: #000; color: #fff; font-weight: bold; }
     #pagination button.disabled { color: #ccc; cursor: default; }
 
-    /* 반응형 (중간 화면: 노트북) */
     @media (max-width: 1200px) {
       .content-wrapper {
         width: 95%;
@@ -200,7 +191,6 @@
       .right-panel { width: 250px; }
     }
 
-    /* 반응형 (태블릿: 세로로 스택 정렬) */
     @media (max-width: 900px) {
       .main-area {
         flex-direction: column;
@@ -212,13 +202,12 @@
         max-height: 500px;
       }
       .map-panel {
-        order: -1; /* 지도를 위로 */
+        order: -1;
         height: 400px;
       }
       #pagination { justify-content: center; }
     }
 
-    /* 반응형 (모바일: 폰 뷰) */
     @media (max-width: 600px) {
       .page-header { flex-direction: column; text-align: center; padding: 10px 20px; }
       .plan-header { flex-direction: column; align-items: flex-start; }
@@ -255,7 +244,6 @@
   </div>
 
   <div class="main-area">
-    <!-- 좌측: 관광지/숙소 -->
     <div class="left-panel">
       <div class="tab-menu">
         <button id="tab-tour" class="active">관광지</button>
@@ -268,10 +256,8 @@
       <div id="pagination"></div>
     </div>
 
-    <!-- 중앙 지도 -->
     <div id="map" class="map-panel"></div>
 
-    <!-- 우측 코스 리스트 -->
     <div class="right-panel">
       <div class="day-tabs" id="dayTabs"></div>
       <div id="courseList"></div>
@@ -279,8 +265,8 @@
   </div>
 
   <div class="button-area">
-    <button id="cancelBtn" class="btn-secondary">수정취소</button>
-    <button id="saveBtn" class="btn-primary">수정완료</button>
+    <button id="cancelBtn" class="btn-secondary">생성취소</button>
+    <button id="saveBtn" class="btn-primary">생성완료</button>
   </div>
 </div>
 
@@ -289,15 +275,14 @@
   let map, markers = [], polylines = [];
   let days = [];
   let activeDay = 1;
-
   let currentPage = 0;
   const pageSize = 10;
-  let totalCount = 12935; // 기본은 관광지 기준
+  let totalCount = 12935;
   let lastType = "tour";
 
   $(document).ready(function() {
     initMap();
-    loadPlan();
+    initDays();
     setupTabs();
     setupSearch();
   });
@@ -308,7 +293,7 @@
     map = new kakao.maps.Map(container, options);
   }
 
-  function loadPlan() {
+  function initDays() {
     $.get(`/plans/${planId}`, function(res) {
       const plan = res.data;
       $("#title").val(plan.title);
@@ -318,17 +303,8 @@
 
       const dayCount = dayDiff(plan.startDate, plan.endDate);
       days = Array.from({ length: dayCount }, (_, i) => ({ dayNo: i + 1, items: [] }));
-
-      if (plan.coursePlaces?.length) {
-        plan.coursePlaces.forEach(p => {
-          const day = days.find(d => d.dayNo === p.dayNo);
-          if (day) day.items.push(p);
-        });
-      }
-
       renderDayTabs(dayCount);
       renderCourseList();
-      renderMap();
       loadPlaces("tour", "", 0);
     });
   }
@@ -343,7 +319,13 @@
     const tabs = $("#dayTabs").empty();
     for (let i = 1; i <= count; i++) {
       const btn = $(`<button class="${i === 1 ? "active" : ""}">${i}일차</button>`);
-      btn.click(() => { activeDay = i; $(".day-tabs button").removeClass("active"); btn.addClass("active"); renderCourseList(); renderMap();  });
+      btn.click(() => {
+        activeDay = i;
+        $(".day-tabs button").removeClass("active");
+        btn.addClass("active");
+        renderCourseList();
+        renderMap();
+      });
       tabs.append(btn);
     }
   }
@@ -352,20 +334,18 @@
     const list = $("#courseList").empty();
     const currentDay = days.find(d => d.dayNo === activeDay);
 
-    // 번호 없이 장소명만 표시
     currentDay.items
             .sort((a, b) => a.orderNo - b.orderNo)
             .forEach((item, idx) => {
               const div = $(`
-        <div class="course-item" data-idx="${idx}">
-          <span>${item.title}</span>
-          <span class="delete-btn">삭제</span>
-        </div>
-      `);
+          <div class="course-item" data-idx="${idx}">
+            <span>${item.title}</span>
+            <span class="delete-btn">삭제</span>
+          </div>
+        `);
               list.append(div);
             });
 
-    // 삭제 시 즉시 지도 반영
     $(".delete-btn").click(function() {
       const idx = $(this).closest(".course-item").data("idx");
       currentDay.items.splice(idx, 1);
@@ -373,7 +353,6 @@
       renderMap();
     });
 
-    // 드래그 후 지도 즉시 갱신
     $("#courseList").sortable({
       update: function () {
         const newItems = [];
@@ -381,16 +360,13 @@
           const i = $(this).data("idx");
           newItems.push(currentDay.items[i]);
         });
-        // 순서 반영
         currentDay.items = newItems.map((it, idx) => ({ ...it, orderNo: idx + 1 }));
         renderCourseList();
-        renderMap(); // 즉시 갱신
+        renderMap();
       }
     });
-
   }
 
-  // 모든 일차 코스를 지도에 표시 (현재 일차는 검정색, 나머지는 회색)
   function renderMap() {
     clearMap();
     const bounds = new kakao.maps.LatLngBounds();
@@ -405,11 +381,10 @@
           const pos = new kakao.maps.LatLng(lat, lng);
           coords.push(pos);
 
-          // 마커 색상 구분 (현재 일차는 파란색, 나머지는 회색)
           const markerImage = new kakao.maps.MarkerImage(
                   day.dayNo === activeDay
-                          ? "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png" // 파란 마커
-                          : "https://t1.daumcdn.net/mapjsapi/images/marker.png", // 회색 기본 마커
+                          ? "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png"
+                          : "https://t1.daumcdn.net/mapjsapi/images/marker.png",
                   new kakao.maps.Size(24, 35)
           );
 
@@ -424,7 +399,6 @@
         }
       });
 
-      // 선 색상 구분
       if (coords.length > 1) {
         const color = day.dayNo === activeDay ? "#000000" : "#a0a0a0";
         const polyline = new kakao.maps.Polyline({
@@ -438,7 +412,6 @@
       }
     });
 
-    // 지도 중심 자동 맞춤
     if (!bounds.isEmpty()) {
       map.setBounds(bounds);
     } else {
@@ -447,7 +420,6 @@
     }
   }
 
-
   function clearMap() {
     markers.forEach(m => m.setMap(null));
     polylines.forEach(p => p.setMap(null));
@@ -455,8 +427,6 @@
     polylines = [];
   }
 
-
-  // 관광지/숙소 목록 + 페이지네이션
   function loadPlaces(type, keyword = "", page = 0) {
     lastType = type;
     currentPage = page;
@@ -465,15 +435,17 @@
     let url =
             type === "tour"
                     ? (keyword
-                            ? `/spots/list?keyword=${keyword}&page=${page}&size=${pageSize}`
+                            ? `/spots/search?keyword=${keyword}&page=${page}&size=${pageSize}`
                             : `/spots/simple?page=${page}&size=${pageSize}`)
                     : (keyword
-                            ? `/accommodations/list?keyword=${keyword}&page=${page}&size=${pageSize}`
+                            ? `/accommodations/search?keyword=${keyword}&page=${page}&size=${pageSize}`
                             : `/accommodations/simple?page=${page}&size=${pageSize}`);
 
     $.get(url, function (res) {
-      // totalPages 동적으로 반영
+      // totalPages 값 추출
       const totalPages = res.data?.totalPages || 1;
+
+      // 실제 데이터 목록 추출
       const places =
               res.data?.contents ||
               res.data?.content ||
@@ -484,6 +456,7 @@
         return;
       }
 
+      // 목록 렌더링
       places.forEach((p) => {
         const div = $(`
         <div class="place-item"
@@ -508,11 +481,10 @@
         $("#placeList").append(div);
       });
 
-      // totalPages 넘겨줌
+      // 페이지네이션 호출 시 totalPages 전달
       renderPagination(totalPages);
     });
   }
-
 
   function renderPagination(totalPages) {
     const $pagination = $("#pagination").empty();
@@ -520,7 +492,6 @@
     const half = Math.floor(maxVisible / 2);
     let start = Math.max(0, currentPage - half);
     let end = Math.min(totalPages - 1, start + maxVisible - 1);
-
     if (end - start < maxVisible - 1) start = Math.max(0, end - maxVisible + 1);
 
     // 이전 버튼
@@ -554,20 +525,15 @@
 
   function addToCourse(id, title, code, mapx, mapy) {
     const currentDay = days.find(d => d.dayNo === activeDay);
-
-    // 좌표 유효성 검증 및 변환
     const x = parseFloat(mapx);
     const y = parseFloat(mapy);
 
     if (isNaN(x) || isNaN(y)) {
-      console.warn("좌표 정보가 올바르지 않습니다:", mapx, mapy);
       alert("이 장소의 위치 정보가 없어 지도에 표시할 수 없습니다.");
       return;
     }
 
     const safeCode = code || (lastType === "acc" ? "acc" : "tsp");
-
-    // 중복 추가 방지 (같은 장소를 여러 번 담지 않게)
     const isDuplicate = currentDay.items.some(item => item.id === id && item.categoryCode === safeCode);
     if (isDuplicate) {
       alert("이미 추가된 장소입니다!");
@@ -584,11 +550,9 @@
       mapy: y
     });
 
-    // 즉시 반영
     renderCourseList();
     renderMap();
   }
-
 
   function setupTabs() {
     $("#tab-tour").click(() => {
@@ -603,61 +567,42 @@
     });
   }
 
-  // 수정완료 버튼 TODO: 수정 필요
   $("#saveBtn").click(function () {
-    if (!confirm("코스 수정을 저장하시겠습니까?")) return;
-
-    // null 또는 undefined id 확인
-    const invalid = days.some(day =>
-            day.items.some(item => !item.id)
-    );
-    if (invalid) {
-      alert("저장할 수 없는 항목이 있습니다. (장소 ID가 누락됨)");
-      console.error(days);
-      return;
-    }
+    if (!confirm("코스를 생성하시겠습니까?")) return;
 
     const req = {
       planId: planId,
       items: days.flatMap(day =>
               day.items.map((item, idx) => ({
                 placeId: item.id,
-                categoryCode: item.categoryCode || (item.type === "ACCOMMODATION" ? "acc" : "tsp"), // ✅ 기본값 보정
+                categoryCode: item.categoryCode,
                 orderNo: idx + 1,
                 dayNo: day.dayNo
               }))
       )
     };
 
-
     $.ajax({
-      url: `/courses/${planId}`,
-      type: "PUT",
+      url: `/courses`,
+      type: "POST",
       contentType: "application/json",
       data: JSON.stringify(req),
       success: () => {
-        alert("코스 수정이 완료되었습니다!");
-        window.location.href = `/plans/${planId}`;
+        alert("코스 생성이 완료되었습니다!");
+        window.location.href = `/plans/${planId}`;  //TODO: 추후 수정 필요
       },
       error: (xhr) => {
         console.error(xhr.responseText);
-        alert("코스 수정 중 오류가 발생했습니다.\n잠시 후 다시 시도해주세요.");
+        alert("코스 생성 중 오류가 발생했습니다.");
       }
     });
   });
 
-
-  // 수정취소 버튼 TODO: 수정 필요
   $("#cancelBtn").click(function() {
-    if (confirm("정말 수정 내용을 취소하시겠습니까?")) {
-      if (planId) {
-        window.location.href = `/plans/${planId}`;
-      } else {
-        window.location.href = `/plans`; // planId가 없을 경우 목록 페이지로
-      }
+    if (confirm("정말 생성을 취소하시겠습니까?")) {
+      window.location.href = `/plans/${planId}`; //TODO: 추후 수정 필요
     }
   });
-
 </script>
 </body>
 </html>

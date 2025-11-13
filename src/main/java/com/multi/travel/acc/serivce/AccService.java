@@ -8,10 +8,7 @@ package com.multi.travel.acc.serivce;
  * @since       : 25. 11. 9. 일요일
  */
 
-import com.multi.travel.acc.dto.AccDTO;
-import com.multi.travel.acc.dto.AccHasDistanceProjection;
-import com.multi.travel.acc.dto.ResAccDTO;
-import com.multi.travel.acc.dto.ResDistanceAccDTO;
+import com.multi.travel.acc.dto.*;
 import com.multi.travel.acc.entity.Acc;
 import com.multi.travel.acc.repository.AccRepository;
 import com.multi.travel.api.service.ApiService;
@@ -27,6 +24,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -35,7 +33,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -248,5 +248,24 @@ public class AccService {
                 .createdAt(acc.getCreatedAt())
                 .modifiedAt(acc.getModifiedAt())
                 .build();
+    }
+
+    public Map<String, Object> getAccSimpleList(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Acc> accPage = accRepository.findByStatus("Y", pageable);
+
+        List<ResAccSimpleDTO> list = accPage.getContent().stream()
+                .map(a -> ResAccSimpleDTO.builder()
+                        .id(a.getId())
+                        .title(a.getTitle())
+                        .mapx(a.getMapx())
+                        .mapy(a.getMapy())
+                        .build())
+                .toList();
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("totalPages", accPage.getTotalPages());
+        result.put("contents", list);
+        return result;
     }
 }

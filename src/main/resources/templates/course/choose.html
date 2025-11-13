@@ -82,10 +82,10 @@
   const planId = /*[[${planId}]]*/ 0;
 
   document.getElementById("ai").onclick = () => {
-    location.href = `/ai/courses/plan/${planId}`;
+    location.href = `/ai/courses/view/create?planId=${planId}`;
   };
   document.getElementById("manual").onclick = () => {
-    location.href = `/courses/view/create?planId=${planId}`;
+    location.href = `/courses/view/create/manual?planId=${planId}`;
   };
   document.getElementById("select").onclick = () => {
     location.href = `/courses/view/list?planId=${planId}`;

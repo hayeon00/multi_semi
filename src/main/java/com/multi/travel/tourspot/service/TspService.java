@@ -13,10 +13,7 @@ import com.multi.travel.api.service.ApiService;
 import com.multi.travel.auth.dto.CustomUser;
 import com.multi.travel.common.exception.TourSpotNotFoundException;
 import com.multi.travel.common.util.RoleUtils;
-import com.multi.travel.tourspot.dto.ResDistanceTspDTO;
-import com.multi.travel.tourspot.dto.ResTspDTO;
-import com.multi.travel.tourspot.dto.TourSpotDTO;
-import com.multi.travel.tourspot.dto.TspHasDistanceProjection;
+import com.multi.travel.tourspot.dto.*;
 import com.multi.travel.tourspot.entity.TourSpot;
 import com.multi.travel.tourspot.repository.TspRepository;
 import lombok.RequiredArgsConstructor;
@@ -154,5 +151,24 @@ public class TspService {
             return tspRepository.findAll(pageable).getTotalPages();
         }
         return tspRepository.findByStatus("Y", pageable).getTotalPages();
+    }
+
+    public Map<String, Object> getTspSimpleList(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<TourSpot> tspPage = tspRepository.findByStatus("Y", pageable);
+
+        List<ResTspSimpleDTO> list = tspPage.getContent().stream()
+                .map(t -> ResTspSimpleDTO.builder()
+                        .id(t.getId())
+                        .title(t.getTitle())
+                        .mapx(t.getMapx())
+                        .mapy(t.getMapy())
+                        .build())
+                .toList();
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("totalPages", tspPage.getTotalPages());
+        result.put("contents", list);
+        return result;
     }
 }

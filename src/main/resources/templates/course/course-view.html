@@ -5,12 +5,12 @@
   <title>코스 상세보기</title>
   <link rel="stylesheet" th:href="@{/css/common.css}">
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=9be895ba7d6b98f83597991def648c2c"></script>
+  <script th:src="@{|https://dapi.kakao.com/v2/maps/sdk.js?appkey=${kakaoKey}&autoload=false|}"></script>
 </head>
 <body>
 <header>
   <div class="header-container">
-    <div class="logo">TRAVEL PLANING</div>
+    <div class="logo">TRAVEL PLANNING</div>
     <nav>
       <a href="/">Home</a>
       <a href="/mypage">마이페이지</a>
@@ -43,25 +43,25 @@
 
 <script th:inline="javascript">
   const courseId = [[${courseId}]];
-  const loginUserId = [[${loginUserId}]]; // 백엔드에서 세션 또는 JWT로 전달
-  const isOwner = [[${isOwner}]]; // true/false
+  const loginUserId = [[${loginUserId}]]; // 로그인 사용자 ID (백엔드에서 전달)
 
-  // 초기 로드
   $(document).ready(function() {
     loadCourseDetail();
-    setupButtons();
   });
 
   /** 코스 상세 데이터 로드 */
   function loadCourseDetail() {
     $.ajax({
-      url: `/api/courses/${courseId}`,
+      url: `/courses/${courseId}`,
       type: 'GET',
       success: function(res) {
         const course = res.data;
         $('#recCount').text(course.recCount ?? 0);
         renderDays(course.items);
         renderMap(course.items);
+
+        // ✅ 버튼은 생성자 ID를 기준으로 동적 구성
+        setupButtons(course.creatorUserId);
       },
       error: function(err) {
         console.error("코스 불러오기 실패:", err);
@@ -69,7 +69,7 @@
     });
   }
 
-  /** 일차별 목록 표시 */
+  /** 일차별 탭 및 리스트 표시 */
   function renderDays(items) {
     const dayTabs = $('#dayTabs');
     const dayContent = $('#dayContent');
@@ -84,7 +84,6 @@
       dayTabs.append(tab);
     });
 
-    // 기본 첫 번째 일차 표시
     if (days.length > 0) showDay(days[0], items);
   }
 
@@ -93,13 +92,14 @@
     const list = $('#dayContent');
     list.empty();
 
-    items.filter(i => i.dayNo === dayNo)
+    items
+            .filter(i => i.dayNo === dayNo)
             .forEach(i => {
-              list.append(`<div class="place-item">• ${i.placeType} - ${i.placeId}</div>`);
+              list.append(`<div class="place-item">• ${i.categoryName ?? '장소'} (ID: ${i.placeId})</div>`);
             });
   }
 
-  /** 지도 렌더링 */
+  /** 지도 표시 */
   function renderMap(items) {
     const mapContainer = document.getElementById('map');
     const mapOption = {
@@ -108,27 +108,32 @@
     };
     const map = new kakao.maps.Map(mapContainer, mapOption);
 
-    // 좌표 예시
+    const bounds = new kakao.maps.LatLngBounds();
+
     items.forEach(i => {
-      if (i.latitude && i.longitude) {
-        const marker = new kakao.maps.Marker({
-          map: map,
-          position: new kakao.maps.LatLng(i.latitude, i.longitude)
-        });
+      if (i.mapy && i.mapx) {
+        const pos = new kakao.maps.LatLng(parseFloat(i.mapy), parseFloat(i.mapx));
+        const marker = new kakao.maps.Marker({ map, position: pos });
+        bounds.extend(pos);
       }
     });
+
+    if (!bounds.isEmpty()) map.setBounds(bounds);
   }
 
-  /** 버튼 영역 구성 */
-  function setupButtons() {
+  /** 버튼 구성 */
+  function setupButtons(creatorUserId) {
     const btnArea = $('#actionButtons');
     btnArea.empty();
 
-    const backBtn = $('<button>뒤로가기</button>').click(() => history.back());
+    // 목록으로 돌아가기
+    const backBtn = $('<button>목록으로</button>').click(() => {
+      location.href = '/courses/view/list';
+    });
     btnArea.append(backBtn);
 
-    if (isOwner) {
-      btnArea.append(`<button onclick="location.href='/courses/edit/${courseId}'">코스 수정하기</button>`);
+    if (creatorUserId && creatorUserId === loginUserId) {
+      btnArea.append(`<button onclick="location.href='/courses/view/edit?planId=${courseId}'">코스 수정하기</button>`);
       btnArea.append(`<button onclick="deleteCourse(${courseId})">코스 삭제하기</button>`);
     } else {
       btnArea.append(`<button onclick="addPlan(${courseId})">계획 추가하기</button>`);
@@ -160,18 +165,24 @@
     });
   });
 
+  /** 코스 삭제 (Soft Delete) */
   function deleteCourse(id) {
     if (!confirm('정말 삭제하시겠습니까?')) return;
     $.ajax({
-      url: `/api/courses/${id}`,
+      url: `/courses/${id}`,
       type: 'DELETE',
       success: function() {
         alert('삭제되었습니다.');
         location.href = '/courses';
+      },
+      error: function(err) {
+        console.error("삭제 실패:", err);
+        alert('삭제 중 오류가 발생했습니다.');
       }
     });
   }
 
+  /** 계획에 추가 */
   function addPlan(id) {
     alert(`${id}번 코스를 계획에 추가합니다.`);
   }

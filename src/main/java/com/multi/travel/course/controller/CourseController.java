@@ -1,13 +1,16 @@
 package com.multi.travel.course.controller;
 
+import com.multi.travel.auth.dto.CustomUser;
 import com.multi.travel.common.ResponseDto;
 import com.multi.travel.course.dto.*;
 import com.multi.travel.course.service.CourseService;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -122,13 +125,24 @@ public class CourseController {
         );
     }
 
-    /** 코스 삭제 (Soft Delete) */
+    /** 코스 삭제 (Soft Delete - 생성자 본인만 가능) */
     @DeleteMapping("/{courseId}")
-    public ResponseEntity<ResponseDto> deleteCourse(@PathVariable Long courseId) {
-        courseService.deleteCourse(courseId);
-        return ResponseEntity.ok(
-                new ResponseDto(HttpStatus.OK, "코스 삭제(비활성화) 완료", null)
-        );
+    public ResponseEntity<ResponseDto> deleteCourse(
+            @PathVariable Long courseId,
+            @AuthenticationPrincipal CustomUser loginUser
+    ) {
+        try {
+            courseService.deleteCourse(courseId, loginUser.getUserId());
+            return ResponseEntity.ok(
+                    new ResponseDto(HttpStatus.OK, "코스 삭제(비활성화) 완료", null)
+            );
+        } catch (SecurityException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new ResponseDto(HttpStatus.FORBIDDEN, e.getMessage(), null));
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ResponseDto(HttpStatus.NOT_FOUND, e.getMessage(), null));
+        }
     }
 
     /** 추천순 코스 목록 조회 */
