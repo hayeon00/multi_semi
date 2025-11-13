@@ -46,7 +46,6 @@ public class AdminController {
 
     /** 관리자 관광지 목록 페이지 */
     @GetMapping("/view/tourspot")
-    @PreAuthorize("hasRole('ADMIN')")
     public String tourspotListPage(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -79,7 +78,6 @@ public class AdminController {
 
     /** 관리자 관광지 추가 페이지 */
     @GetMapping("/view/tourspot/add")
-    @PreAuthorize("hasRole('ADMIN')")
     public String tourSpotAddPage() {
         return "admin/tourspot-add";
     }

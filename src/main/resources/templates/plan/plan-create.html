@@ -117,15 +117,32 @@
 </main>
 
 <script>
-  // ✅ 임시 출발 위치 세팅 (상세 페이지 미구현 상태)
-  const defaultSpotId = 11;           // tb_tsp.id = 11
-  const defaultSpotName = "강서역사문화거리";   // 화면 표시용 이름
-
-  // HTML 요소 참조
+  // HTML 요소 참조 먼저
   const tourSpotInput = document.getElementById("tourSpotId");
   const startLocationInput = document.getElementById("startLocation");
 
-  // ✅ 기본값 강제 세팅
+  // URL 파라미터에서 관광지 ID 가져오기
+  const urlParams = new URLSearchParams(window.location.search);
+  const tspId = urlParams.get('tspId');
+
+  // 기본값 설정
+  const defaultSpotId = tspId ? parseInt(tspId) : 11;
+  let defaultSpotName = "강서역사문화거리"; // fallback
+
+  // 관광지명 API로 자동 조회
+  if (tspId) {
+    fetch(`/spots/detail?id=${tspId}`)
+            .then(res => res.json())
+            .then(result => {
+              if (result.data && result.data.title) {
+                defaultSpotName = result.data.title;
+                startLocationInput.value = defaultSpotName;
+              }
+            })
+            .catch(err => console.error("❌ 관광지명 조회 실패:", err));
+  }
+
+  // 기본값 강제 세팅
   tourSpotInput.value = defaultSpotId;
   startLocationInput.value = defaultSpotName;
 
@@ -154,7 +171,7 @@
 
       if (response.ok) {
         alert(result.message);
-        location.href = `/plans/${result.data}`;
+        location.href = `/courses/view/choose?planId=${result.data}`;
       } else {
         alert("오류 발생: " + result.message);
       }

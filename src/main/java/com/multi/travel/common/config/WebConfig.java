@@ -48,8 +48,8 @@ public class WebConfig implements WebMvcConfigurer {
                 .addResourceLocations(reviewLocation);
         registry.addResourceHandler(accHandler)
                 .addResourceLocations(accLocations);
-        registry.addResourceHandler("/tourspotimgs/**")  // ✅ 관광지 추가
-                .addResourceLocations("file:/Users/rlagkdus/upload/tourspotimgs/");
+        registry.addResourceHandler(tourspotHandler)  // ✅ 관광지 추가
+                .addResourceLocations(tourspotLocation);
     }
 
 }

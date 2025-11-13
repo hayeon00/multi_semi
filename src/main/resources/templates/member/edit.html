@@ -38,14 +38,17 @@
 ====================== -->
 <main>
     <form th:object="${member}" class="member-form" enctype="multipart/form-data">
-        <!-- 왼쪽: 프로필 이미지 -->
-        <img th:src="${member.imageUrl != null ? member.imageUrl : '/images/default-profile.png'}"
-             alt="프로필 사진" class="profile-img" id="profile-preview">
 
-        <label class="photo-btn">
-            사진 수정
-            <input type="file" name="imageFile" id="profileImage" accept="image/*" hidden>
-        </label>
+        <!-- ✅ 왼쪽 프로필 영역 (div로 묶기!) -->
+        <div class="left-section">
+            <img th:src="${member.imageUrl != null ? member.imageUrl : '/images/default-profile.png'}"
+                 alt="프로필 사진" class="profile-img" id="profile-preview">
+
+            <label class="photo-btn">
+                프로필사진 수정
+                <input type="file" name="imageFile" id="profileImage" accept="image/*" hidden>
+            </label>
+        </div>
 
         <!-- 오른쪽: 회원정보 입력 -->
         <div class="right-section">

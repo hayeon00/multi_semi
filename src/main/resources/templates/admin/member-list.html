@@ -64,6 +64,7 @@
     // ✅ 기존 fetch → fetchWithRefresh()로 변경
     async function loadMembers() {
         try {
+            console.log("나패치하러 들어간다");
             const response = await fetchWithRefresh("/admin/members", {
                 method: "GET",
                 headers: { "Content-Type": "application/json" },
