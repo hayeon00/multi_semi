@@ -16,11 +16,19 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: #ddd;
+            background: #f5f6f8;
             padding: 15px 40px;
+            border-bottom: 1px solid #ccc;
         }
-        .page-header h1 { font-size: 20px; margin: 0; }
-        .page-header nav a { margin-left: 15px; color: #333; text-decoration: none; }
+
+        .page-header h1 { font-size: 20px; margin: 0; color: #333; }
+
+        .page-header nav a {
+            margin-left: 15px;
+            color: #333;
+            text-decoration: none;
+            font-weight: 500;
+        }
 
         .content-wrapper {
             width: 1200px;
@@ -61,25 +69,42 @@
             font-weight: bold;
         }
 
-        .review-images img {
-            width: 120px;
-            height: auto;
-            border-radius: 10px;
-            margin-right: 10px;
-            margin-top: 10px;
-        }
-
         .no-review {
             text-align: center;
             color: #999;
             padding: 40px 0;
         }
 
-        @media (max-width: 768px) {
-            .content-wrapper { width: 90%; padding: 20px; }
-            .review-images img { width: 100px; }
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+            gap: 5px;
         }
 
+        .pagination button {
+            background: none;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+
+        .pagination button.active {
+            background: #000;
+            color: #fff;
+            font-weight: bold;
+        }
+
+        .pagination button:disabled {
+            background: #eee;
+            cursor: default;
+            color: #aaa;
+        }
+
+        @media (max-width: 768px) {
+            .content-wrapper { width: 90%; padding: 20px; }
+        }
     </style>
 </head>
 <body>
@@ -96,20 +121,20 @@
 
 <div class="content-wrapper">
     <h2>내가 쓴 리뷰</h2>
-    <div id="myReviewList">
-        <!-- 리뷰가 여기에 렌더링됨 -->
-    </div>
+    <div id="myReviewList"></div>
+    <div class="pagination" id="pagination"></div>
 </div>
 
 <script th:src="@{/js/common.js}"></script>
 <script>
-    async function loadMyReviews() {
+    let currentPage = 0;
+
+    async function loadMyReviews(page = 0) {
         try {
-            const res = await fetchWithRefresh('/reviews/my', {
+            const res = await fetchWithRefresh(`/reviews/my?page=${page}`, {
                 method: 'GET',
                 credentials: 'include'
             });
-
             const result = await res.json();
             const reviews = result.content;
             const container = document.getElementById('myReviewList');
@@ -117,31 +142,58 @@
 
             if (!reviews || reviews.length === 0) {
                 container.innerHTML = `<div class="no-review">작성한 리뷰가 없습니다.</div>`;
+                document.getElementById("pagination").innerHTML = "";
                 return;
             }
 
             reviews.forEach(r => {
                 const div = document.createElement("div");
                 div.className = "review-card";
-
                 div.innerHTML = `
-          <h3>${r.title}</h3>
-          <p>${r.content}</p>
-          <p class="rating">★ ${r.rating} / 5</p>
-          <div class="review-images">
-            ${(r.imageUrls || []).map(url => `<img src="${url}" alt="리뷰 이미지">`).join("")}
-          </div>
-          <p style="font-size: 14px; color: #888;">작성자: ${r.writer}</p>
-        `;
+                    <h3>${r.title}</h3>
+                    <p>${r.content}</p>
+                    <p class="rating">★ ${r.rating} / 5</p>
+                    <p style="font-size: 14px; color: #888;">작성자: ${r.writer}</p>
+                `;
                 container.appendChild(div);
             });
+
+            renderPagination(result.totalPages, result.number);
         } catch (e) {
             console.error("리뷰 로딩 실패:", e);
             document.getElementById('myReviewList').innerHTML = `<div class="no-review">리뷰를 불러오는 중 오류가 발생했습니다.</div>`;
         }
     }
 
-    window.onload = loadMyReviews;
+    function renderPagination(totalPages, current) {
+        const pagination = document.getElementById("pagination");
+        pagination.innerHTML = "";
+        currentPage = current;
+
+        if (totalPages <= 1) return;
+
+        const prevBtn = document.createElement("button");
+        prevBtn.textContent = "« 이전";
+        prevBtn.disabled = currentPage === 0;
+        prevBtn.onclick = () => loadMyReviews(currentPage - 1);
+        pagination.appendChild(prevBtn);
+
+        for (let i = 0; i < totalPages; i++) {
+            const pageBtn = document.createElement("button");
+            pageBtn.textContent = i + 1;
+            if (i === currentPage) pageBtn.classList.add("active");
+            pageBtn.onclick = () => loadMyReviews(i);
+            pagination.appendChild(pageBtn);
+        }
+
+        const nextBtn = document.createElement("button");
+        nextBtn.textContent = "다음 »";
+        nextBtn.disabled = currentPage >= totalPages - 1;
+        nextBtn.onclick = () => loadMyReviews(currentPage + 1);
+        pagination.appendChild(nextBtn);
+    }
+
+    window.onload = () => loadMyReviews(0);
 </script>
 </body>
 </html>
