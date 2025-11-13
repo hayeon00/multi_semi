@@ -4,7 +4,6 @@ import com.multi.travel.admin.controller.dto.TourSpotReqDto;
 import com.multi.travel.admin.service.AdminService;
 import com.multi.travel.common.ResponseDto;
 import com.multi.travel.member.service.MemberService;
-import com.multi.travel.review.dto.ReviewDetailDto;
 import com.multi.travel.review.service.ReviewService;
 import com.multi.travel.tourspot.dto.TourSpotDTO;
 import lombok.RequiredArgsConstructor;
