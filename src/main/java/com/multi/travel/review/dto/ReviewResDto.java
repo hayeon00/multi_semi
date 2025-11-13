@@ -1,8 +1,6 @@
 package com.multi.travel.review.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -17,6 +15,8 @@ import java.util.List;
 @Data
 @Builder
 @AllArgsConstructor
+@Getter
+@Setter
 public class ReviewResDto {
     private Long id;
     private String title;

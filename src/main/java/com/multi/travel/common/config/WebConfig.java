@@ -49,7 +49,7 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addResourceHandler(accHandler)
                 .addResourceLocations(accLocations);
         registry.addResourceHandler("/tourspotimgs/**")  // ✅ 관광지 추가
-                .addResourceLocations("file:/Users/chang/Desktop/upload/tourspotimgs/");
+                .addResourceLocations("file:/Users/rlagkdus/upload/tourspotimgs/");
     }
 
 }

@@ -168,6 +168,17 @@ public class ReviewService {
     }
 
 
+//    public void saveCourseReview(CourseReviewDto dto, Long memberId) {
+//        CourseReview review = CourseReview.builder()
+//                .content(dto.getContent())
+//                .course(courseRepository.findById(dto.getCourseId()).orElseThrow())
+//                .member(memberRepository.findById(memberId).orElseThrow())
+//                .build();
+//
+//        reviewRepository.save(review);
+//    }
+
+
 
 
 

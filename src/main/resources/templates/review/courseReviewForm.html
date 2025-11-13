@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>코스 리뷰 등록 | Travel Planing</title>
+    <link th:href="@{/css/admin.css}" rel="stylesheet">
+    <style>
+        .review-form {
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            max-width: 700px;
+            margin: auto;
+        }
+
+        .review-form h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 22px;
+            color: #2c3e50;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: #34495e;
+        }
+
+        input[type="text"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+            background: #fdfdfd;
+        }
+
+        input[type="file"] {
+            margin-top: 10px;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #2980b9;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <div class="logo">
+        <img th:src="@{/images/logo.png}" alt="Logo">
+        <span class="title">TRAVEL PLANING</span>
+    </div>
+
+    <nav class="admin-nav">
+        <div class="welcome-text">관리자 님 환영합니다.</div>
+        <div class="menu-links">
+            <a th:href="@{/}">Home</a>
+            <a th:href="@{/mypage}">마이페이지</a>
+            <a th:href="@{/logout}">로그아웃</a>
+        </div>
+    </nav>
+</header>
+
+<main>
+    <div class="admin-container">
+        <aside class="admin-sidebar">
+            <h2 class="admin-title">코스 리뷰 등록</h2>
+            <p class="admin-sub">관리자 전용 리뷰 등록 화면입니다.</p>
+        </aside>
+
+        <section class="admin-content">
+            <div class="review-form">
+                <h2>📝 리뷰 작성</h2>
+                <form id="reviewForm">
+                    <input type="hidden" name="targetId" th:value="${courseId}" />
+                    <input type="hidden" name="targetType" value="COURSE" />
+
+                    <div class="form-group">
+                        <label for="title">제목</label>
+                        <input type="text" id="title" name="title" placeholder="제목을 입력하세요" required />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="content">내용</label>
+                        <textarea id="content" name="content" rows="5" placeholder="리뷰 내용을 입력하세요" required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="rating">평점</label>
+                        <select id="rating" name="rating" required>
+                            <option value="5">★★★★★ (5점)</option>
+                            <option value="4">★★★★☆ (4점)</option>
+                            <option value="3">★★★☆☆ (3점)</option>
+                            <option value="2">★★☆☆☆ (2점)</option>
+                            <option value="1">★☆☆☆☆ (1점)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="reviewImages">사진 업로드</label>
+                        <input type="file" id="reviewImages" name="reviewImages" accept="image/*" multiple />
+                    </div>
+
+                    <button type="submit">리뷰 등록</button>
+                </form>
+            </div>
+        </section>
+    </div>
+</main>
+
+<footer>
+    &copy; 2025 Travel Planing. All rights reserved.
+</footer>
+
+<script th:src="@{/js/common.js}"></script>
+
+<script>
+    document.getElementById("reviewForm").addEventListener("submit", async function (e) {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+
+        const response = await fetchWithRefresh("/review/view/regist/course", {
+            method: "POST",
+            body: formData,
+            credentials: "include"
+        });
+
+        if (response.ok) {
+            alert("리뷰가 등록되었습니다.");
+            window.location.href = "/review/view/course/" + formData.get("targetId");
+        } else {
+            alert("등록 실패 ❌");
+        }
+    });
+</script>
+</body>
+</html>

@@ -4,7 +4,6 @@ import com.multi.travel.admin.controller.dto.TourSpotReqDto;
 import com.multi.travel.admin.service.AdminService;
 import com.multi.travel.common.ResponseDto;
 import com.multi.travel.member.service.MemberService;
-import com.multi.travel.review.dto.ReviewDetailDto;
 import com.multi.travel.review.service.ReviewService;
 import com.multi.travel.tourspot.dto.TourSpotDTO;
 import lombok.RequiredArgsConstructor;
@@ -42,7 +41,7 @@ public class AdminController {
     /** 관리자 회원 목록 페이지 */
     @GetMapping("/view/members")
     public String memberListPage() {
-        return "admin/member-list"; // → templates/admin/member-list.html
+        return "admin/member-list"; // → templates/admin/member-courseReviewList.html
     }
 
     /** 관리자 관광지 목록 페이지 */
