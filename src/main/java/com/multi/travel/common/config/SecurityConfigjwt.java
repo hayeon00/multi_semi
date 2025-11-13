@@ -60,7 +60,9 @@ public class SecurityConfigjwt {
                                 "/js/**",
                                 "/images/**",
                                 "/fonts/**",
-                                "/static/**"
+                                "/static/**",
+                                "/admin/view/**"
+
                         ).permitAll()
                         .requestMatchers("/login", "/signup", "/css/**", "/images/**").permitAll()
                         .requestMatchers("/auth/**", "/api/auth/**").permitAll()

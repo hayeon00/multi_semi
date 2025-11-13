@@ -19,7 +19,7 @@ import java.time.LocalDate;
  */
 
 @Entity
-@Table(name="tb_pln")
+@Table(name="trip_plan")
 @Getter
 @Setter
 @Builder

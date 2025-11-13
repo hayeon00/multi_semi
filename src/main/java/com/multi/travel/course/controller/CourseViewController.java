@@ -6,6 +6,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 /**
  * Please explain the class!!!
@@ -31,5 +32,12 @@ public class CourseViewController {
     public String viewCoursePage(@PathVariable Long planId, Model model) {
         model.addAttribute("planId", planId);
         return "course/course-view";
+    }
+
+    /** 계획 생성 후 & 코스 생성 전 분기 페이지 */
+    @GetMapping("/choose")
+    public String showChoosePage(@RequestParam Long planId, Model model) {
+        model.addAttribute("planId", planId);
+        return "course/choose"; // templates/course/choose.html
     }
 }
