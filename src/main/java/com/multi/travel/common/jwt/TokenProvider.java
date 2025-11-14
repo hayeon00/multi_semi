@@ -25,8 +25,8 @@ import java.util.stream.Collectors;
 public class TokenProvider {
 
     private static final String AUTHORITIES_KEY = "auth";  // 클레임에서 권한정보담을키
-    private static final long ACCESS_TOKEN_EXPIRE_TIME = 1000 * 60 * 30;     //30분
-    private static final long REFRESH_TOKEN_EXPIRE_TIME =1000L * 60 * 60 * 24; //1000L * 60 * 60 * 24 * 1;  // 1일
+    private static final long ACCESS_TOKEN_EXPIRE_TIME = 1000 * 60 * 3;     //3분
+    private static final long REFRESH_TOKEN_EXPIRE_TIME =1000L * 60 * 5; //1000L * 60 * 60 * 24 * 1;  // 1일
 
     private final JwtProvider jwtProvider;  // JwtProvider 의존성 추가
     private final Key SKEY;
@@ -43,25 +43,20 @@ public class TokenProvider {
 
     }
 
-    public String generateToken(String loginId, List<String> roles, String code) {
+    public String generateToken(String memberEmail, List<String> roles, String code) {
 
         Claims claims = Jwts
                 .claims()
-                .setSubject(loginId);
-
-        // ✅ 두 토큰 모두에 auth 클레임 추가 (역할정보 유지)
-        claims.put(AUTHORITIES_KEY, String.join(",", roles));
+                .setSubject(memberEmail);
 
         long now = (new Date()).getTime();
         Date tokenExpiresIn = new Date();
-        if (code.equals("A")) {  //액세스 토큰
+        if (code.equals("A")) {
             tokenExpiresIn = new Date(now + ACCESS_TOKEN_EXPIRE_TIME);
             claims.put(AUTHORITIES_KEY, String.join(",", roles)); // List<String> -> 콤마로 구분된 문자열
-        } else {  //리프레시 토큰
+        } else {
             tokenExpiresIn = new Date(now + REFRESH_TOKEN_EXPIRE_TIME);
         }
-
-
 
         return Jwts.builder()
                 .setIssuer(ISSUER) // 프로퍼티에 설정한 발행자
@@ -129,8 +124,7 @@ public class TokenProvider {
         log.info("[TokenProvider] authorities : {}", authorities);
 
         CustomUser customUser = new CustomUser();
-        customUser.setUserId(claims.getSubject()); // 로그인 ID(loginId) -> 기존 코드(claims.getId())의 문제: 실제 JWT에는 id 필드가 없음
-        customUser.setEmail((String) claims.get("email")); // 이메일 claim이 있을 때만 -> 기존 코드(claims.getSubject())의 문제: subject에 로그인 ID가 들어 있음
+        customUser.setEmail(claims.getSubject());
         customUser.setAuthorities(authorities);
         return new UsernamePasswordAuthenticationToken(customUser, "", authorities);
     }
