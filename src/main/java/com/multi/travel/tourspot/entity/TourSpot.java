@@ -41,7 +41,7 @@ public class TourSpot {
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;   // 설명
 
-    @Column(name = "homepage", length = 200)
+    @Column(name = "homepage", columnDefinition ="TEXT")
     private String homepage;
 
     @Column(name = "tel", length = 100)
