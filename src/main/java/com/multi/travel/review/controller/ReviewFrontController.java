@@ -8,10 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
 @RequiredArgsConstructor
@@ -45,6 +42,25 @@ public class ReviewFrontController {
         model.addAttribute("review", review);
         return "review/course-review-detail";
     }
+
+
+    @GetMapping("/edit")
+    public String showEditPage(@RequestParam Long reviewId, @AuthenticationPrincipal CustomUser user, Model model) {
+        ReviewDetailDto review = reviewService.getReviewDetail(reviewId, user.getUserId());
+        model.addAttribute("review", review);
+        return "review/course-review-edit";
+    }
+
+
+//    @PostMapping("/{reviewId}")
+//    public String updateReview(@PathVariable Long reviewId,
+//                               @AuthenticationPrincipal CustomUser user,
+//                               @ModelAttribute ReviewUpdateDto dto) {
+//        reviewService.updateReview(reviewId, dto, user.getUserId());
+//        return "redirect:/reviews/view/detail?reviewId=" + reviewId;
+//    }
+
+
 
 
 
