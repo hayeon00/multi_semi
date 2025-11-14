@@ -2,173 +2,357 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>관리자 관광지 추가 | Travel Planing</title>
-    <link th:href="@{/css/admin.css}" rel="stylesheet">
-    <style>
-        body {
-            background-color: #fffce6;
-            font-family: 'Pretendard', sans-serif;
-        }
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background-color: #e0e0e0;
-            padding: 10px 30px;
-        }
-        .admin-container {
-            display: flex;
-            justify-content: center;
-            margin-top: 20px;
-        }
-        form {
-            display: flex;
-            flex-direction: row;
-            gap: 40px;
-            background: white;
-            padding: 40px;
-            border-radius: 8px;
-            box-shadow: 0 0 8px rgba(0,0,0,0.1);
-        }
-        .left, .right {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        input, textarea {
-            width: 300px;
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-        }
-        textarea {
-            height: 100px;
-        }
-        .btns {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 20px;
-        }
-        button {
-            background-color: #efefef;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            padding: 8px 20px;
-            cursor: pointer;
-        }
-        .preview img {
-            width: 250px;
-            height: 150px;
-            border-radius: 8px;
-            object-fit: cover;
-            border: 1px solid #ddd;
-        }
-        .switch {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-    </style>
+    <title>관광지 추가 | Travel Planning</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <link rel="stylesheet" th:href="@{/css/admin_tourspot_add.css}">
 </head>
 
 <body>
 <header>
-    <div>
-        <img th:src="@{/images/logo.png}" alt="Logo" style="width:40px; vertical-align: middle;">
-        <span style="font-weight:bold; font-size:20px;">TRAVEL PLANING</span>
+    <div class="header-left">
+        <img th:src="@{/images/logo.png}" alt="Logo">
+        <div class="title">TRAVEL PLANNING</div>
     </div>
-    <div>
-        <span>{관리자} 님 환영합니다.</span> |
-        <a th:href="@{/}">Home</a> |
-        <a th:href="@{/mypage}">마이페이지</a> |
-        <a th:href="@{/logout}">로그아웃</a>
+    <div class="header-right">
+        <div class="welcome-text">
+            <span class="admin-badge">관리자</span>님 환영합니다.
+        </div>
+        <nav class="nav">
+            <a th:href="@{/admin/view/dashboard}" class="nav-link">
+                <span class="nav-icon">🏠</span>
+                <span>대시보드</span>
+            </a>
+            <a th:href="@{/admin/view/members}" class="nav-link">
+                <span class="nav-icon">👥</span>
+                <span>회원관리</span>
+            </a>
+            <a th:href="@{/admin/view/tourspot}" class="nav-link active">
+                <span class="nav-icon">🗺️</span>
+                <span>관광지관리</span>
+            </a>
+            <a th:href="@{/logout}" class="nav-link logout">
+                <span class="nav-icon">🚪</span>
+                <span>로그아웃</span>
+            </a>
+        </nav>
     </div>
 </header>
 
-<main class="admin-container">
-    <form id="tourspotForm" onsubmit="return submitForm(event)">
-        <div class="left">
-            <label>Adress</label>
-            <input type="text" id="address" placeholder="주소를 입력하세요" required>
-
-            <label>Title</label>
-            <input type="text" id="title" placeholder="제목을 입력하세요" required>
-
-            <label>AreaCode</label>
-            <input type="text" id="areacode" placeholder="지역코드를 입력하세요">
-
-            <label>SIGUNGUCODE</label>
-            <input type="text" id="sigungucode" placeholder="시군구 코드를 입력하세요">
-
-            <label>TEL</label>
-            <input type="text" id="tel" placeholder="전화번호를 입력하세요">
-
-            <div class="switch">
-                <label>Status</label>
-                <input type="checkbox" id="status" checked>
-            </div>
+<main>
+    <div class="page-header">
+        <div class="breadcrumb">
+            <a th:href="@{/admin/view/tourspot}">관광지 관리</a>
+            <span class="separator">›</span>
+            <span class="current">새 관광지 추가</span>
         </div>
+        <h2 class="page-title">
+            <span class="title-icon">➕</span>
+            새로운 관광지 추가
+        </h2>
+        <p class="page-desc">새로운 관광지 정보를 입력하고 등록합니다</p>
+    </div>
 
-        <div class="right">
-            <label>관광지 이미지</label>
-            <input type="file" id="imageInput" accept="image/*" onchange="previewImage(event)">
-            <div class="preview">
-                <img id="preview" th:src="@{/images/sample.png}" alt="preview">
+    <form id="addForm" enctype="multipart/form-data">
+        <div class="form-container">
+            <!-- 왼쪽 입력 폼 -->
+            <div class="form-section form-left">
+                <div class="section-title">
+                    <span class="section-icon">📋</span>
+                    기본 정보
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label required">
+                        <span class="label-icon">📝</span>
+                        관광지 제목
+                    </label>
+                    <input type="text"
+                           id="title"
+                           name="title"
+                           class="form-input"
+                           placeholder="예: 경복궁"
+                           required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label required">
+                        <span class="label-icon">📍</span>
+                        주소
+                    </label>
+                    <input type="text"
+                           id="address"
+                           name="address"
+                           class="form-input"
+                           placeholder="예: 서울특별시 종로구 사직로 161"
+                           required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        <span class="label-icon">📞</span>
+                        전화번호
+                    </label>
+                    <input type="text"
+                           id="tel"
+                           name="tel"
+                           class="form-input"
+                           placeholder="예: 02-3700-3900">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">
+                            <span class="label-icon">🏷️</span>
+                            지역 코드
+                        </label>
+                        <input type="text"
+                               id="areacode"
+                               name="areacode"
+                               class="form-input"
+                               placeholder="예: 1">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            <span class="label-icon">🏷️</span>
+                            시군구 코드
+                        </label>
+                        <input type="text"
+                               id="sigungucode"
+                               name="sigungucode"
+                               class="form-input"
+                               placeholder="예: 1">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        <span class="label-icon">🔘</span>
+                        상태
+                    </label>
+                    <div class="switch-container">
+                        <input type="checkbox"
+                               id="status"
+                               name="status"
+                               class="switch-input"
+                               checked>
+                        <label for="status" class="switch-label">
+                            <span class="switch-slider"></span>
+                        </label>
+                        <span class="switch-text">활성화</span>
+                    </div>
+                </div>
             </div>
 
-            <label>Desc</label>
-            <textarea id="description" placeholder="상세설명을 입력하세요"></textarea>
+            <!-- 오른쪽 이미지 및 설명 영역 -->
+            <div class="form-section form-right">
+                <div class="section-title">
+                    <span class="section-icon">🖼️</span>
+                    이미지 및 설명
+                </div>
 
-            <div class="btns">
-                <button type="submit">등록</button>
-                <button type="button" onclick="window.history.back()">뒤로가기</button>
+                <div class="image-upload-section">
+                    <label class="form-label required">
+                        <span class="label-icon">📷</span>
+                        대표 이미지
+                    </label>
+
+                    <div class="image-preview-container">
+                        <img id="preview"
+                             th:src="@{/images/sample.png}"
+                             alt="미리보기 이미지"
+                             class="preview-image">
+                        <div class="image-placeholder" id="placeholder">
+                            <span class="placeholder-icon">🖼️</span>
+                            <p class="placeholder-text">이미지를 선택해주세요</p>
+                        </div>
+                    </div>
+
+                    <div class="file-input-wrapper">
+                        <input type="file"
+                               id="imageInput"
+                               name="firstImageFile"
+                               class="file-input"
+                               accept="image/*"
+                               onchange="previewImage(event)"
+                               required>
+                        <label for="imageInput" class="file-label">
+                            <span class="file-icon">📁</span>
+                            <span class="file-text">이미지 선택하기</span>
+                        </label>
+                    </div>
+
+                    <div class="image-info">
+                        <p class="info-text">
+                            <span class="info-icon">ℹ️</span>
+                            권장 크기: 800x600px 이상
+                        </p>
+                        <p class="info-text">
+                            <span class="info-icon">ℹ️</span>
+                            최대 크기: 5MB
+                        </p>
+                        <p class="info-text">
+                            <span class="info-icon">ℹ️</span>
+                            지원 형식: JPG, PNG, WEBP
+                        </p>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        <span class="label-icon">📄</span>
+                        상세 설명
+                    </label>
+                    <textarea id="description"
+                              name="description"
+                              class="form-textarea"
+                              placeholder="관광지에 대한 상세한 설명을 입력하세요&#10;&#10;예: 경복궁은 조선왕조의 법궁이자 대표적인 궁궐로..."></textarea>
+                </div>
             </div>
         </div>
     </form>
+
+    <!-- 하단 버튼 -->
+    <div class="btn-container">
+        <button type="button" class="btn btn-submit" onclick="submitAdd()">
+            <span class="btn-icon">✓</span>
+            <span>등록하기</span>
+        </button>
+        <button type="button" class="btn btn-cancel" onclick="confirmCancel()">
+            <span class="btn-icon">↩️</span>
+            <span>취소</span>
+        </button>
+    </div>
 </main>
 
+<footer>
+    <p>&copy; 2025 Travel Planning. All rights reserved.</p>
+</footer>
+
 <script>
-    async function submitForm(event) {
-        event.preventDefault();
-
-        const dto = {
-            title: document.getElementById('title').value,
-            description: document.getElementById('description').value,
-            address: document.getElementById('address').value,
-            tel: document.getElementById('tel').value,
-            areacode: document.getElementById('areacode').value,
-            sigungucode: document.getElementById('sigungucode').value,
-            status: document.getElementById('status').checked ? "Y" : "N"
-        };
-
-        const res = await fetch("/admin/tourspot", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            credentials: "include",
-            body: JSON.stringify(dto)
-        });
-
-        if (res.ok) {
-            alert("관광지 등록 성공!");
-            location.href = "/admin/view/tourspot/list";
-        } else {
-            alert("등록 실패: " + res.status);
-        }
-    }
-
+    // 이미지 미리보기
     function previewImage(event) {
         const file = event.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = e => {
-                document.getElementById('preview').src = e.target.result;
-            };
-            reader.readAsDataURL(file);
+        const preview = document.getElementById("preview");
+        const placeholder = document.getElementById("placeholder");
+
+        if (!file) return;
+
+        // 파일 크기 체크 (5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            alert('⚠️ 파일 크기가 5MB를 초과합니다.');
+            event.target.value = '';
+            return;
+        }
+
+        // 파일 타입 체크
+        if (!file.type.startsWith('image/')) {
+            alert('⚠️ 이미지 파일만 업로드 가능합니다.');
+            event.target.value = '';
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = e => {
+            preview.src = e.target.result;
+            preview.style.display = 'block';
+            placeholder.style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+    }
+
+    // 취소 확인
+    function confirmCancel() {
+        if (confirm('작성을 취소하시겠습니까?\n입력한 내용이 저장되지 않습니다.')) {
+            window.history.back();
         }
     }
-</script>
 
+    // 관광지 등록
+    async function submitAdd() {
+        // 필수 필드 검증
+        const title = document.getElementById("title").value.trim();
+        const address = document.getElementById("address").value.trim();
+        const imageFile = document.getElementById("imageInput").files[0];
+
+        if (!title) {
+            alert('⚠️ 관광지 제목을 입력해주세요.');
+            document.getElementById("title").focus();
+            return;
+        }
+
+        if (!address) {
+            alert('⚠️ 주소를 입력해주세요.');
+            document.getElementById("address").focus();
+            return;
+        }
+
+        if (!imageFile) {
+            alert('⚠️ 대표 이미지를 선택해주세요.');
+            document.getElementById("imageInput").focus();
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("title", title);
+        formData.append("description", document.getElementById("description").value.trim());
+        formData.append("address", address);
+        formData.append("tel", document.getElementById("tel").value.trim());
+        formData.append("areacode", document.getElementById("areacode").value.trim());
+        formData.append("sigungucode", document.getElementById("sigungucode").value.trim());
+        formData.append("status", document.getElementById("status").checked ? "Y" : "N");
+        formData.append("firstImageFile", imageFile);
+
+        // 로딩 표시
+        const submitBtn = document.querySelector('.btn-submit');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<span>등록 중...</span>';
+        submitBtn.disabled = true;
+
+        try {
+            const res = await fetch("/admin/tourspot", {
+                method: "POST",
+                body: formData,
+                credentials: "include"
+            });
+
+            if (res.ok) {
+                alert("✅ 관광지가 성공적으로 등록되었습니다!");
+                location.href = "/admin/view/tourspot";
+            } else {
+                const msg = await res.text();
+                alert("❌ 등록 실패: " + msg);
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        } catch (err) {
+            console.error("네트워크 오류:", err);
+            alert("❌ 네트워크 오류가 발생했습니다: " + err.message);
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }
+    }
+
+    // 페이지 나갈 때 경고
+    let formChanged = false;
+    document.querySelectorAll('input, textarea').forEach(element => {
+        element.addEventListener('input', () => {
+            formChanged = true;
+        });
+    });
+
+    window.addEventListener('beforeunload', (e) => {
+        if (formChanged) {
+            e.preventDefault();
+            e.returnValue = '';
+        }
+    });
+
+    // 스위치 텍스트 업데이트
+    document.getElementById('status').addEventListener('change', function() {
+        const switchText = document.querySelector('.switch-text');
+        switchText.textContent = this.checked ? '활성화' : '비활성화';
+    });
+</script>
 </body>
 </html>

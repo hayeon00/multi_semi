@@ -1,0 +1,269 @@
+/* ======================
+   관광지 관리 전용 스타일
+====================== */
+
+/* 관광지 추가 버튼 */
+.btn-add-tourspot {
+    width: 100%;
+    padding: 14px 20px;
+    margin-top: 16px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.btn-add-tourspot:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.btn-add-tourspot:active {
+    transform: translateY(0);
+}
+
+.add-icon {
+    font-size: 18px;
+}
+
+/* 관광지 썸네일 이미지 */
+.tourspot-thumbnail {
+    width: 80px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 2px solid #f0f0f0;
+    transition: all 0.3s ease;
+}
+
+.tourspot-thumbnail:hover {
+    transform: scale(1.1);
+    border-color: #667eea;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* 관광지 제목 */
+.tourspot-title {
+    font-weight: 600;
+    color: #1a1a1a;
+}
+
+/* 관광지 주소 */
+.tourspot-address {
+    color: #6b7280;
+    font-size: 13px;
+}
+
+/* 추천 수 */
+.rec-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    padding: 4px 10px;
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    color: white;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 13px;
+}
+
+/* 클릭 가능한 행 효과 */
+.clickable-row {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.clickable-row:hover {
+    background-color: #f9fafb;
+    transform: translateX(2px);
+}
+
+.clickable-row:active {
+    transform: translateX(0);
+}
+
+/* 페이지네이션 스타일 개선 */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid #f0f0f0;
+}
+
+.page-btn,
+.page-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    padding: 0 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    color: #4b5563;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    background: white;
+}
+
+.page-btn:hover,
+.page-number:hover {
+    border-color: #667eea;
+    color: #667eea;
+    background-color: #f9fafb;
+}
+
+.page-number.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-color: transparent;
+    font-weight: 700;
+}
+
+.prev-btn,
+.next-btn {
+    padding: 0 16px;
+    font-weight: 600;
+}
+
+/* 빈 상태 스타일 확장 */
+.empty-state {
+    padding: 40px 20px;
+}
+
+.empty-icon {
+    font-size: 56px;
+    display: block;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+.empty-state p {
+    font-size: 16px;
+    color: #9ca3af;
+    font-weight: 500;
+}
+
+/* 테이블 특화 스타일 */
+#tourspotTable tbody tr {
+    position: relative;
+}
+
+#tourspotTable .btn-action {
+    position: relative;
+    z-index: 10;
+}
+
+/* 반응형 - 관광지 관리 */
+@media (max-width: 1200px) {
+    .tourspot-thumbnail {
+        width: 60px;
+        height: 45px;
+    }
+}
+
+@media (max-width: 768px) {
+    .btn-add-tourspot {
+        font-size: 14px;
+        padding: 12px 16px;
+    }
+
+    .tourspot-thumbnail {
+        width: 50px;
+        height: 38px;
+    }
+
+    .tourspot-title {
+        font-size: 13px;
+    }
+
+    .tourspot-address {
+        font-size: 12px;
+    }
+
+    .rec-count {
+        font-size: 12px;
+        padding: 3px 8px;
+    }
+}
+
+/* 로딩 상태 (선택사항) */
+.loading {
+    text-align: center;
+    padding: 40px;
+    color: #9ca3af;
+}
+
+.loading::after {
+    content: "...";
+    animation: dots 1.5s steps(4, end) infinite;
+}
+
+@keyframes dots {
+    0%, 20% { content: "."; }
+    40% { content: ".."; }
+    60%, 100% { content: "..."; }
+}
+
+/* 검색 결과 하이라이트 (선택사항) */
+.search-highlight {
+    background-color: #fef3c7;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-weight: 600;
+}
+
+/* 테이블 셀 정렬 최적화 */
+#tourspotTable td {
+    vertical-align: middle;
+}
+
+#tourspotTable .text-center {
+    text-align: center;
+}
+
+/* 상태 배지 여백 조정 */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 버튼 액션 영역 */
+#tourspotTable td:last-child {
+    padding: 8px;
+}
+
+/* 스크롤 바 스타일 (선택사항) */
+.table-container::-webkit-scrollbar {
+    height: 8px;
+}
+
+.table-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 4px;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
+}

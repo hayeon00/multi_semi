@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>관리자 페이지 - TRAVEL PLANING</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f0;
+        }
+
+        /* 헤더 스타일 */
+        .header {
+            background-color: #d3d3d3;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .logo {
+            width: 60px;
+            height: 60px;
+            background-color: #fff;
+            border: 2px solid #333;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 5px;
+        }
+
+        .logo-text {
+            font-size: 10px;
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
+
+        .logo-icon {
+            font-size: 24px;
+        }
+
+        .site-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .user-info {
+            color: #333;
+            font-size: 14px;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav-menu a {
+            text-decoration: none;
+            color: #333;
+            padding: 8px 16px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        .nav-menu a:hover {
+            background-color: #bbb;
+        }
+
+        /* 컨테이너 */
+        .container {
+            padding: 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .page-title {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 40px;
+            color: #333;
+        }
+
+        /* 그리드 레이아웃 */
+        .admin-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        /* 카드 스타일 */
+        .info-card {
+            background-color: #e0e0e0;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .info-card.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .info-card.highlight {
+            border: 3px solid #4a90e2;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #bbb;
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .more-btn {
+            background-color: #333;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+
+        .more-btn:hover {
+            background-color: #555;
+        }
+
+        /* 테이블 스타일 */
+        .data-table {
+            width: 100%;
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .data-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table thead {
+            background-color: #666;
+            color: white;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .data-table th {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .data-table tbody tr:hover {
+            background-color: #f9f9f9;
+        }
+
+        .data-table td {
+            font-size: 13px;
+            color: #333;
+        }
+
+        .data-table td img {
+            display: block;
+            margin: 0 auto;
+        }
+
+        /* 빈 데이터 메시지 */
+        .empty-message {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+            font-size: 16px;
+        }
+
+        /* 상태 배지 */
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-active {
+            background-color: #4caf50;
+            color: white;
+        }
+
+        .status-inactive {
+            background-color: #f44336;
+            color: white;
+        }
+
+        /* 로딩 스피너 */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #333;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+<!-- 헤더 -->
+<div class="header">
+    <div class="logo-section">
+        <div class="logo">
+            <div class="logo-text">Logo</div>
+            <div class="logo-icon">🖼️</div>
+        </div>
+        <div class="site-title">TRAVEL PLANING</div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 30px;">
+        <div class="user-info">{관리자} 님 환영합니다.</div>
+        <div class="nav-menu">
+            <a href="/">Home</a>
+            <a href="/admin/view/adminpage">관리자페이지</a>
+            <a href="/logout">로그아웃</a>
+        </div>
+    </div>
+</div>
+
+<!-- 메인 컨텐츠 -->
+<div class="container">
+    <h1 class="page-title">관리자 대시보드</h1>
+
+    <div class="admin-grid">
+        <!-- 회원 정보 카드 -->
+        <div class="info-card">
+            <div class="card-header">
+                <h2 class="card-title">회원 정보</h2>
+                <button class="more-btn" onclick="location.href='/admin/view/members'">더보기</button>
+            </div>
+            <div class="data-table" id="memberTable">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <div>회원 정보를 불러오는 중...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 숙소 정보 카드 -->
+        <div class="info-card">
+            <div class="card-header">
+                <h2 class="card-title">숙소 정보</h2>
+                <button class="more-btn">더보기</button>
+            </div>
+            <div class="data-table">
+                <div class="empty-message">숙소 정보 API를 구현해주세요</div>
+            </div>
+        </div>
+
+        <!-- 관광지 정보 카드 (전체 너비) -->
+        <div class="info-card full-width highlight">
+            <div class="card-header">
+                <h2 class="card-title">관광지 정보</h2>
+                <button class="more-btn" onclick="location.href='/admin/view/tourspot'">더보기</button>
+            </div>
+            <div class="data-table" id="tourspotTable">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <div>관광지 정보를 불러오는 중...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 페이지 로드 시 데이터 불러오기
+    document.addEventListener('DOMContentLoaded', function() {
+        loadMemberData();
+        loadTourSpotData();
+    });
+
+    // 회원 데이터 불러오기
+    async function loadMemberData() {
+        try {
+            console.log('회원 데이터 요청 시작...');
+            const response = await fetch('/admin/members');
+            console.log('응답 상태:', response.status);
+
+            const result = await response.json();
+            console.log('회원 API 응답:', result);
+            console.log('result.status:', result.status);
+            console.log('result.data:', result.data);
+
+            // ResponseDto 구조: { status, message, data }
+            // status는 HttpStatus 객체일 수 있음
+            const statusValue = result.status?.value || result.status;
+            const isSuccess = statusValue === 200 || statusValue === 'OK' || result.message?.includes('성공');
+
+            console.log('성공 여부:', isSuccess);
+            console.log('데이터 개수:', result.data?.length);
+
+            if (result.data && result.data.length > 0) {
+                const members = result.data.slice(0, 5); // 최대 5개만 표시
+
+                let html = `
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="width: 50px;">ID</th>
+                                    <th style="width: 100px;">아이디</th>
+                                    <th style="width: 100px;">이름</th>
+                                    <th style="width: 180px;">이메일</th>
+                                    <th style="width: 110px;">전화번호</th>
+                                    <th style="width: 110px;">권한</th>
+                                    <th style="width: 60px;">상태</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+
+                members.forEach(member => {
+                    html += `
+                            <tr>
+                                <td>${member.id || '-'}</td>
+                                <td>${member.loginId || '-'}</td>
+                                <td>${member.username || '-'}</td>
+                                <td>${member.email || '-'}</td>
+                                <td>${member.tel || '-'}</td>
+                                <td>${member.role || '-'}</td>
+                                <td>${member.status || '-'}</td>
+                            </tr>
+                        `;
+                });
+
+                html += `
+                            </tbody>
+                        </table>
+                    `;
+
+                document.getElementById('memberTable').innerHTML = html;
+            } else {
+                document.getElementById('memberTable').innerHTML = '<div class="empty-message">등록된 회원이 없습니다.</div>';
+            }
+        } catch (error) {
+            console.error('회원 데이터 로드 실패:', error);
+            document.getElementById('memberTable').innerHTML = '<div class="empty-message">데이터를 불러올 수 없습니다.</div>';
+        }
+    }
+
+    // 관광지 데이터 불러오기
+    async function loadTourSpotData() {
+        try {
+            console.log('관광지 데이터 요청 시작...');
+            const response = await fetch('/admin/tourspot/list?page=0&size=5&sort=id');
+            console.log('응답 상태:', response.status);
+
+            const result = await response.json();
+            console.log('관광지 API 응답:', result);
+            console.log('result.status:', result.status);
+            console.log('result.data:', result.data);
+
+            // ResponseDto 구조: { status, message, data }
+            const statusValue = result.status?.value || result.status;
+            const isSuccess = statusValue === 200 || statusValue === 'OK' || result.message?.includes('성공');
+
+            console.log('성공 여부:', isSuccess);
+            console.log('데이터 구조:', result.data);
+
+            if (result.data && result.data.content && result.data.content.length > 0) {
+                const tourspots = result.data.content;
+
+                let html = `
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="width: 50px;">ID</th>
+                                    <th style="width: 120px;">이미지</th>
+                                    <th style="width: 200px;">제목</th>
+                                    <th>주소</th>
+                                    <th style="width: 80px;">추천수</th>
+                                    <th style="width: 60px;">상태</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+
+                tourspots.forEach(spot => {
+                    // 이미지 URL 처리
+                    const imgSrc = spot.firstImage || '/images/no-image.png';
+                    const recCount = spot.recCount || 0;
+
+                    html += `
+                            <tr>
+                                <td>${spot.id || '-'}</td>
+                                <td><img src="${imgSrc}" alt="${spot.title}" style="width: 100px; height: 70px; object-fit: cover; border-radius: 4px;" onerror="this.src='/images/no-image.png'"></td>
+                                <td>${spot.title || '-'}</td>
+                                <td>${spot.address || '-'}</td>
+                                <td>${recCount}</td>
+                                <td>${spot.status || '-'}</td>
+                            </tr>
+                        `;
+                });
+
+                html += `
+                            </tbody>
+                        </table>
+                    `;
+
+                document.getElementById('tourspotTable').innerHTML = html;
+            } else {
+                document.getElementById('tourspotTable').innerHTML = '<div class="empty-message">등록된 관광지가 없습니다.</div>';
+            }
+        } catch (error) {
+            console.error('관광지 데이터 로드 실패:', error);
+            document.getElementById('tourspotTable').innerHTML = '<div class="empty-message">데이터를 불러올 수 없습니다.</div>';
+        }
+    }
+</script>
+</body>
+</html>

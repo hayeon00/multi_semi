@@ -11,7 +11,6 @@ package com.multi.travel.acc.repository;
 
 import com.multi.travel.acc.dto.AccHasDistanceProjection;
 import com.multi.travel.acc.entity.Acc;
-import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -105,4 +104,25 @@ public interface AccRepository extends JpaRepository<Acc,Long> {
             @Param("mapy") BigDecimal mapy,
             Pageable pageable
     );
+
+    @Query("""
+    SELECT a FROM Acc a
+    WHERE a.status = :status
+    AND (
+        LOWER(a.title) LIKE LOWER(CONCAT('%', :keyword, '%'))
+        OR LOWER(a.address) LIKE LOWER(CONCAT('%', :keyword, '%'))
+    )
+    """)
+    Page<Acc> statusAndSearch(@Param("status") String status,
+                     @Param("keyword") String keyword,
+                     Pageable pageable);
+
+    @Query("""
+    SELECT a FROM Acc a
+    WHERE LOWER(a.title) LIKE LOWER(CONCAT('%', :keyword, '%'))
+         OR LOWER(a.address) LIKE LOWER(CONCAT('%', :keyword, '%'))
+    """)
+    Page<Acc> search(@Param("keyword") String keyword,
+                     Pageable pageable);
+
 }

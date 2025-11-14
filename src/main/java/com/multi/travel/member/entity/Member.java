@@ -1,10 +1,8 @@
 package com.multi.travel.member.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import lombok.extern.slf4j.Slf4j;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -25,6 +23,8 @@ import java.util.Objects;
 @AllArgsConstructor
 @Getter
 @Builder
+@Slf4j
+@Setter
 public class Member {
 
     @Id
@@ -64,13 +64,25 @@ public class Member {
     @Column(name = "image", length = 100, columnDefinition = "VARCHAR(100) DEFAULT 'default.img'")
     private String image;
 
-    public void updateInfo(String username, String email, String tel, String image) {
-        this.username = username;
-        this.email = email;
-        this.tel = tel;
-        this.image = image;
+    public void updateInfo(String username, String email, String tel) {
+        log.info("updateInfo 호출 - 전달받은 값: username={}, email={}, tel={}", username, email, tel);
 
+        if (username != null && !username.isEmpty()) {
+            this.username = username;
+            log.info("username 변경: {}", this.username);
+        }
+        if (email != null && !email.isEmpty()) {
+            this.email = email;
+            log.info("email 변경: {}", this.email);
+        }
+        if (tel != null && !tel.isEmpty()) {
+            this.tel = tel;
+            log.info("tel 변경: {}", this.tel);
+        }
     }
+
+
+
 
     public void setStatus(String status) {
         this.status = status;
@@ -90,6 +102,7 @@ public class Member {
     public int hashCode() {
         return Objects.hash(id);
     }
+
 
 
 

@@ -15,38 +15,81 @@ body {
 }
 
 /* ======================
-   헤더 영역
+   HEADER (관리자용 통일 스타일)
 ====================== */
 header {
-    width: 100%;
-    background: #e5e5e5;
-    padding: 20px 40px;
+    background-color: #ddd;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding: 20px 40px;
+    border-bottom: 2px solid #ccc;
 }
 
-header .logo {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-header .logo img {
-    width: 50px;
-    height: 50px;
-    background: #fff;
-    border: 1px solid #ccc;
-    border-radius: 5px;
+header img {
+    width: 80px;
+    height: 80px;
 }
 
 header .title {
-    font-size: 22px;
+    font-size: 24px;
     font-weight: bold;
 }
 
-header nav a {
+header .nav {
+    display: flex;
+    gap: 20px;
+    font-size: 15px;
+}
+
+header .nav a {
     text-decoration: none;
+    color: black;
+}
+
+/* ✅ 관리자 메뉴 영역 */
+.admin-nav {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    line-height: 1.4;
+}
+
+.admin-nav .welcome-text {
+    font-size: 14px;
+    margin-bottom: 4px;
+    color: #333;
+}
+
+.admin-nav .menu-links a {
+    margin-left: 8px;
+    text-decoration: none;
+    color: #222;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.admin-nav .menu-links a:hover {
     color: #000;
-    font-size: 16px;
+    text-decoration: underline;
+}
+
+/* ======================
+   본문 / 공통 레이아웃
+====================== */
+main {
+    width: 80%;
+    max-width: 1200px;
+    margin: 50px auto;
+    background-color: white;
+    padding: 40px 50px;
+    border-radius: 12px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+}
+
+footer {
+    text-align: center;
+    margin-top: 40px;
+    color: gray;
+    font-size: 13px;
 }
