@@ -176,7 +176,6 @@ public class PlanService {
     }
 
 
-
     public void deleteTripPlan(Long planId, String requesterId) {
         TripPlan plan = tripPlanRepository.findById(planId)
                 .orElseThrow(() -> new IllegalArgumentException("여행 계획을 찾을 수 없습니다."));
@@ -200,6 +199,8 @@ public class PlanService {
 
         // 날짜(startDate, endDate)는 그대로 유지됨 (변경 X)
         tripPlanRepository.save(plan);
+    }
+
     /**
      * 사용자 ID로 여행 계획 목록 조회 (마이페이지 용도)
      */
@@ -247,5 +248,4 @@ public class PlanService {
                 .coursePlaces(coursePlaceDtos)
                 .build();
     }
-
 }
