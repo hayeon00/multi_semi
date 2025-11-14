@@ -29,6 +29,7 @@ public class ReviewDetailDto {
     private List<String> imageUrls;
     private String targetType;
     private Long targetId;
+    private boolean isOwner;
 
     private ReviewDetailDto toDto(Review review) {
         return ReviewDetailDto.builder()
