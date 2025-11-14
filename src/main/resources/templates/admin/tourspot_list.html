@@ -2,113 +2,202 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>관리자 | 관광지 목록</title>
-
-    <!-- CSS -->
+    <title>관광지 관리 | Travel Planing</title>
     <link rel="stylesheet" th:href="@{/css/admin.css}">
     <link rel="stylesheet" th:href="@{/css/admin_tourspot.css}">
 </head>
 
 <body>
 <header>
-    <div style="display: flex; align-items: center; gap: 20px;">
+    <div class="header-left">
         <img th:src="@{/images/logo.png}" alt="Logo">
         <div class="title">TRAVEL PLANING</div>
     </div>
-    <div>
-        <div style="text-align:right; font-size:14px; margin-bottom:5px;">
-            (관리자) 님 환영합니다.
+    <div class="header-right">
+        <div class="welcome-text">
+            <span class="admin-badge">관리자</span>님 환영합니다.
         </div>
-        <div class="nav">
-            <a th:href="@{/admin/view/members}">회원관리</a>
-            <a th:href="@{/admin/view/tourspot}">관광지관리</a>
-            <a th:href="@{/mypage}">관리자페이지</a>
-            <a th:href="@{/logout}">로그아웃</a>
-        </div>
+        <nav class="nav">
+            <a th:href="@{/admin/view/dashboard}" class="nav-link">
+                <span class="nav-icon">🏠</span>
+                <span>대시보드</span>
+            </a>
+            <a th:href="@{/admin/view/members}" class="nav-link">
+                <span class="nav-icon">👥</span>
+                <span>회원관리</span>
+            </a>
+            <a th:href="@{/admin/view/tourspot}" class="nav-link active">
+                <span class="nav-icon">🗺️</span>
+                <span>관광지관리</span>
+            </a>
+            <a th:href="@{/logout}" class="nav-link logout">
+                <span class="nav-icon">🚪</span>
+                <span>로그아웃</span>
+            </a>
+        </nav>
     </div>
 </header>
 
 <main>
+    <div class="admin-container">
+        <aside class="admin-sidebar">
+            <div class="sidebar-header">
+                <h2 class="admin-title">관광지 관리</h2>
+                <p class="admin-sub">등록된 관광지를 관리하고 새로운 장소를 추가합니다</p>
+            </div>
+            <div class="stats-card">
+                <div class="stat-item">
+                    <span class="stat-label">전체 관광지</span>
+                    <span class="stat-value" id="totalSpots">-</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">활성 관광지</span>
+                    <span class="stat-value active" id="activeSpots">-</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">비활성 관광지</span>
+                    <span class="stat-value inactive" id="inactiveSpots">-</span>
+                </div>
+            </div>
+            <button class="btn-add-tourspot" th:onclick="'location.href=\'/admin/view/tourspot/add\''">
+                <span class="add-icon">➕</span>
+                <span>관광지 추가하기</span>
+            </button>
+        </aside>
 
-    <!-- ✅ 검색 영역 -->
-    <div style="margin: 20px 0; text-align: center;">
-        <input type="text" id="searchInput" placeholder="관광지 제목으로 검색..."
-               style="padding: 6px 10px; width: 250px;">
-        <button onclick="searchTourSpots()">검색</button>
-        <button onclick="location.href='/admin/view/tourspot'">전체 보기</button>
+        <section class="admin-content">
+            <!-- 검색 영역 -->
+            <div class="search-container">
+                <div class="search-box">
+                    <input type="text"
+                           id="searchInput"
+                           placeholder="🔍 관광지 제목으로 검색..."
+                           onkeydown="if(event.key==='Enter') searchTourSpots();" />
+                    <button class="btn btn-search" onclick="searchTourSpots()">검색</button>
+                    <button class="btn btn-reset" onclick="location.href='/admin/view/tourspot'">전체 보기</button>
+                </div>
+            </div>
+
+            <!-- 테이블 영역 -->
+            <div class="table-container">
+                <table id="tourspotTable">
+                    <thead>
+                    <tr>
+                        <th width="60">번호</th>
+                        <th width="100">대표 이미지</th>
+                        <th width="200">제목</th>
+                        <th width="250">주소</th>
+                        <th width="80">추천 수</th>
+                        <th width="80">상태</th>
+                        <th width="120">관리</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="spot, iterStat : ${tourspotList}"
+                        th:onclick="'location.href=\'/admin/edit/' + ${spot.id} + '\';'"
+                        class="clickable-row">
+                        <td class="text-center" th:text="${iterStat.count}"></td>
+                        <td class="text-center">
+                            <img th:src="${spot.firstImage}"
+                                 alt="관광지 이미지"
+                                 class="tourspot-thumbnail"
+                                 onerror="this.src='/images/no-image.png'">
+                        </td>
+                        <td class="tourspot-title" th:text="${spot.title}">제목</td>
+                        <td class="tourspot-address" th:text="${spot.address}">주소</td>
+                        <td class="text-center">
+                            <span class="rec-count" th:text="${spot.recCount}">0</span>
+                        </td>
+                        <td class="text-center">
+                                <span class="status-badge"
+                                      th:classappend="${spot.status == 'Y' ? 'status-active' : 'status-inactive'}"
+                                      th:text="${spot.status == 'Y' ? '✓ 활성' : '✗ 비활성'}">
+                                </span>
+                        </td>
+                        <td class="text-center">
+                            <button class="btn-action btn-deactivate"
+                                    th:if="${spot.status == 'Y'}"
+                                    th:onclick="'event.stopPropagation(); deactivateTourSpot(' + ${spot.id} + ');'">
+                                <span>비활성화</span>
+                            </button>
+                            <button class="btn-action btn-activate"
+                                    th:if="${spot.status == 'N'}"
+                                    th:onclick="'event.stopPropagation(); activateTourSpot(' + ${spot.id} + ');'">
+                                <span>복구</span>
+                            </button>
+                        </td>
+                    </tr>
+
+                    <tr th:if="${#lists.isEmpty(tourspotList)}" class="empty-row">
+                        <td colspan="7">
+                            <div class="empty-state">
+                                <span class="empty-icon">🗺️</span>
+                                <p>등록된 관광지가 없습니다</p>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 페이지네이션 -->
+            <div class="pagination" th:if="${totalPages > 0}">
+                <a th:if="${currentPage > 0}"
+                   th:href="@{/admin/view/tourspot(page=${currentPage - 1})}"
+                   class="page-btn prev-btn">
+                    ‹ 이전
+                </a>
+
+                <a th:each="i : ${#numbers.sequence(startPage, endPage - 1)}"
+                   th:href="@{/admin/view/tourspot(page=${i})}"
+                   th:text="${i + 1}"
+                   class="page-number"
+                   th:classappend="${i == currentPage} ? 'active' : ''">
+                </a>
+
+                <a th:if="${currentPage + 1 < totalPages}"
+                   th:href="@{/admin/view/tourspot(page=${currentPage + 1})}"
+                   class="page-btn next-btn">
+                    다음 ›
+                </a>
+            </div>
+        </section>
     </div>
-
-    <!-- ✅ 관광지 추가 버튼 -->
-    <div style="text-align: right; margin: 20px;">
-        <button class="add-btn" th:onclick="'location.href=\'/admin/view/tourspot/add\''">관광지 추가</button>
-    </div>
-
-    <h2 style="text-align: center;">관광지 목록</h2>
-
-    <table id="tourspotTable">
-        <thead>
-        <tr>
-            <th>번호</th>
-            <th>대표 이미지</th>
-            <th>제목</th>
-            <th>주소</th>
-            <th>추천 수</th>
-            <th>상태</th>
-            <th>관리</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="spot, iterStat : ${tourspotList}"
-            th:onclick="'location.href=\'/admin/edit/' + ${spot.id} + '\';'"
-            class="clickable-row">
-            <td th:text="${iterStat.count}"></td>
-            <td><img th:src="${spot.firstImage}" alt="이미지" width="80" height="60"></td>
-            <td th:text="${spot.title}">제목</td>
-            <td th:text="${spot.address}">주소</td>
-            <td th:text="${spot.recCount}">추천 수</td>
-            <td th:text="${spot.status}">상태</td>
-            <td>
-                <button class="btn-action"
-                        th:if="${spot.status == 'Y'}"
-                        th:onclick="'event.stopPropagation(); deactivateTourSpot(' + ${spot.id} + ');'">
-                    🗑 비활성화
-                </button>
-                <button class="btn-action"
-                        th:if="${spot.status == 'N'}"
-                        th:onclick="'event.stopPropagation(); activateTourSpot(' + ${spot.id} + ');'">
-                    ♻ 복구
-                </button>
-            </td>
-        </tr>
-
-        <tr th:if="${#lists.isEmpty(tourspotList)}">
-            <td colspan="7">등록된 관광지가 없습니다.</td>
-        </tr>
-        </tbody>
-    </table>
-
-    <!-- ✅ 페이지네이션 -->
-    <div class="pagination">
-        <a th:if="${currentPage > 0}"
-           th:href="@{/admin/view/tourspot(page=${currentPage - 1})}">&lt; 이전</a>
-
-        <a th:each="i : ${#numbers.sequence(startPage, endPage - 1)}"
-           th:href="@{/admin/view/tourspot(page=${i})}"
-           th:text="${i + 1}"
-           th:classappend="${i == currentPage} ? 'active' : ''"></a>
-
-        <a th:if="${currentPage + 1 < totalPages}"
-           th:href="@{/admin/view/tourspot(page=${currentPage + 1})}">다음 &gt;</a>
-    </div>
-
-    <footer>© 2025 Travel Planing. All rights reserved.</footer>
 </main>
 
-<!-- ✅ 스크립트 -->
+<footer>
+    <p>&copy; 2025 Travel Planing. All rights reserved.</p>
+</footer>
+
 <script>
-    // ✅ 서버 yml에 지정한 이미지 기본 URL (환경에 맞게 수정)
     const IMAGE_BASE_URL = "http://localhost:8090/reviewimgs/";
 
+    // 페이지 로드 시 통계 업데이트
+    window.onload = function() {
+        updateStats();
+    };
+
+    // 통계 업데이트
+    function updateStats() {
+        const rows = document.querySelectorAll("#tourspotTable tbody tr:not(.empty-row)");
+        const total = rows.length;
+        let active = 0;
+
+        rows.forEach(row => {
+            const statusBadge = row.querySelector('.status-badge');
+            if (statusBadge && statusBadge.classList.contains('status-active')) {
+                active++;
+            }
+        });
+
+        const inactive = total - active;
+
+        document.getElementById('totalSpots').textContent = total;
+        document.getElementById('activeSpots').textContent = active;
+        document.getElementById('inactiveSpots').textContent = inactive;
+    }
+
+    // 관광지 검색
     async function searchTourSpots() {
         const keyword = document.getElementById("searchInput").value.trim();
         if (!keyword) {
@@ -125,12 +214,20 @@
             tableBody.innerHTML = "";
 
             if (tourList.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="7">검색 결과가 없습니다.</td></tr>`;
+                tableBody.innerHTML = `
+                    <tr class="empty-row">
+                        <td colspan="7">
+                            <div class="empty-state">
+                                <span class="empty-icon">🔍</span>
+                                <p>검색 결과가 없습니다</p>
+                            </div>
+                        </td>
+                    </tr>`;
+                updateStats();
                 return;
             }
 
             tourList.forEach((spot, index) => {
-                // ✅ 이미지 경로 보정 로직
                 let imageSrc = "";
                 if (!spot.firstImage) {
                     imageSrc = "/images/no-image.png";
@@ -145,20 +242,37 @@
                 row.onclick = () => location.href = `/admin/edit/${spot.id}`;
 
                 row.innerHTML = `
-                    <td>${index + 1}</td>
-                    <td><img src="${imageSrc}" alt="이미지" width="80" height="60"></td>
-                    <td>${spot.title}</td>
-                    <td>${spot.address}</td>
-                    <td>${spot.recCount || 0}</td>
-                    <td>${spot.status}</td>
-                    <td>
+                    <td class="text-center">${index + 1}</td>
+                    <td class="text-center">
+                        <img src="${imageSrc}"
+                             alt="관광지 이미지"
+                             class="tourspot-thumbnail"
+                             onerror="this.src='/images/no-image.png'">
+                    </td>
+                    <td class="tourspot-title">${spot.title}</td>
+                    <td class="tourspot-address">${spot.address}</td>
+                    <td class="text-center">
+                        <span class="rec-count">${spot.recCount || 0}</span>
+                    </td>
+                    <td class="text-center">
+                        <span class="status-badge ${spot.status === 'Y' ? 'status-active' : 'status-inactive'}">
+                            ${spot.status === 'Y' ? '✓ 활성' : '✗ 비활성'}
+                        </span>
+                    </td>
+                    <td class="text-center">
                         ${spot.status === 'Y'
-                    ? `<button class="btn-action" onclick="event.stopPropagation(); deactivateTourSpot(${spot.id});">🗑 비활성화</button>`
-                    : `<button class="btn-action" onclick="event.stopPropagation(); activateTourSpot(${spot.id});">♻ 복구</button>`}
+                    ? `<button class="btn-action btn-deactivate" onclick="event.stopPropagation(); deactivateTourSpot(${spot.id});">
+                                   <span>비활성화</span>
+                               </button>`
+                    : `<button class="btn-action btn-activate" onclick="event.stopPropagation(); activateTourSpot(${spot.id});">
+                                   <span>복구</span>
+                               </button>`}
                     </td>
                 `;
                 tableBody.appendChild(row);
             });
+
+            updateStats();
 
         } catch (err) {
             console.error("서버 통신 오류:", err);
@@ -166,26 +280,38 @@
         }
     }
 
-    // ✅ 관광지 비활성화
+    // 관광지 비활성화
     async function deactivateTourSpot(id) {
         if (!confirm("이 관광지를 비활성화하시겠습니까?")) return;
-        const res = await fetch(`/admin/tourspot/${id}/deactivate`, { method: "PUT" });
-        if (res.ok) {
-            alert("비활성화 완료!");
-            location.reload();
-        } else {
+
+        try {
+            const res = await fetch(`/admin/tourspot/${id}/deactivate`, { method: "PUT" });
+            if (res.ok) {
+                alert("✓ 비활성화 완료!");
+                location.reload();
+            } else {
+                alert("처리 중 오류가 발생했습니다.");
+            }
+        } catch (err) {
+            console.error("오류:", err);
             alert("처리 중 오류가 발생했습니다.");
         }
     }
 
-    // ✅ 관광지 복구
+    // 관광지 복구
     async function activateTourSpot(id) {
         if (!confirm("이 관광지를 복구하시겠습니까?")) return;
-        const res = await fetch(`/admin/tourspot/${id}/activate`, { method: "PUT" });
-        if (res.ok) {
-            alert("복구 완료!");
-            location.reload();
-        } else {
+
+        try {
+            const res = await fetch(`/admin/tourspot/${id}/activate`, { method: "PUT" });
+            if (res.ok) {
+                alert("✓ 복구 완료!");
+                location.reload();
+            } else {
+                alert("처리 중 오류가 발생했습니다.");
+            }
+        } catch (err) {
+            console.error("오류:", err);
             alert("처리 중 오류가 발생했습니다.");
         }
     }

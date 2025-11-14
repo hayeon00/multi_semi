@@ -40,6 +40,12 @@ public class AdminController {
     // ✅ [1] 관리자 페이지 뷰 렌더링
     // -----------------------------------------------------------------------
 
+    /** 관리자 메인 페이지 */
+    @GetMapping("/view/adminpage")
+    public String adminMainPage(Model model) {
+        return "admin/adminpage"; // → templates/admin/adminpage.html
+    }
+
     /** 관리자 회원 목록 페이지 */
     @GetMapping("/view/members")
     public String memberListPage() {

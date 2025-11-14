@@ -38,14 +38,6 @@ public class MemberController {
     private final TokenService tokenService;
 
 
-//    @PreAuthorize("hasRole('ADMIN')")
-//    @GetMapping
-//    public ResponseEntity<ResponseDto> getMembers() {
-//        return ResponseEntity.ok(
-//                new ResponseDto(HttpStatus.OK,"전체회원조회 성공",memberService.findAll())
-//
-//        );
-//    }
 
     @GetMapping("/{loginId}")
     public ResponseEntity<ResponseDto> getOneMember(@PathVariable String loginId) {
@@ -74,27 +66,8 @@ public class MemberController {
     }
 
 
-    /**
-     * ✅ 회원정보 수정 (본인만 가능)
-     */
-    @PutMapping("/update")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<ResponseDto> updateMember(
-            @ModelAttribute MemberReqDto memberReqDto,
-            @AuthenticationPrincipal CustomUser user
-    ) {
-        if (user == null) {
-            throw new AccessDeniedException("로그인 정보가 없습니다.");
-        }
 
-        String loginIdFromToken = user.getUserId();
-        if (!loginIdFromToken.equals(memberReqDto.getLoginId())) {
-            throw new AccessDeniedException("본인 정보만 수정할 수 있습니다.");
-        }
 
-        memberService.update(memberReqDto);
-        return ResponseEntity.ok(new ResponseDto(HttpStatus.OK, "회원정보 수정 성공", null));
-    }
 
     // 회원 삭제 (본인만 가능)
     @DeleteMapping("/delete")
@@ -152,7 +125,20 @@ public class MemberController {
         );
     }
 
+    @PutMapping("/update")
+    public ResponseEntity<ResponseDto> updateMember(
+            @ModelAttribute MemberReqDto dto,
+            @AuthenticationPrincipal CustomUser user
+    ) {
+        String loginId = user.getUserId(); // 로그인한 아이디
+        log.info("[MemberController] 회원정보 수정 요청: loginId={}, dto={}", loginId, dto);
 
+        memberService.updateMember(loginId, dto);
+
+        return ResponseEntity.ok(
+                new ResponseDto(HttpStatus.OK, "회원정보가 수정되었습니다.", null)
+        );
+    }
 
 
 }

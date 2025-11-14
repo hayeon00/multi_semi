@@ -7,69 +7,103 @@
 </head>
 <body>
 <header>
-    <div style="display: flex; align-items: center; gap: 20px;">
+    <div class="header-left">
         <img th:src="@{/images/logo.png}" alt="Logo">
         <div class="title">TRAVEL PLANING</div>
     </div>
-    <div>
-        <div style="text-align:right; font-size:14px; margin-bottom:5px;">
-            (관리자) 님 환영합니다.
+    <div class="header-right">
+        <div class="welcome-text">
+            <span class="admin-badge">관리자</span>님 환영합니다.
         </div>
-        <div class="nav">
-            <a th:href="@{/admin/view/members}">회원관리</a>
-            <a th:href="@{/admin/view/tourspot}">관광지관리</a>
-            <a th:href="@{/admin/view/dashboard}">관리자페이지</a>
-            <a th:href="@{/logout}">로그아웃</a>
-        </div>
+        <nav class="nav">
+            <a th:href="@{/admin/view/dashboard}" class="nav-link">
+                <span class="nav-icon">🏠</span>
+                <span>대시보드</span>
+            </a>
+            <a th:href="@{/admin/view/members}" class="nav-link active">
+                <span class="nav-icon">👥</span>
+                <span>회원관리</span>
+            </a>
+            <a th:href="@{/admin/view/tourspot}" class="nav-link">
+                <span class="nav-icon">🗺️</span>
+                <span>관광지관리</span>
+            </a>
+            <a th:href="@{/logout}" class="nav-link logout">
+                <span class="nav-icon">🚪</span>
+                <span>로그아웃</span>
+            </a>
+        </nav>
     </div>
 </header>
-
 
 <main>
     <div class="admin-container">
         <aside class="admin-sidebar">
-            <h2 class="admin-title">회원 관리</h2>
-            <p class="admin-sub">관리자 전용 페이지입니다.</p>
+            <div class="sidebar-header">
+                <h2 class="admin-title">회원 관리</h2>
+                <p class="admin-sub">시스템에 등록된 회원을 관리합니다</p>
+            </div>
+            <div class="stats-card">
+                <div class="stat-item">
+                    <span class="stat-label">전체 회원</span>
+                    <span class="stat-value" id="totalMembers">-</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">활성 회원</span>
+                    <span class="stat-value active" id="activeMembers">-</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">비활성 회원</span>
+                    <span class="stat-value inactive" id="inactiveMembers">-</span>
+                </div>
+            </div>
         </aside>
 
         <section class="admin-content">
-
-            <!-- ✅ 검색 영역 -->
-            <div class="search-box">
-                <input type="text" id="searchInput" placeholder="아이디로 검색..." onkeydown="if(event.key==='Enter') searchMember();" />
-                <button class="btn-search" onclick="searchMember()">검색</button>
-                <button class="btn-reset" onclick="loadMembers()">전체 보기</button>
+            <!-- 검색 영역 -->
+            <div class="search-container">
+                <div class="search-box">
+                    <input type="text"
+                           id="searchInput"
+                           placeholder="🔍 아이디로 검색..."
+                           onkeydown="if(event.key==='Enter') searchMember();" />
+                    <button class="btn btn-search" onclick="searchMember()">검색</button>
+                    <button class="btn btn-reset" onclick="loadMembers()">전체 보기</button>
+                </div>
             </div>
 
-            <table id="memberTable" border="1" cellpadding="10">
-                <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>아이디</th>
-                    <th>이름</th>
-                    <th>이메일</th>
-                    <th>전화번호</th>
-                    <th>권한</th>
-                    <th>상태</th>
-                    <th>관리</th>
-                </tr>
-                </thead>
-                <tbody>
-                <!-- JS로 채움 -->
-                </tbody>
-            </table>
+            <!-- 테이블 영역 -->
+            <div class="table-container">
+                <table id="memberTable">
+                    <thead>
+                    <tr>
+                        <th width="60">ID</th>
+                        <th width="120">아이디</th>
+                        <th width="100">이름</th>
+                        <th width="180">이메일</th>
+                        <th width="120">전화번호</th>
+                        <th width="80">권한</th>
+                        <th width="80">상태</th>
+                        <th width="120">관리</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <!-- JS로 채움 -->
+                    </tbody>
+                </table>
+            </div>
         </section>
     </div>
 </main>
 
 <footer>
-    &copy; 2025 Travel Planing. All rights reserved.
+    <p>&copy; 2025 Travel Planing. All rights reserved.</p>
 </footer>
 
 <script th:src="@{/js/common.js}"></script>
 
 <script>
-    // ✅ 회원 목록 불러오기
+    // 회원 목록 불러오기
     async function loadMembers() {
         try {
             const response = await fetchWithRefresh("/admin/members", {
@@ -79,42 +113,73 @@
             });
 
             if (!response.ok) {
-                alert("회원 목록을 불러오지 못했습니다. (권한 또는 토큰 확인)");
+                alert("회원 목록을 불러오지 못했습니다.");
                 return;
             }
 
             const result = await response.json();
             renderMembers(result.data);
+            updateStats(result.data);
         } catch (error) {
             console.error("🚨 오류 발생:", error);
         }
     }
 
-    // ✅ 회원 목록 렌더링
+    // 통계 업데이트
+    function updateStats(members) {
+        const total = members ? members.length : 0;
+        const active = members ? members.filter(m => m.status === 'Y').length : 0;
+        const inactive = total - active;
+
+        document.getElementById('totalMembers').textContent = total;
+        document.getElementById('activeMembers').textContent = active;
+        document.getElementById('inactiveMembers').textContent = inactive;
+    }
+
+    // 회원 목록 렌더링
     function renderMembers(members) {
         const tbody = document.querySelector("#memberTable tbody");
         tbody.innerHTML = "";
 
         if (!members || members.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;">조회된 회원이 없습니다.</td></tr>`;
+            tbody.innerHTML = `
+                <tr class="empty-row">
+                    <td colspan="8">
+                        <div class="empty-state">
+                            <span class="empty-icon">📭</span>
+                            <p>조회된 회원이 없습니다</p>
+                        </div>
+                    </td>
+                </tr>`;
             return;
         }
 
         members.forEach(member => {
             const tr = document.createElement("tr");
             tr.innerHTML = `
-                <td>${member.id}</td>
-                <td>${member.loginId}</td>
+                <td class="text-center">${member.id}</td>
+                <td><strong>${member.loginId}</strong></td>
                 <td>${member.username}</td>
-                <td>${member.email}</td>
+                <td class="text-email">${member.email}</td>
                 <td>${member.tel}</td>
-                <td>${member.role}</td>
-                <td>${member.status}</td>
-                <td>
-                    ${
-                member.status === "Y"
-                    ? `<button class="btn-action btn-deactivate" onclick="deactivateMember(${member.id})">🗑 비활성화</button>`
-                    : `<button class="btn-action btn-activate" onclick="activateMember(${member.id})">🔄 복구</button>`
+                <td class="text-center">
+                    <span class="badge badge-${member.role === 'ADMIN' ? 'admin' : 'user'}">
+                        ${member.role}
+                    </span>
+                </td>
+                <td class="text-center">
+                    <span class="status-badge ${member.status === 'Y' ? 'status-active' : 'status-inactive'}">
+                        ${member.status === 'Y' ? '✓ 활성' : '✗ 비활성'}
+                    </span>
+                </td>
+                <td class="text-center">
+                    ${member.status === "Y"
+                ? `<button class="btn-action btn-deactivate" onclick="deactivateMember(${member.id})">
+                              <span>비활성화</span>
+                           </button>`
+                : `<button class="btn-action btn-activate" onclick="activateMember(${member.id})">
+                              <span>복구</span>
+                           </button>`
             }
                 </td>
             `;
@@ -122,7 +187,7 @@
         });
     }
 
-    // ✅ 아이디로 회원 검색
+    // 아이디로 회원 검색
     async function searchMember() {
         const keyword = document.getElementById("searchInput").value.trim();
         if (!keyword) {
@@ -138,20 +203,21 @@
             });
 
             if (!response.ok) {
-                alert("검색 실패 ❌ (권한 또는 서버 오류)");
+                alert("검색 실패 (권한 또는 서버 오류)");
                 return;
             }
 
             const result = await response.json();
             const members = Array.isArray(result.data) ? result.data : [result.data];
             renderMembers(members);
+            updateStats(members);
         } catch (error) {
             console.error("🚨 검색 오류:", error);
             alert("검색 중 오류가 발생했습니다.");
         }
     }
 
-    // ✅ 회원 비활성화 (Y → N)
+    // 회원 비활성화
     async function deactivateMember(id) {
         if (!confirm("정말로 이 회원을 비활성화하시겠습니까?")) return;
 
@@ -161,14 +227,14 @@
         });
 
         if (response.ok) {
-            alert("회원이 비활성화되었습니다.");
+            alert("✓ 회원이 비활성화되었습니다.");
             loadMembers();
         } else {
-            alert("비활성화 실패 ❌ (권한 또는 서버 오류)");
+            alert("비활성화 실패 (권한 또는 서버 오류)");
         }
     }
 
-    // ✅ 회원 복구 (N → Y)
+    // 회원 복구
     async function activateMember(id) {
         if (!confirm("이 회원을 다시 활성화하시겠습니까?")) return;
 
@@ -178,10 +244,10 @@
         });
 
         if (response.ok) {
-            alert("회원이 복구되었습니다.");
+            alert("✓ 회원이 복구되었습니다.");
             loadMembers();
         } else {
-            alert("복구 실패 ❌ (권한 또는 서버 오류)");
+            alert("복구 실패 (권한 또는 서버 오류)");
         }
     }
 
