@@ -16,4 +16,6 @@ import java.util.List;
 public interface CourseItemRepository extends JpaRepository<CourseItem, Long> {
     // 하루별 코스 조회용 쿼리 메서드
     List<CourseItem> findByCourseAndDayNoOrderByOrderNoAsc(Course course, Integer dayNo);
+
+    //List<CourseItem> findByCourseId(void attr0);
 }

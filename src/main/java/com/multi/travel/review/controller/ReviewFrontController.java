@@ -1,19 +1,16 @@
 package com.multi.travel.review.controller;
 
 import com.multi.travel.auth.dto.CustomUser;
-import com.multi.travel.course.entity.Course;
 import com.multi.travel.course.service.CourseService;
-import com.multi.travel.review.dto.ReviewReqDto;
 import com.multi.travel.review.service.ReviewService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 @RequiredArgsConstructor
@@ -27,37 +24,39 @@ public class ReviewFrontController {
     @GetMapping("/search/my")
     public String showMyReviewPage(Model model, @AuthenticationPrincipal CustomUser user) {
         // model.addAttribute("userId", user.getUsername()); // 필요시
-        return "review/mycourseReviewList";
+        return "review/my-course-review-list";
     }
 
     /** 코스 리뷰 등록 페이지 출력 */
     @GetMapping("/write")
-    public String reviewWrite(@RequestParam Long courseId, Model model) {
-
-        Course course = courseService.getCourseById(courseId);
-        model.addAttribute("course", course);
-        return "review/courseReviewFrom"; // 리뷰작성 화면
+    public String showReviewWritePage(@RequestParam("planId") Long planId, Model model) {
+        model.addAttribute("planId", planId);
+        return "review/course-review-regist";
     }
-
-
-
-
-
-
-
 
     /** 코스 리뷰 상세 페이지 출력 */
-    @GetMapping("/detail/{courseId}")
-    public String showCourseReviewDetailPage(@PathVariable Long courseId, Model model) {
-        model.addAttribute("courseId", courseId);
-        return "review/courseReviewDetail";
+    @GetMapping("/detail")
+    public String showCourseReviewDetailPage(@RequestParam("reviewId") Long reviewId, Model model) {
+        model.addAttribute("reviewId", reviewId);
+        return "course-review-detail";
     }
+
+
+
+
+
+
+
+
+
+
+
 
     /** 코스 리뷰 조회 페이지 출력 */
     @GetMapping("/search/{courseId}")
     public String showCourseReviewPage(@PathVariable Long courseId, Model model) {
         model.addAttribute("courseId", courseId);
-        return "review/courseReviewList";
+        return "review/course-review-list";
     }
 
 
@@ -68,22 +67,6 @@ public class ReviewFrontController {
 
 
 
-
-
-    /** 비동기(Ajax) 리뷰 등록 요청 처리 → JSON 응답 반환 */
-    @PostMapping("/regist/course")
-    @ResponseBody
-    public ResponseEntity<?> submitCourseReview(@ModelAttribute ReviewReqDto dto,
-                                                @RequestParam(value = "reviewImages", required = false) List<MultipartFile> files,
-                                                @AuthenticationPrincipal CustomUser user) {
-        try {
-            dto.setTargetType("COURSE");
-            reviewService.createReview(dto, files, user.getUsername());
-            return ResponseEntity.ok().body("리뷰 등록 성공");
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("리뷰 등록 실패: " + e.getMessage());
-        }
-    }
 
 
 

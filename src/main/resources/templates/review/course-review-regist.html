@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>여행 코스 리뷰 작성</title>
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: #f4f6fa;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-top: 40px;
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        #review-target-container {
+            max-width: 700px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .review-card {
+            background: #ffffff;
+            border-radius: 14px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            animation: fadeIn 0.4s ease;
+        }
+
+        .review-card h2 {
+            margin: 0 0 20px;
+            color: #34495e;
+            text-align: center;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        textarea {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            border: 1px solid #dcdde1;
+            background: #fafafa;
+            transition: .2s;
+            font-size: 15px;
+        }
+
+        input:focus, textarea:focus {
+            border-color: #74b9ff;
+            background: #fff;
+            outline: none;
+        }
+
+        textarea {
+            height: 140px;
+            resize: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: #0984e3;
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: .2s;
+        }
+
+        button:hover {
+            background: #74b9ff;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+<h1>여행 코스 리뷰 작성</h1>
+
+<div id="review-target-container">
+    <p style="text-align: center; color: #7f8c8d;">리뷰 대상을 불러오는 중입니다...</p>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", async () => {
+        const url = new URL(window.location.href);
+        const planId = url.searchParams.get("planId");
+        const container = document.getElementById("review-target-container");
+
+        if (!planId) {
+            container.innerHTML = `<p style="text-align:center;color:#e74c3c;">잘못된 접근입니다. planId가 없습니다.</p>`;
+            return;
+        }
+
+        try {
+            const response = await fetch(`/reviews/course?planId=${planId}`, {
+                method: "GET",
+                credentials: "include"
+            });
+
+            if (!response.ok) {
+                container.innerHTML = `<p style="text-align:center;color:#e74c3c;">리뷰 대상을 불러올 수 없습니다.</p>`;
+                return;
+            }
+
+            const target = await response.json();
+
+            container.innerHTML = `
+                <div class="review-card">
+                    <h2>${target.title}</h2>
+
+                    <form id="reviewForm" enctype="multipart/form-data">
+                        <input type="hidden" name="targetId" value="${target.targetId}">
+                        <input type="hidden" name="targetType" value="${target.type}">
+
+                        <input type="text" name="title" placeholder="리뷰 제목" required>
+
+                        <textarea name="content" placeholder="리뷰 내용을 입력하세요" required></textarea>
+
+                        <input type="number" name="rating" min="1" max="5" placeholder="별점 (1~5)" required>
+
+                        <label style="font-weight: 600;">사진 업로드</label>
+                        <input type="file" name="images" multiple>
+
+                        <button type="submit">리뷰 등록</button>
+                    </form>
+                </div>
+            `;
+        } catch (error) {
+            console.error(error);
+            container.innerHTML = `<p style="text-align:center;color:#e74c3c;">서버 오류가 발생했습니다.</p>`;
+        }
+    });
+
+    // ⭐ 리뷰 등록 submit 이벤트 처리 (fetch 방식)
+    document.addEventListener("submit", async (event) => {
+        if (event.target.id !== "reviewForm") return;
+        event.preventDefault();
+
+        const form = document.getElementById("reviewForm");
+        const formData = new FormData(form);
+
+        try {
+            const response = await fetch("/reviews", {
+                method: "POST",
+                body: formData,
+                credentials: "include"
+            });
+
+            if (!response.ok) {
+                alert("리뷰 등록에 실패했습니다.");
+                return;
+            }
+
+            alert("리뷰가 성공적으로 등록되었습니다!");
+            location.href = "/member/view/mypage";
+
+        } catch (err) {
+            console.error(err);
+            alert("서버 오류가 발생했습니다.");
+        }
+    });
+</script>
+
+</body>
+</html>

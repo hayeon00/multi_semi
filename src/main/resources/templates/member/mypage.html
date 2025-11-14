@@ -31,7 +31,7 @@
         <p class="user-email" id="email">email@example.com</p>
 
         <button class="btn-edit" onclick="location.href='/member/view/edit'">프로필 수정</button>
-        <button class="btn-review" onclick="location.href='/review/my'">내가 쓴 리뷰보기</button>
+        <button class="btn-review" onclick="location.href='/reviews/view/search/my'">내가 쓴 리뷰보기</button>
     </section>
 
     <!-- 오른쪽 최근 계획 -->
@@ -81,7 +81,7 @@
             imgTag.src = member.imageUrl ? member.imageUrl : "/images/profile-sample.jpg";
 
             // ✅ 3. 최근 여행 계획 목록 불러오기
-            const planRes = await fetchWithRefresh("/members/plans", {
+            const planRes = await fetchWithRefresh("/plans", {
                 method: "GET",
                 headers: { "Content-Type": "application/json" },
                 credentials: "include"
@@ -98,7 +98,7 @@
                     list.innerHTML = plans.map(plan => `
           <div class="plan-item">
             <div class="plan-title">${plan.title}</div>
-            <button class="btn-review-small" onclick="location.href='/review/${plan.id}'">리뷰</button>
+            <button class="btn-review-small" onclick="location.href='/reviews/view/write?planId=${plan.id}'">리뷰</button>
           </div>
         `).join("");
                 }
