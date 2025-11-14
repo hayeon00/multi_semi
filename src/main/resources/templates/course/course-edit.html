@@ -343,7 +343,17 @@
       if (plan.coursePlaces?.length) {
         plan.coursePlaces.forEach(p => {
           const day = days.find(d => d.dayNo === p.dayNo);
-          if (day) day.items.push(p);
+          if (day) {
+            day.items.push({
+              id: p.placeId || p.id,    // 어떤 형식이 오든 id가 들어가게 보정
+              title: p.title,
+              categoryCode: p.categoryCode || p.category || p.catCode || (p.accId ? "acc" : "tsp"),
+              orderNo: p.orderNo,
+              dayNo: p.dayNo,
+              mapx: p.mapx,
+              mapy: p.mapy
+            });
+          }
         });
       }
 
@@ -529,26 +539,25 @@
       const response = await fetchWithRefresh(url);
       const res = await response.json();
 
-      const totalPages = res.data?.totalPages ?? 1;
-      const places = res.data?.contents || res.data?.content || res.data;
+      const places = res.data?.contents ?? res.data?.content ?? [];
 
       $("#placeList").empty();
 
-      if (!places || places.length === 0) {
+      if (!places.length) {
         $("#placeList").append("<div>데이터가 없습니다.</div>");
         return;
       }
 
       places.forEach(p => {
         const div = $(`
-          <div class="place-item"
-               data-id="${p.id}"
-               data-mapx="${p.mapx}"
-               data-mapy="${p.mapy}"
-               data-type="${type === "tour" ? "tsp" : "acc"}">
-            <span>${p.title}</span>
-            <span>+</span>
-          </div>`);
+        <div class="place-item"
+             data-id="${p.id}"
+             data-mapx="${p.mapx}"
+             data-mapy="${p.mapy}"
+             data-type="${type === "tour" ? "tsp" : "acc"}">
+          <span>${p.title}</span>
+          <span>+</span>
+        </div>`);
 
         div.click(() =>
                 addToCourse(p.id, p.title, type === "tour" ? "tsp" : "acc", p.mapx, p.mapy)
@@ -557,7 +566,7 @@
         $("#placeList").append(div);
       });
 
-      renderPagination(totalPages);
+      renderPagination(res.data.totalPages);
 
     } catch (e) {
       console.error(e);
@@ -670,7 +679,7 @@
       }
 
       alert("코스 수정이 완료되었습니다!");
-      location.href = `/plans/${planId}`;
+      location.href = `/plans/view/${planId}`;
 
     } catch (e) {
       console.error(e);
@@ -683,7 +692,7 @@
   ================================= */
   $("#cancelBtn").click(() => {
     if (confirm("정말 수정 내용을 취소하시겠습니까?")) {
-      location.href = `/plans/${planId}`;
+      location.href = `/plans/view/${planId}`;
     }
   });
 
