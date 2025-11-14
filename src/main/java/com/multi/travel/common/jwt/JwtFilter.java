@@ -36,6 +36,8 @@ public class JwtFilter extends OncePerRequestFilter {
     private static final String[] WILDCARD_PATHS = {
             "/spots/view/**",
             "/courses/view/**",
+            "/accommodations/view/**",
+            "/reviews/target",
             "/members/view/**",
             "/admin/view/**",
             "/auth/**",
