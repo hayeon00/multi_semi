@@ -77,7 +77,7 @@ public class ReviewService {
                 ReviewImage image = ReviewImage.builder()
                         .originalName(file.getOriginalFilename())
                         .storedName(storedName)
-                        .imageUrl("/uploads/" + storedName)
+                        .imageUrl(IMAGE_URL + storedName)
                         .build();
 
                 review.addImage(image);
@@ -111,7 +111,7 @@ public class ReviewService {
                 ReviewImage image = ReviewImage.builder()
                         .originalName(file.getOriginalFilename())
                         .storedName(storedName)
-                        .imageUrl("/uploads/" + storedName)
+                        .imageUrl(IMAGE_URL + storedName)
                         .build();
                 review.addImage(image); // 양방향 관계 설정
             }
@@ -222,94 +222,20 @@ public class ReviewService {
     }
 
 
-//    public ReviewDetailResponseDto getReviewDetail(Long reviewId, String userId) {
-//
-//        // 1. 리뷰 조회
-//        Review review = reviewRepository.findById(reviewId)
-//                .orElseThrow(() -> new RuntimeException("리뷰를 찾을 수 없습니다."));
-//
-//        // (선택) 본인 리뷰인지 체크하고 싶다면
-//        // if (!review.getMember().getLoginId().equals(userId)) throw new RuntimeException("권한이 없습니다.");
-//
-//        // 2. 리뷰 이미지 URL 목록 추출
-//        List<String> imageUrls = review.getImages() != null ?
-//                review.getImages().stream()
-//                        .map(ReviewImage::getImageUrl)
-//                        .toList()
-//                : List.of();
-//
-//        // 3. ReviewDetailDto 생성
-//        ReviewDetailDto reviewDto = ReviewDetailDto.builder()
-//                .reviewId(review.getId())
-//                .title(review.getTitle())
-//                .content(review.getContent())
-//                .rating(review.getRating())
-//                .writer(review.getMember().getUsername())
-//                .createdAt(review.getCreatedAt())
-//                .imageUrls(imageUrls)
-//                .targetId(review.getTargetId())
-//                .targetType(review.getTargetType().toString())
-//                .build();
+    public ReviewDetailDto getReviewDetail(Long reviewId, String userId) {
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new RuntimeException("리뷰를 찾을 수 없습니다."));
 
-        // ===========================
-        // 4. 여행 계획 정보 조회
-        // ===========================
+        // 본인 리뷰인지 확인 (선택사항)
+        if (!review.getMember().getLoginId().equals(userId)) {
+            throw new SecurityException("본인의 리뷰만 조회할 수 있습니다.");
+        }
 
-//        TripPlan plan = tripPlanRepository.findByCourseId(review.getTargetId())
-//                .orElseThrow(() -> new RuntimeException("여행 계획을 찾을 수 없습니다."));
-//
-//        PlanDto planDto = PlanDto.builder()
-//                .planId(plan.getId())
-//                .title(plan.getTitle())
-//                .startDate(plan.getStartDate().toString())
-//                .endDate(plan.getEndDate().toString())
-//                .days(plan.getDays())
-//                .build();
+        return toDto(review); // 이미지를 포함하여 DTO로 변환
+    }
 
-        // ===========================
-        // 5. 코스 상세 조회
-        // ===========================
-//
-//        Course course = courseRepository.findById(review.getTargetId())
-//                .orElseThrow(() -> new RuntimeException("코스를 찾을 수 없습니다."));
-//
-//        // 코스에 포함된 장소들
-//        List<CourseItem> items = courseItemRepository.findByCourseId((course.getCourseId());
-//
-////
-//        blic class CourseItemDto {
-//            private Long spotId;       // 관광지 ID
-//            private String name;       // 관광지 이름
-//            private String address;    // 주소
-//            private String imageUrl;   // 장소 이미지 주소
-//            private String category;
-        // CourseItemDto로 변환
-//        List<CourseItemDto> itemDtos = items.stream().map(item ->
-//                CourseItemDto.builder()
-//                        .spotId(item.getSpotId())
-//                        .name(item.getSpot().getName())
-//                        .address(item.getSpot().getAddress())
-//                        .imageUrl(item.getSpot().getImageUrl())
-//                        .category(item.getSpot().getCategory().getName())
-//                        .build()
-//        ).toList();
-//
-//        CourseDetailDto courseDto = CourseDetailDto.builder()
-//                .courseId(course.getId())
-//                .title(course.getTitle())
-//                .items(itemDtos)
-//                .build();
-//
-//        // ===========================
-//        // 6. 최종 조립
-//        // ===========================
-//
-//        return ReviewDetailResponseDto.builder()
-//                .review(reviewDto)
-//                .tripPlan(planDto)
-//                .course(courseDto)
-//                .build();
-//    }
+
+
 
 }
 
