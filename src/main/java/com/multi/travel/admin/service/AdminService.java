@@ -1,8 +1,8 @@
 package com.multi.travel.admin.service;
 
-import com.multi.travel.admin.controller.dto.TourSpotReqDto;
-import com.multi.travel.admin.controller.dto.TourSpotResDto;
-import com.multi.travel.admin.controller.dto.TourSpotSimpleResDto;
+import com.multi.travel.admin.dto.TourSpotReqDto;
+import com.multi.travel.admin.dto.TourSpotResDto;
+import com.multi.travel.admin.dto.TourSpotSimpleResDto;
 import com.multi.travel.common.exception.TourSpotNotFoundException;
 import com.multi.travel.common.util.FileUploadUtils;
 import com.multi.travel.tourspot.dto.TourSpotDTO;
