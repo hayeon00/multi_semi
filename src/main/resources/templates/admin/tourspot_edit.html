@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>관광지 수정 | Travel Planing</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <link rel="stylesheet" th:href="@{/css/admin_tourspot_edit.css}">
+</head>
+
+<body>
+<header>
+    <div style="display: flex; align-items: center; gap: 20px;">
+        <img th:src="@{/images/logo.png}" alt="Logo">
+        <div class="title">TRAVEL PLANING</div>
+    </div>
+    <div>
+        <div style="text-align:right; font-size:14px; margin-bottom:5px;">
+            (관리자) 님 환영합니다.
+        </div>
+        <div class="nav">
+            <a th:href="@{/admin/view/members}">회원관리</a>
+            <a th:href="@{/admin/view/tourspot}">관광지관리</a>
+            <a th:href="@{/admin/view/dashboard}">관리자페이지</a>
+            <a th:href="@{/logout}">로그아웃</a>
+        </div>
+    </div>
+</header>
+
+
+
+<main>
+    <h2>관광지 수정</h2>
+
+    <div class="edit-container">
+        <!-- ✅ 왼쪽 입력 폼 -->
+        <div class="form-left">
+            <input type="hidden" id="spotId" th:value="${spot.id}">
+
+            <label>제목</label>
+            <input type="text" id="title" th:value="${spot.title}" required>
+
+            <label>주소</label>
+            <input type="text" id="address" th:value="${spot.address}" required>
+
+            <label>전화번호</label>
+            <input type="text" id="tel" th:value="${spot.tel}">
+
+            <label>설명</label>
+            <textarea id="description" th:text="${spot.description}"></textarea>
+
+            <label>위도 (mapy)</label>
+            <input type="text" id="mapy" th:value="${spot.mapy}">
+
+            <label>경도 (mapx)</label>
+            <input type="text" id="mapx" th:value="${spot.mapx}">
+
+            <label>지역 코드</label>
+            <input type="number" id="areacode" th:value="${spot.areacode}">
+
+            <label>시군구 코드</label>
+            <input type="number" id="sigungucode" th:value="${spot.sigungucode}">
+
+            <label>행정동 코드</label>
+            <input type="text" id="lDongRegnCd" th:value="${spot.lDongRegnCd}">
+        </div>
+
+        <!-- ✅ 오른쪽 이미지 영역 -->
+        <div class="form-right">
+            <img id="previewImg" th:src="${spot.firstImage}" alt="관광지 이미지">
+            <br>
+            <input type="file" id="file" accept="image/*" onchange="previewImage(event)">
+        </div>
+    </div>
+
+    <div class="btn-box">
+        <button type="button" class="btn-save" onclick="updateSpot()">💾 저장</button>
+        <button type="button" class="btn-cancel" onclick="history.back()">취소</button>
+    </div>
+</main>
+
+<footer>© 2025 Travel Planing. All rights reserved.</footer>
+
+<script>
+    function previewImage(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = e => {
+            document.getElementById("previewImg").src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function updateSpot() {
+        const id = document.getElementById("spotId").value;
+        const dto = {
+            title: document.getElementById("title").value,
+            address: document.getElementById("address").value,
+            tel: document.getElementById("tel").value,
+            description: document.getElementById("description").value,
+            mapx: parseFloat(document.getElementById("mapx").value),
+            mapy: parseFloat(document.getElementById("mapy").value),
+            areacode: parseInt(document.getElementById("areacode").value),
+            sigungucode: parseInt(document.getElementById("sigungucode").value),
+            lDongRegnCd: document.getElementById("lDongRegnCd").value
+        };
+
+        const file = document.getElementById("file").files[0];
+        const formData = new FormData();
+        formData.append("dto", new Blob([JSON.stringify(dto)], { type: "application/json" }));
+        if (file) formData.append("file", file);
+
+        fetch(`/admin/tourspot/${id}`, {
+            method: "PUT",
+            body: formData
+        })
+            .then(res => {
+                if (res.ok) {
+                    alert("수정 완료 ✅");
+                    location.href = "/admin/view/tourspot";
+                } else {
+                    alert("수정 실패 ❌");
+                }
+            })
+            .catch(() => alert("서버 오류 ❌"));
+    }
+</script>
+</body>
+</html>
