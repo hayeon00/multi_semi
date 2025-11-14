@@ -83,14 +83,27 @@ public class ReviewController {
         return ResponseEntity.ok(myReviews);
     }
 
+//    // 타겟별 리뷰 조회 (페이징)
+//    @GetMapping("/targets")
+//    public ResponseEntity<List<ReviewTargetDto>> getReviewTargetsByTripPlan(
+//            @RequestParam("planId") Long planId,
+//            @AuthenticationPrincipal CustomUser user
+//    ) {
+//        List<ReviewTargetDto> targets = reviewService.getReviewTargetsByPlan(planId, user.getUserId());
+//        return ResponseEntity.ok(targets);
+//    }
     // 타겟별 리뷰 조회 (페이징)
-    @GetMapping("/targets")
-    public ResponseEntity<List<ReviewTargetDto>> getReviewTargetsByTripPlan(
-            @RequestParam("planId") Long planId,
-            @AuthenticationPrincipal CustomUser user
+    @GetMapping("/target")
+    public ResponseEntity<Page<ReviewDetailDto>> getReviewsByTarget(
+            @RequestParam("type") String targetType,
+            @RequestParam("id") Long targetId,
+            @RequestParam(defaultValue = "10") int size,
+            Pageable pageable
     ) {
-        List<ReviewTargetDto> targets = reviewService.getReviewTargetsByPlan(planId, user.getUserId());
-        return ResponseEntity.ok(targets);
+        Pageable fixedPageable = PageRequest.of(pageable.getPageNumber(), size, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        Page<ReviewDetailDto> reviews = reviewService.getReviewsByTarget(targetType, targetId, pageable);
+        return ResponseEntity.ok(reviews);
     }
 
     // ReviewController.java
