@@ -242,16 +242,13 @@
                 const data = await res.json();
 
                 if (res.ok && data.data) {
-                    const savedCourse = data.data; // CourseResDto
+                    const savedCourse = data.data;
                     alert('코스가 확정되어 저장되었습니다.');
 
-                    // 저장 후, 코스 상세 페이지로 이동하는 경우 (경로는 프로젝트에 맞게 수정)
-                    if (savedCourse.id) {
-                        location.href = `/courses/view/detail?courseId=${savedCourse.id}`;
-                    } else {
-                        location.href = '/courses/view/list';
-                    }
-                } else {
+                    // AI 저장 후 — 곧바로 코스 수정 페이지로 이동
+                    location.href = `/courses/view/edit?planId=${currentCourse.planId}`;
+                }
+                else {
                     alert('코스 확정 중 오류가 발생했습니다.');
                 }
             } catch (e) {

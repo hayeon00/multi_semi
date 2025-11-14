@@ -264,6 +264,8 @@ public class AccService {
                         .address(list.getAddress())
                         .recCount(list.getRecCount())
                         .firstImage(list.getFirstImage())
+                        .mapx(list.getMapx())
+                        .mapy(list.getMapy())
                         .build()
                 ).toList();
     }
