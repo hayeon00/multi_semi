@@ -35,16 +35,18 @@ public class CourseViewController {
 //    }
 
     /** 코스 상세보기 - AI 생성 코스든 일반 코스든 동일하게 사용 */
-    @GetMapping("/view/{courseId}")
+    @GetMapping("/detail/{courseId}")
     public String showCourseDetail(
             @PathVariable Long courseId,
+            @RequestParam(required = false) Long planId,
             @AuthenticationPrincipal CustomUser user,
             Model model
     ) {
         model.addAttribute("courseId", courseId);
+        model.addAttribute("planId", planId);   // ⭐ 반드시 추가
         model.addAttribute("loginUserId", user != null ? user.getUserId() : null);
         model.addAttribute("kakaoKey", kakaoKey);
-        return "course/course-view";
+        return "course/course-detail";
     }
 
     /** 계획 생성 후 & 코스 생성 전 분기 페이지 */
@@ -72,9 +74,13 @@ public class CourseViewController {
 
     /** 코스 목록 페이지 */
     @GetMapping("/list")
-    public String showCourseListPage(@AuthenticationPrincipal CustomUser user, Model model) {
+    public String showCourseList(
+            @AuthenticationPrincipal CustomUser user,
+            @RequestParam(required = false) Long planId,
+            Model model
+    ) {
+        model.addAttribute("planId", planId);
         model.addAttribute("loginUserId", user != null ? user.getUserId() : null);
-        model.addAttribute("kakaoKey", kakaoKey);
         return "course/course-list"; // templates/course/course-list.html
     }
 

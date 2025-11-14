@@ -28,4 +28,12 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
             "WHERE c.courseId = :courseId")
     Optional<Course> findByIdWithItemsAndCategory(@Param("courseId") Long courseId);
 
+
+    @Query("""
+    SELECT DISTINCT c FROM Course c
+    JOIN c.items i
+    WHERE i.placeId = :spotId
+      AND c.status = 'Y'
+""")
+    Page<Course> findCoursesByStartSpot(@Param("spotId") Long spotId, Pageable pageable);
 }
