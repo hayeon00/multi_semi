@@ -142,10 +142,8 @@ public class AccService {
     }
 
     @Transactional
-    public AccDTO registAcc(AccDTO accDTO) { // 관리자 전용
-        Category category = categoryRepository.findById(accDTO.getCatCode())
-                .orElseThrow(() -> new CategoryNotFoundException(accDTO.getCatCode()));
-        // 1) 신규 엔티티 생성 및 저장
+    public AccDTO registAcc(AccDTO accDTO) { //관리자 전용
+        Category category = categoryRepository.findById(accDTO.getCatCode()).orElseThrow(() -> new CategoryNotFoundException(accDTO.getCatCode()));
         Acc newAcc = Acc.builder()
                 .address(accDTO.getAddress())
                 .title(accDTO.getTitle())
@@ -224,7 +222,6 @@ public class AccService {
 
         // ⭐ 나머지 필드 업데이트
         acc.updateInfo(accDTO);
-
         return AccEntityToDTO(acc);
     }
 
@@ -264,6 +261,8 @@ public class AccService {
                         .recCount(list.getRecCount())
                         .firstImage(list.getFirstImage())
                         .status(list.getStatus())
+                        .mapx(list.getMapx())
+                        .mapy(list.getMapy())
                         .build()
                 ).toList();
     }

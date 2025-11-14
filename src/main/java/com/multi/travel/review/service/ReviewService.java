@@ -10,9 +10,7 @@ import com.multi.travel.member.entity.Member;
 import com.multi.travel.member.repository.MemberRepository;
 import com.multi.travel.plan.entity.TripPlan;
 import com.multi.travel.plan.repository.TripPlanRepository;
-import com.multi.travel.review.dto.ReviewDetailDto;
-import com.multi.travel.review.dto.ReviewReqDto;
-import com.multi.travel.review.dto.ReviewTargetDto;
+import com.multi.travel.review.dto.*;
 import com.multi.travel.review.entity.Review;
 import com.multi.travel.review.entity.ReviewImage;
 import com.multi.travel.review.repository.ReviewImageRepository;
@@ -50,7 +48,6 @@ public class ReviewService {
     private final TripPlanRepository tripPlanRepository;
     private final CourseRepository courseRepository;
     private final CourseItemRepository courseItemRepository;
-
 
 
     public ReviewDetailDto createReview(ReviewReqDto dto, List<MultipartFile> images, String userId) {
@@ -172,7 +169,6 @@ public class ReviewService {
     }
 
 
-
     public List<ReviewTargetDto> getReviewTargetsByPlan(Long planId, String userId) {
         TripPlan plan = tripPlanRepository.findById(planId)
                 .orElseThrow(() -> new IllegalArgumentException("여행 계획이 존재하지 않습니다."));
@@ -225,17 +221,70 @@ public class ReviewService {
     public ReviewDetailDto getReviewDetail(Long reviewId, String userId) {
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new RuntimeException("리뷰를 찾을 수 없습니다."));
-
-        // 본인 리뷰인지 확인 (선택사항)
-        if (!review.getMember().getLoginId().equals(userId)) {
-            throw new SecurityException("본인의 리뷰만 조회할 수 있습니다.");
+        // 1. 본인 리뷰인지 확인 (오류 대신 boolean 값으로)
+        boolean isOwner = false;
+        if (userId != null) {
+            isOwner = review.getMember().getLoginId().equals(userId);
         }
-
-        return toDto(review); // 이미지를 포함하여 DTO로 변환
+        // 2. toDto(review) 대신 DTO를 직접 빌드하여 isOwner 값 주입
+        return ReviewDetailDto.builder()
+                .reviewId(review.getId())
+                .title(review.getTitle())
+                .content(review.getContent())
+                .rating(review.getRating())
+                .writer(review.getMember().getUsername())
+                .createdAt(review.getCreatedAt())
+                .targetType(review.getTargetType())
+                .targetId(review.getTargetId())
+                .imageUrls(review.getImages().stream()
+                        .map(ReviewImage::getImageUrl)
+                        .collect(Collectors.toList()))
+                .isOwner(isOwner) // :왼쪽을_가리키는_손_모양: isOwner 값을 DTO에 담아서 반환
+                .build();
     }
 
 
+    @Transactional
+    public void createComplexReview(ComplexReviewReqDto dto, List<MultipartFile> images, String userId) {
+        Member member = memberRepository.findByLoginId(userId).orElseThrow(() -> new IllegalArgumentException("회원 정보가 없습니다.")); // --- 1. 코스 전체 리뷰 저장 ---
+        Review mainReview = Review.builder()
+                .title(dto.getMainReview()
+                        .getTitle())
+                .content(dto.getMainReview()
+                        .getContent())
+                .rating(dto.getMainReview().getRating())
+                .targetType(dto.getMainReview().getTargetType())
+                .targetId(dto.getMainReview()
+                        .getTargetId())
+                .member(member)
+                .build(); // 메인 이미지 저장
+        if (images != null && !images.isEmpty()) {
+            for (MultipartFile file : images) {
+                String storedName = fileService.store(file);
+                ReviewImage image = ReviewImage.builder().originalName(file.getOriginalFilename()).storedName(storedName).imageUrl(IMAGE_URL + storedName) // :왼쪽을_가리키는_손_모양: 4-1. 수정된 경로 사용
+                        .build();
+
+                mainReview.addImage(image);
+            }
+        }
+        reviewRepository.save(mainReview); // 코스 리뷰 1개 저장// --- 2. 개별 관광지 리뷰들 저장 ---
+        if (dto.getSpotReviews() != null) {
+            for (SpotReviewDto spotDto : dto.getSpotReviews()) { // 별점을 선택했거나, 한 줄 평을 썼을 때만 저장
+                if (spotDto.getRating() > 0 || (spotDto.getContent() != null && !spotDto.getContent().isBlank())) {
+                    Review spotReview = Review.builder().title(mainReview.getTitle() + " - " + spotDto.getTargetType()) // 관광지 리뷰는 제목을 메인에서 따옴
+                            .content(spotDto.getContent())
+                            .rating(spotDto.getRating())
+                            .targetType(spotDto.getTargetType())
+                            .targetId(spotDto.getTargetId())
+                            .member(member)
+                            .build(); // 관광지 리뷰는 이미지 없음
+
+                    reviewRepository.save(spotReview); // 관광지 리뷰 N개 저장
+                }
+            }
+        }
+    }
 
 
-}
+    }
 

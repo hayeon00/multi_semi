@@ -267,6 +267,12 @@
     <!-- 지도 -->
     <div id="map" class="map-panel"></div>
 
+    <!-- Day 추가/삭제 버튼 UI 추가 -->
+    <div style="display:flex; justify-content:flex-end; gap:10px; margin-bottom:10px;">
+      <button class="btn-secondary" id="addDayBtn">+ 일차 추가</button>
+      <button class="btn-secondary" id="removeDayBtn">- 일차 삭제</button>
+    </div>
+
     <!-- 우측 패널 -->
     <div class="right-panel">
 
@@ -343,7 +349,17 @@
       if (plan.coursePlaces?.length) {
         plan.coursePlaces.forEach(p => {
           const day = days.find(d => d.dayNo === p.dayNo);
-          if (day) day.items.push(p);
+          if (day) {
+            day.items.push({
+              id: p.placeId || p.id,    // 어떤 형식이 오든 id가 들어가게 보정
+              title: p.title,
+              categoryCode: p.categoryCode || p.category || p.catCode || (p.accId ? "acc" : "tsp"),
+              orderNo: p.orderNo,
+              dayNo: p.dayNo,
+              mapx: p.mapx,
+              mapy: p.mapy
+            });
+          }
         });
       }
 
@@ -529,26 +545,25 @@
       const response = await fetchWithRefresh(url);
       const res = await response.json();
 
-      const totalPages = res.data?.totalPages ?? 1;
-      const places = res.data?.contents || res.data?.content || res.data;
+      const places = res.data?.contents ?? res.data?.content ?? [];
 
       $("#placeList").empty();
 
-      if (!places || places.length === 0) {
+      if (!places.length) {
         $("#placeList").append("<div>데이터가 없습니다.</div>");
         return;
       }
 
       places.forEach(p => {
         const div = $(`
-          <div class="place-item"
-               data-id="${p.id}"
-               data-mapx="${p.mapx}"
-               data-mapy="${p.mapy}"
-               data-type="${type === "tour" ? "tsp" : "acc"}">
-            <span>${p.title}</span>
-            <span>+</span>
-          </div>`);
+        <div class="place-item"
+             data-id="${p.id}"
+             data-mapx="${p.mapx}"
+             data-mapy="${p.mapy}"
+             data-type="${type === "tour" ? "tsp" : "acc"}">
+          <span>${p.title}</span>
+          <span>+</span>
+        </div>`);
 
         div.click(() =>
                 addToCourse(p.id, p.title, type === "tour" ? "tsp" : "acc", p.mapx, p.mapy)
@@ -557,7 +572,7 @@
         $("#placeList").append(div);
       });
 
-      renderPagination(totalPages);
+      renderPagination(res.data.totalPages);
 
     } catch (e) {
       console.error(e);
@@ -641,6 +656,57 @@
     });
   }
 
+  /* ================================
+      DAY 추가 / 삭제 기능
+================================ */
+
+  /* Day 추가 */
+  $("#addDayBtn").click(() => {
+    const last = days.length;
+    const newDayNo = last + 1;
+
+    days.push({
+      dayNo: newDayNo,
+      items: []
+    });
+
+    renderDayTabs(days.length);
+    activeDay = newDayNo;
+    renderCourseList();
+    renderMap();
+  });
+
+  /* Day 삭제 */
+  $("#removeDayBtn").click(() => {
+    if (days.length <= 1) {
+      alert("1일차는 삭제할 수 없습니다.");
+      return;
+    }
+
+    if (!confirm(`${days.length}일차를 삭제하시겠습니까?\n삭제 시 해당 일차의 코스는 이전 날로 이동됩니다.`))
+      return;
+
+    const removed = days.pop();  // 마지막 day 제거
+
+    // 제거된 마지막 날의 아이템을 모두 "하루 전"으로 이동
+    removed.items.forEach(item => {
+      const prevDay = days[days.length - 1];
+      prevDay.items.push({
+        ...item,
+        dayNo: prevDay.dayNo,
+        orderNo: prevDay.items.length + 1
+      });
+    });
+
+    // 활성 Day 조정
+    activeDay = days.length;
+
+    renderDayTabs(days.length);
+    renderCourseList();
+    renderMap();
+  });
+
+
   /* ---------------- 저장 요청 ---------------- */
   $("#saveBtn").click(async function () {
     if (!confirm("수정 내용을 저장하시겠습니까?")) return;
@@ -670,7 +736,7 @@
       }
 
       alert("코스 수정이 완료되었습니다!");
-      location.href = `/plans/${planId}`;
+      location.href = `/plans/view/${planId}`;
 
     } catch (e) {
       console.error(e);
@@ -683,7 +749,7 @@
   ================================= */
   $("#cancelBtn").click(() => {
     if (confirm("정말 수정 내용을 취소하시겠습니까?")) {
-      location.href = `/plans/${planId}`;
+      location.href = `/plans/view/${planId}`;
     }
   });
 

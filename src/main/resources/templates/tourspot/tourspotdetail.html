@@ -183,7 +183,7 @@
             window.location.href = `/accommodations/view/acclist?tspId=${id}`;
 
         document.getElementById("btnPlan").onclick = () => {
-            fetchWithRefresh(`/plans/view/create?tspId=${id}`);
+            window.location.href = `/plans/view/create?tspId=${id}`;
         };
 
         document.getElementById("btnLike").onclick = () => {

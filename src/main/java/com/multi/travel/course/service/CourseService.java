@@ -23,6 +23,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -238,15 +239,11 @@ public class CourseService {
             throw new IllegalStateException("해당 계획에 연결된 코스가 없습니다.");
         }
 
-        // 기존 아이템 전체 삭제 (고아 제거 활성화되어 있음)
+        // 기존 아이템 삭제
         course.getItems().clear();
 
-        // 수정된 아이템 추가
+        // 새 아이템 추가
         dto.getItems().forEach(itemDto -> {
-            if (itemDto.getCategoryCode() == null || itemDto.getCategoryCode().isBlank()) {
-                throw new IllegalArgumentException("카테고리 코드가 누락되었습니다. placeId=" + itemDto.getPlaceId());
-            }
-
             Category category = categoryRepository.findById(itemDto.getCategoryCode())
                     .orElseThrow(() -> new EntityNotFoundException("카테고리를 찾을 수 없습니다. code=" + itemDto.getCategoryCode()));
 
@@ -261,18 +258,54 @@ public class CourseService {
             course.addItem(item);
         });
 
-        // 계획 기본정보도 함께 수정
-        plan.setTitle(dto.getMemberId());  // (승아님 상황에 맞게 수정 필요)
-        plan.setNumberOfPeople(plan.getNumberOfPeople());
-        plan.setStartDate(plan.getStartDate());
-        plan.setEndDate(plan.getEndDate());
-        tripPlanRepository.save(plan);
-
         courseRepository.save(course);
+
+        // 출발지 자동 업데이트
+        updatePlanStartLocationByCourse(plan, course);
+
+        // 코스 dayNo 기반 TripPlan.endDate 자동 조정
+        int maxDay = course.getItems().stream()
+                .mapToInt(CourseItem::getDayNo)
+                .max()
+                .orElse(1);
+
+        LocalDate newEndDate = plan.getStartDate().plusDays(maxDay - 1);
+        plan.setEndDate(newEndDate);
+
+        tripPlanRepository.save(plan);  // Plan 변경 저장
 
         return mapToCourseResDto(course);
     }
 
+    private void updatePlanStartLocationByCourse(TripPlan plan, Course course) {
+
+        // 1일차 + orderNo 1 찾기
+        CourseItem first = course.getItems().stream()
+                .filter(i -> i.getDayNo() == 1)
+                .sorted((a, b) -> a.getOrderNo() - b.getOrderNo())
+                .findFirst()
+                .orElse(null);
+
+        if (first == null) return;
+
+        String cat = first.getCategory().getCatCode();
+
+        if ("tsp".equals(cat)) {
+            tspRepository.findById(first.getPlaceId()).ifPresent(spot -> {
+                plan.setStartLocation(spot.getTitle());
+                plan.setStartMapX(spot.getMapx());
+                plan.setStartMapY(spot.getMapy());
+            });
+        } else if ("acc".equals(cat)) {
+            accRepository.findById(first.getPlaceId()).ifPresent(acc -> {
+                plan.setStartLocation(acc.getTitle());
+                plan.setStartMapX(acc.getMapx());
+                plan.setStartMapY(acc.getMapy());
+            });
+        }
+
+        tripPlanRepository.save(plan);
+    }
 
 
     /** DTO 변환 */

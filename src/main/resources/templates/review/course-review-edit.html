@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>리뷰 수정</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pretendard&display.swap">
+    <style>
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background: #F5F6F8;
+            margin: 0;
+            padding: 0;
+        }
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fff;
+            padding: 15px 40px;
+            border-bottom: 1px solid #E0E0E0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .page-header h1 {
+            font-size: 20px;
+            margin: 0;
+            color: #2C3E50;
+            font-weight: 700;
+        }
+        .page-header nav a {
+            margin-left: 15px;
+            color: #555;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .content-wrapper {
+            max-width: 800px;
+            margin: 40px auto;
+            background: #fff;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        h2 {
+            margin-bottom: 10px;
+            font-size: 26px;
+            color: #2C3E50;
+            font-weight: 700;
+        }
+        .target-title {
+            text-align: center;
+            color: #555;
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+            font-size: 15px;
+        }
+        input[type="text"],
+        textarea,
+        input[type="file"] {
+            width: 100%;
+            padding: 14px;
+            border-radius: 8px;
+            border: 1px solid #DCDDE1;
+            background: #FAFAFA;
+            font-size: 15px;
+            box-sizing: border-box;
+        }
+        input[type="text"]:focus,
+        textarea:focus {
+            border-color: #3498DB;
+            background: #fff;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+        textarea {
+            height: 140px;
+            resize: none;
+        }
+        /* ======== 1. 버튼 스타일 수정 ======== */
+        /* 버튼을 감싸는 컨테이너 */
+        .button-group {
+            display: flex;
+            gap: 10px; /* 버튼 사이 간격 */
+            margin-top: 20px;
+        }
+        /* 모든 버튼 공통 스타일 */
+        .button-group button {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        /* '리뷰 수정' 버튼 (녹색 계열) */
+        .btn-submit {
+            background: #2ECC71;
+            flex-grow: 2; /* 수정 버튼을 더 길게 */
+        }
+        .btn-submit:hover {
+            background: #27AE60;
+        }
+        /* '뒤로가기' 버튼 (회색 계열) */
+        .btn-back {
+            background: #95A5A6;
+            flex-grow: 1; /* 뒤로가기 버튼 */
+        }
+        .btn-back:hover {
+            background: #7F8C8D;
+        }
+        /* ================================== */
+        .rating-stars {
+            display: inline-block;
+            direction: rtl;
+        }
+        .rating-stars input[type="radio"] {
+            display: none;
+        }
+        .rating-stars label {
+            font-size: 32px;
+            color: #E0E0E0;
+            cursor: pointer;
+            padding: 0 2px;
+            display: inline-block;
+        }
+        .rating-stars label:hover,
+        .rating-stars label:hover ~ label,
+        .rating-stars input[type="radio"]:checked ~ label {
+            color: #F39C12;
+        }
+    </style>
+</head>
+<body>
+<div class="page-header">
+    <h1>TRAVEL PLANNING</h1>
+    <nav>
+        <span>사용자님 환영합니다.</span>
+        <a href="/">Home</a>
+        <a href="/mypage">마이페이지</a>
+        <a href="/logout">로그아웃</a>
+    </nav>
+</div>
+<div class="content-wrapper">
+    <h2>리뷰 수정</h2>
+    <div id="form-container">
+        <p style="text-align: center; color: #7F8C8D;">기존 리뷰 정보를 불러오는 중입니다...</p>
+    </div>
+</div>
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const reviewId = urlParams.get("reviewId");
+    const container = document.getElementById("form-container");
+    if (!reviewId) {
+        container.innerHTML = `<p style="text-align:center;color:#e74c3c;">잘못된 접근입니다. reviewId가 없습니다.</p>`;
+    } else {
+        loadReviewData();
+    }
+    async function loadReviewData() {
+        try {
+            const response = await fetch(`/reviews/detail/${reviewId}`, {
+                method: "GET",
+                credentials: "include"
+            });
+            if (!response.ok) throw new Error("데이터 로딩 실패");
+            const data = await response.json();
+            container.innerHTML = `
+                <h3 class="target-title">${data.title} (수정)</h3>
+                <form id="reviewForm" enctype="multipart/form-data">
+                    <input type="hidden" name="targetId" value="${data.targetId}">
+                    <input type="hidden" name="targetType" value="${data.targetType}">
+                    <div class="form-group">
+                        <label for="review-title">리뷰 제목</label>
+                        <input type="text" id="review-title" name="title" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="review-content">리뷰 내용</label>
+                        <textarea id="review-content" name="content" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>별점</label>
+                        <div class="rating-stars">
+                            <input type="radio" id="star5" name="rating" value="5" required><label for="star5">★</label>
+                            <input type="radio" id="star4" name="rating" value="4"><label for="star4">★</label>
+                            <input type="radio" id="star3" name="rating" value="3"><label for="star3">★</label>
+                            <input type="radio" id="star2" name="rating" value="2"><label for="star2">★</label>
+                            <input type="radio" id="star1" name="rating" value="1"><label for="star1">★</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="review-images">새 이미지 업로드 (기존 이미지는 삭제됩니다)</label>
+                        <input type="file" id="review-images" name="images" multiple>
+                    </div>
+                    <div class="button-group">
+                        <button type="button" class="btn-back" onclick="history.back()">뒤로가기</button>
+                        <button type="submit" class="btn-submit">리뷰 수정</button>
+                    </div>
+                    </form>
+            `;
+            document.getElementById("review-title").value = data.title;
+            document.getElementById("review-content").value = data.content;
+            const starRadio = document.querySelector(`input[name="rating"][value="${data.rating}"]`);
+            if (starRadio) {
+                starRadio.checked = true;
+            }
+        } catch (error) {
+            console.error(error);
+            container.innerHTML = `<p style="text-align:center;color:#e74c3c;">데이터를 불러오는 중 오류가 발생했습니다.</p>`;
+        }
+    }
+    document.addEventListener("submit", async (event) => {
+        if (event.target.id !== "reviewForm") return;
+        event.preventDefault();
+        const form = document.getElementById("reviewForm");
+        const rating = form.querySelector('input[name="rating"]:checked');
+        if (!rating) {
+            alert("별점을 선택해주세요.");
+            return;
+        }
+        const formData = new FormData(form);
+        try {
+            const response = await fetch(`/reviews/${reviewId}`, {
+                method: "PUT",
+                body: formData,
+                credentials: "include"
+            });
+            if (!response.ok) {
+                alert("리뷰 수정에 실패했습니다.");
+                return;
+            }
+            alert("리뷰가 성공적으로 수정되었습니다!");
+            location.href = `/reviews/view/detail?reviewId=${reviewId}`;
+        } catch (err) {
+            console.error(err);
+            alert("서버 오류가 발생했습니다.");
+        }
+    });
+</script>
+</body>
+</html>
