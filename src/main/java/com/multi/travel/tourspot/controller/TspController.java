@@ -22,6 +22,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Map;
+
 
 @RestController
 @RequiredArgsConstructor
@@ -40,15 +42,17 @@ public class TspController {
             @RequestParam(defaultValue = "") String keyword,
             @AuthenticationPrincipal CustomUser customUser
     ) {
-        Object result;
-
+        Map<String, Object> result;
+        String message;
 
         if (keyword.isBlank()) {
             result = tspService.getTourSpotList(page, size, sort, customUser);
+            message = "관광지 목록 조회 성공";
         } else {
             result = tspService.getTspSearch(page, size, sort, keyword, customUser);
+            message = "관광지 검색 성공";
         }
-        return ResponseEntity.ok(new ResponseDto(HttpStatus.OK, "success", result));
+        return ResponseEntity.ok(new ResponseDto(HttpStatus.OK, message, result));
     }
 
 
@@ -57,7 +61,6 @@ public class TspController {
             @RequestParam @Valid Long id,
             @AuthenticationPrincipal CustomUser customUser
     ) {
-        log.info("id >>> {}", id);
         return ResponseEntity.ok(new ResponseDto(HttpStatus.OK, "상세 조회 성공", tspService.getTourSpotDetail(id, customUser)));
     }
 
