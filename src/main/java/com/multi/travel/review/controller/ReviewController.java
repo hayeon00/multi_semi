@@ -60,15 +60,16 @@ public class ReviewController {
         return ResponseEntity.ok("리뷰가 성공적으로 삭제되었습니다.");
     }
 
-    //리뷰 상세조회
-//    @GetMapping("/detail/{reviewId}")
-//    public ResponseEntity<ReviewDetailResponseDto> getReviewDetail(
-//            @PathVariable Long reviewId,
-//            @AuthenticationPrincipal CustomUser user
-//    ) {
-//        ReviewDetailResponseDto dto = reviewService.getReviewDetail(reviewId, user.getUserId());
-//        return ResponseEntity.ok(dto);
-//    }
+    // 리뷰 상세조회
+    @GetMapping("/detail/{reviewId}")
+    public ResponseEntity<ReviewDetailDto> getReviewDetail(
+            @PathVariable Long reviewId,
+            @AuthenticationPrincipal CustomUser user
+    ) {
+        ReviewDetailDto dto = reviewService.getReviewDetail(reviewId, user.getUserId());
+        return ResponseEntity.ok(dto);
+    }
+
 
 
     // 내가 쓴 리뷰 조회 (페이징)

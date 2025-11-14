@@ -2,6 +2,7 @@ package com.multi.travel.review.controller;
 
 import com.multi.travel.auth.dto.CustomUser;
 import com.multi.travel.course.service.CourseService;
+import com.multi.travel.review.dto.ReviewDetailDto;
 import com.multi.travel.review.service.ReviewService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -36,9 +37,13 @@ public class ReviewFrontController {
 
     /** 코스 리뷰 상세 페이지 출력 */
     @GetMapping("/detail")
-    public String showCourseReviewDetailPage(@RequestParam("reviewId") Long reviewId, Model model) {
-        model.addAttribute("reviewId", reviewId);
-        return "course-review-detail";
+    public String showReviewDetail(@RequestParam Long reviewId,
+                                   @AuthenticationPrincipal CustomUser user,
+                                   Model model) {
+
+        ReviewDetailDto review = reviewService.getReviewDetail(reviewId, user.getUserId());
+        model.addAttribute("review", review);
+        return "review/course-review-detail";
     }
 
 

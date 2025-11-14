@@ -1,10 +1,13 @@
 package com.multi.travel.review.dto;
 
+import com.multi.travel.review.entity.Review;
+import com.multi.travel.review.entity.ReviewImage;
 import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Please explain the class!!!
@@ -26,4 +29,21 @@ public class ReviewDetailDto {
     private List<String> imageUrls;
     private String targetType;
     private Long targetId;
+
+    private ReviewDetailDto toDto(Review review) {
+        return ReviewDetailDto.builder()
+                .reviewId(review.getId())
+                .title(review.getTitle())
+                .content(review.getContent())
+                .rating(review.getRating())
+                .writer(review.getMember().getUsername())
+                .createdAt(review.getCreatedAt())
+                .targetType(review.getTargetType())
+                .targetId(review.getTargetId())
+                .imageUrls(review.getImages().stream()
+                        .map(ReviewImage::getImageUrl)
+                        .collect(Collectors.toList()))
+                .build();
+    }
+
 }
