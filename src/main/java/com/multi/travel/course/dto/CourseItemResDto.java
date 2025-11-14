@@ -22,4 +22,5 @@ public class CourseItemResDto {
     private String placeTitle; // 코스 title 생성을 위해 추가함
     private Integer orderNo;
     private Integer dayNo;
+    private String placeImageUrl;
 }

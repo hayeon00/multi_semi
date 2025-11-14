@@ -301,6 +301,7 @@ public class CourseService {
     /** 코스 아이템 변환 (장소명 포함) */
     private CourseItemResDto mapToItemResDto(CourseItem item) {
         String placeTitle = resolvePlaceTitle(item.getCategory().getCatCode(), item.getPlaceId());
+        String imageUrl = resolvePlaceImage(item.getCategory().getCatCode(), item.getPlaceId());
 
         return CourseItemResDto.builder()
                 .itemId(item.getItemId())
@@ -308,9 +309,23 @@ public class CourseService {
                 .categoryName(item.getCategory().getCatName())
                 .placeId(item.getPlaceId())
                 .placeTitle(placeTitle) // 추가
+                .placeImageUrl(imageUrl)   // 추가
                 .orderNo(item.getOrderNo())
                 .dayNo(item.getDayNo())
                 .build();
+    }
+
+    private String resolvePlaceImage(String catCode, Long placeId) {
+        if ("tsp".equals(catCode)) {
+            return tspRepository.findById(placeId)
+                    .map(TourSpot::getFirstImage)
+                    .orElse(null);
+        } else if ("acc".equals(catCode)) {
+            return accRepository.findById(placeId)
+                    .map(Acc::getFirstImage)
+                    .orElse(null);
+        }
+        return null;
     }
 
     /** 장소명 찾기 로직 */
@@ -335,6 +350,27 @@ public class CourseService {
     public Course getCourseById(Long courseId) {
         return courseRepository.findById(courseId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 ID(" + courseId + ")의 코스를 찾을 수 없습니다."));
+    }
+
+    @Transactional(readOnly = true)
+    public Page<CourseResDto> getCoursesForPlan(Long planId, int page, int size) {
+
+        TripPlan plan = tripPlanRepository.findById(planId)
+                .orElseThrow(() -> new EntityNotFoundException("계획을 찾을 수 없습니다."));
+
+        // 1) 출발 관광지를 좌표로 역검색
+        TourSpot startSpot = tspRepository
+                .findByMapxAndMapy(plan.getStartMapX(), plan.getStartMapY())
+                .orElseThrow(() -> new EntityNotFoundException("출발 관광지를 찾을 수 없습니다."));
+
+        Long startSpotId = startSpot.getId();
+
+        Pageable pageable = PageRequest.of(page, size);
+
+        // 2) 그 관광지가 포함된 코스만 조회
+        Page<Course> courses = courseRepository.findCoursesByStartSpot(startSpotId, pageable);
+
+        return courses.map(this::mapToCourseResDto);
     }
 
 }

@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
+  <script src="/js/common.js"></script>
+
   <meta charset="UTF-8">
   <title>Travel Planning</title>
   <style>
@@ -51,7 +53,7 @@
       margin-top: 15px;
     }
 
-    input, select {
+    input {
       width: 100%;
       padding: 10px;
       border: 1px solid #ccc;
@@ -87,7 +89,7 @@
     <span>{사용자} 님 환영합니다.</span>
     <nav>
       <a href="/">Home</a>
-      <a href="/mypage">마이페이지</a>
+      <a href="/member/view/mypage">마이페이지</a>
       <a href="/logout">로그아웃</a>
     </nav>
   </div>
@@ -121,30 +123,39 @@
   const tourSpotInput = document.getElementById("tourSpotId");
   const startLocationInput = document.getElementById("startLocation");
 
-  // URL 파라미터에서 관광지 ID 가져오기
   const urlParams = new URLSearchParams(window.location.search);
   const tspId = urlParams.get('tspId');
 
   // 기본값 설정
   const defaultSpotId = tspId ? parseInt(tspId) : 11;
-  let defaultSpotName = "강서역사문화거리"; // fallback
+  let defaultSpotName = "강서역사문화거리";
 
-  // 관광지명 API로 자동 조회
-  if (tspId) {
-    fetch(`/spots/detail?id=${tspId}`)
-            .then(res => res.json())
-            .then(result => {
-              if (result.data && result.data.title) {
-                defaultSpotName = result.data.title;
-                startLocationInput.value = defaultSpotName;
-              }
-            })
-            .catch(err => console.error("❌ 관광지명 조회 실패:", err));
-  }
+  /* ----------------------------------------
+   📌 관광지명 조회 (fetchWithRefresh 적용)
+  ---------------------------------------- */
+  (async function loadSpotName() {
+    if (!tspId) {
+      tourSpotInput.value = defaultSpotId;
+      startLocationInput.value = defaultSpotName;
+      return;
+    }
 
-  // 기본값 강제 세팅
-  tourSpotInput.value = defaultSpotId;
-  startLocationInput.value = defaultSpotName;
+    try {
+      const response = await fetchWithRefresh(`/spots/detail?id=${tspId}`);
+      const result = await response.json();
+
+      if (result?.data?.title) {
+        defaultSpotName = result.data.title;
+      }
+
+      startLocationInput.value = defaultSpotName;
+    } catch (err) {
+      console.error("❌ 관광지명 조회 실패:", err);
+      startLocationInput.value = defaultSpotName;
+    }
+
+    tourSpotInput.value = defaultSpotId;
+  })();
 
   // 날짜 유효성 검사 로직 추가
   const startDateInput = document.getElementById("startDate");
@@ -183,7 +194,7 @@
     console.log("[DEBUG] 요청 JSON:", dto);
 
     try {
-      const response = await fetch("/plans", {
+      const response = await fetchWithRefresh("/plans", {
         method: "POST",
         headers: { "Content-Type": "application/json;charset=utf-8" },
         body: JSON.stringify(dto)

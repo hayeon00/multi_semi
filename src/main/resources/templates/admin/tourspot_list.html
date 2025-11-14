@@ -101,7 +101,7 @@
                             <img th:src="${spot.firstImage}"
                                  alt="관광지 이미지"
                                  class="tourspot-thumbnail"
-                                 onerror="this.src='/images/no-image.png'">
+                                 onerror="this.onerror=null; this.src='/images/no-image.png'">
                         </td>
                         <td class="tourspot-title" th:text="${spot.title}">제목</td>
                         <td class="tourspot-address" th:text="${spot.address}">주소</td>

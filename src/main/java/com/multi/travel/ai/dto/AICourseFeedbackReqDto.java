@@ -17,6 +17,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AICourseFeedbackReqDto {
-    private Long planId;
-    private String feedback;
+    private Long planId;               // 어떤 여행 계획에 대한 코스인지
+    private String feedback;           // 사용자 피드백
+    private AICourseResDto baseCourse; // 현재 화면에서 보고 있는 기존 AI 코스
 }
