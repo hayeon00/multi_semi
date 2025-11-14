@@ -63,6 +63,10 @@ public class Course {
     @Builder.Default //@Builder.Default를 붙이지 않으면 Lombok의 Builder가 null로 초기화해버림
     private List<CourseItem> items = new ArrayList<>();
 
+    public List<CourseItem> getCoursePlaces() {
+        return this.items;
+    }
+
     // cascade = CascadeType.ALL
 
     // orphanRemoval = true : 부모 엔티티에서 자식 엔티티의 참조가 끊어지면,

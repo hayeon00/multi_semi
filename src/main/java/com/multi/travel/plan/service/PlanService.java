@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +36,7 @@ public class PlanService {
     private final CourseRepository courseRepository;
     private final AccRepository accRepository;
     private final CategoryRepository categoryRepository;
+
 
     public Long createTripPlan(PlanReqDto dto) {
         Member member = memberRepository.findByLoginId(dto.getMemberId())
@@ -184,4 +186,53 @@ public class PlanService {
 
         tripPlanRepository.delete(plan);
     }
+
+    /**
+     * 사용자 ID로 여행 계획 목록 조회 (마이페이지 용도)
+     */
+    @Transactional(readOnly = true)
+    public List<PlanDetailResDto> getPlansByUser(String uesrLoginId) {
+        List<TripPlan> plans = tripPlanRepository.findAllByMember_LoginId(uesrLoginId);
+        return plans.stream()
+                .map(this::toPlanDetailDto)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * TripPlan → PlanDetailResDto 변환
+     */
+    private PlanDetailResDto toPlanDetailDto(TripPlan plan) {
+        List<CoursePlaceDto> coursePlaceDtos = new ArrayList<>();
+
+        if (plan.getCourse() != null) {
+            coursePlaceDtos = plan.getCourse().getItems().stream()
+                    .map(item -> CoursePlaceDto.builder()
+                            .id(item.getPlaceId())
+                            .type(item.getCategory().getCatCode())
+                            .orderNo(item.getOrderNo())
+                            .dayNo(item.getDayNo())
+                            .title("장소명") // 필요 시 조회하여 추가
+                            .address("주소")
+                            .mapx("0.0")
+                            .mapy("0.0")
+                            .build())
+                    .collect(Collectors.toList());
+        }
+
+        return PlanDetailResDto.builder()
+                .id(plan.getId())
+                .title(plan.getTitle())
+                .startLocation(plan.getStartLocation())
+                .startMapX(plan.getStartMapX())
+                .startMapY(plan.getStartMapY())
+                .isAiPlan(plan.isAiPlan())
+                .status(plan.getStatus())
+                .numberOfPeople(plan.getNumberOfPeople())
+                .startDate(plan.getStartDate())
+                .endDate(plan.getEndDate())
+                .memberName(plan.getMember().getUsername())
+                .coursePlaces(coursePlaceDtos)
+                .build();
+    }
+
 }

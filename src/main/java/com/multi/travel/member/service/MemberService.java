@@ -138,7 +138,7 @@ public class MemberService {
 
     /** ✅ 로그인한 회원이 작성한 여행계획 전체조회 */
     public List<PlanReqDto> getMyTripPlans(String loginId) {
-        List<TripPlan> plans = tripPlanRepository.findAllByMemberLoginIdOrderByIdDesc(loginId);
+        List<TripPlan> plans = tripPlanRepository.findAllByMember_LoginId(loginId);
 
         return plans.stream().map(plan -> {
             PlanReqDto dto = new PlanReqDto();
