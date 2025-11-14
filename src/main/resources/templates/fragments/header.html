@@ -1,0 +1,64 @@
+<!-- fragments/header.html -->
+<header th:fragment="commonHeader"
+        class="header"
+        xmlns:th="http://www.thymeleaf.org"
+        xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+    <div class="header-container">
+
+        <!-- 로고 영역 -->
+        <div class="logo-area">
+            <a th:href="@{/}">
+                <img th:src="@{/images/logo.png}" alt="Logo" class="logo">
+            </a>
+            <span class="title">TRAVEL PLANNING</span>
+        </div>
+
+        <!-- 우측 메뉴 영역 -->
+        <div class="user-menu">
+
+            <!-- 로그인 O -->
+            <div class="user-info" sec:authorize="isAuthenticated()">
+                <i class="fas fa-user-circle user-icon"></i>
+                <span class="username" sec:authentication="principal.userId"></span>
+                <span class="welcome">님 환영합니다.</span>
+            </div>
+
+            <!-- 로그인 X -->
+            <div class="user-info" sec:authorize="isAnonymous()">
+                <i class="fas fa-user user-icon"></i>
+                <span class="welcome">로그인해주세요.</span>
+            </div>
+
+            <!-- 메뉴 -->
+            <nav class="nav-menu">
+
+                <!-- 공통 메뉴 -->
+                <a th:href="@{/}">Home</a>
+
+                <!-- ROLE_USER -->
+                <a th:href="@{/member/view/mypage}" sec:authorize="hasRole('USER')">
+                    마이페이지
+                </a>
+
+                <!-- ROLE_ADMIN -->
+                <a th:href="@{/admin/view/adminpage}" sec:authorize="hasRole('ADMIN')">
+                    관리자 페이지
+                </a>
+
+                <!-- 비로그인 -->
+                <a th:href="@{/login}" sec:authorize="isAnonymous()">로그인</a>
+                <a th:href="@{/member/view/join}" sec:authorize="isAnonymous()">회원가입</a>
+
+                <!-- 로그인 -->
+                <form th:action="@{/auth/logout}" method="post" sec:authorize="isAuthenticated()"
+                      style="display:inline;">
+                    <button type="submit" class="logout-btn">로그아웃</button>
+                </form>
+
+            </nav>
+        </div>
+
+    </div>
+
+</header>

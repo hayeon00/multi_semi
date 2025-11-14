@@ -1,0 +1,149 @@
+/* ===== 공통 List 페이지 기본 스타일 ===== */
+
+body {
+    font-family: 'Pretendard', sans-serif;
+    background: #fafafa;
+    margin: 0;
+}
+
+/* 페이지 제목 */
+.page-title {
+    text-align: center;
+    padding: 20px;
+    font-size: 28px;
+    font-weight: 700;
+    color: #222;
+}
+
+/* 검색 / 정렬 영역 */
+.toolbar {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.toolbar input[type="text"] {
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    margin-left: 10px;
+}
+
+.toolbar button {
+    cursor: pointer;
+    padding: 6px 12px;
+    border: 1px solid #aaa;
+    border-radius: 6px;
+    background: white;
+    transition: 0.2s;
+}
+
+.toolbar button:hover {
+    background: #f0f0f0;
+}
+
+/* ======= 리스트 카드 그리드 ======= */
+
+.grid,
+.grid-list {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* 3열 유지 */
+    gap: 20px;
+    padding: 20px;
+}
+
+/* 카드 전체 */
+.card,
+.list-card {
+    background: white;
+    border-radius: 10px;
+    padding: 15px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+
+    /* 카드 높이 통일 */
+    display: flex;
+    flex-direction: column;
+}
+
+/* 호버 효과 */
+.card:hover,
+.list-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+/* ===== 이미지 고정 비율 적용 ===== */
+
+.card img,
+.list-card img,
+.card-img {
+    width: 100%;
+    aspect-ratio: 16 / 9; /* ★ 이미지 비율 고정 */
+    object-fit: cover; /* 넘치는 부분 잘라서 균일하게 */
+    border-radius: 8px;
+    background: #ddd;
+    display: block;
+}
+
+/* 텍스트 */
+.card h3,
+.list-card h3,
+.card-title {
+    margin: 12px 0 6px;
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+}
+
+.card p,
+.list-card p {
+    margin: 4px 0;
+    color: #555;
+}
+
+/* ===== 빈 데이터 ===== */
+.empty-text,
+.no-data {
+    text-align: center;
+    grid-column: 1 / -1;
+    color: #888;
+    padding: 20px;
+    font-size: 16px;
+}
+
+/* ===== 페이지네이션 ===== */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 30px 0;
+    gap: 6px;
+}
+
+.page-btn {
+    border: none;
+    background: none;
+    cursor: pointer;
+    padding: 8px 12px;
+    font-size: 14px;
+    color: #333;
+    transition: 0.2s;
+}
+
+.page-btn:hover {
+    background: #eaeaea;
+    border-radius: 5px;
+}
+
+.page-btn.active {
+    background-color: #333;
+    color: #fff;
+    border-radius: 5px;
+}
+
+.page-btn.disabled {
+    color: #aaa;
+    cursor: not-allowed;
+    background: none;
+}
