@@ -16,6 +16,7 @@ import com.multi.travel.plan.dto.PlanReqDto;
 import com.multi.travel.plan.entity.TripPlan;
 import com.multi.travel.plan.repository.TripPlanRepository;
 import com.multi.travel.tourspot.entity.TourSpot;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -184,4 +185,19 @@ public class PlanService {
 
         tripPlanRepository.delete(plan);
     }
+
+    @Transactional
+    public void attachCourse(Long planId, Long courseId) {
+        TripPlan plan = tripPlanRepository.findById(planId)
+                .orElseThrow(() -> new EntityNotFoundException("계획을 찾을 수 없습니다. id=" + planId));
+
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new EntityNotFoundException("코스를 찾을 수 없습니다. id=" + courseId));
+
+        plan.setCourse(course);
+
+        // 날짜(startDate, endDate)는 그대로 유지됨 (변경 X)
+        tripPlanRepository.save(plan);
+    }
+
 }

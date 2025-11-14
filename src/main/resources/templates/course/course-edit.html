@@ -1,9 +1,15 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="ko">
 <head>
+  <script src="/js/common.js"></script>
+
   <meta charset="UTF-8">
   <title>코스 수정</title>
+
+  <!-- Kakao API -->
   <script th:src="@{|https://dapi.kakao.com/v2/maps/sdk.js?appkey=${kakaoKey}&autoload=false|}"></script>
+
+  <!-- jQuery (DOM 조작 및 sortable만 사용) -->
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
   <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
@@ -222,14 +228,14 @@
   <nav>
     <span>{사용자} 님 환영합니다.</span>
     <a href="/">Home</a>
-    <a href="/mypage">마이페이지</a>
+    <a href="/member/view/mypage">마이페이지</a>
     <a href="/logout">로그아웃</a>
   </nav>
 </div>
 
 <div class="content-wrapper">
 
-  <!-- 📌 조회용 여행 기본 정보 -->
+  <!-- 조회용 여행 정보 -->
   <div class="plan-header">
     <span class="plan-title-view" id="titleView"></span>
 
@@ -261,7 +267,7 @@
     <!-- 지도 -->
     <div id="map" class="map-panel"></div>
 
-    <!-- 우측: 일차 탭 + 코스 리스트 -->
+    <!-- 우측 패널 -->
     <div class="right-panel">
 
       <div class="day-tabs-wrapper">
@@ -292,10 +298,10 @@
   let lastType = "tour";
 
   /* ---------------- 초기 로딩 ---------------- */
-  $(document).ready(function () {
-    kakao.maps.load(function () {
+  $(document).ready(() => {
+    kakao.maps.load(async () => {
       initMap();
-      loadPlan();
+      await loadPlan();
       setupTabs();
       setupSearch();
     });
@@ -309,9 +315,13 @@
     });
   }
 
-  /* ---------------- 계획 불러오기 ---------------- */
-  function loadPlan() {
-    $.get(`/plans/${planId}`, function (res) {
+  /* ================================
+      여행 계획 + 기존 코스 불러오기
+  ================================= */
+  async function loadPlan() {
+    try {
+      const response = await fetchWithRefresh(`/plans/${planId}`);
+      const res = await response.json();
 
       const plan = res.data;
 
@@ -320,6 +330,7 @@
       $("#dateRangeView").text(`${plan.startDate} ~ ${plan.endDate}`);
       $("#peopleView").text(`${plan.numberOfPeople}명`);
 
+      // 일차 계산
       const daysCount = dayDiff(plan.startDate, plan.endDate);
 
       // 일자 배열 생성
@@ -340,12 +351,16 @@
       renderCourseList();
       renderMap();
 
-      loadPlaces("tour", "", 0);
-    });
+      await loadPlaces("tour", "", 0);
+
+    } catch (e) {
+      console.error(e);
+      alert("계획 정보를 불러오는 중 문제가 발생했습니다.");
+    }
   }
 
   function dayDiff(start, end) {
-    return Math.ceil((new Date(end) - new Date(start)) / (1000 * 60 * 60 * 24)) + 1;
+    return Math.ceil((new Date(end) - new Date(start)) / (1000*60*60*24)) + 1;
   }
 
   /* ---------------- 일차 탭 렌더링 ---------------- */
@@ -361,13 +376,14 @@
         $(".day-tabs button").removeClass("active");
         btn.addClass("active");
 
-        // 중앙정렬 스크롤
+        // 중앙 정렬 스크롤
         const box = document.getElementById("dayTabs");
         const rectBtn = btn[0].getBoundingClientRect();
         const rectBox = box.getBoundingClientRect();
-        const diff = (rectBtn.left + rectBtn.width / 2) - (rectBox.left + rectBox.width / 2);
-
-        box.scrollBy({ left: diff, behavior: "smooth" });
+        box.scrollBy({
+          left: (rectBtn.left + rectBtn.width/2) - (rectBox.left + rectBox.width/2),
+          behavior: "smooth"
+        });
 
         renderCourseList();
         renderMap();
@@ -394,13 +410,11 @@
     currentDay.items
             .sort((a, b) => a.orderNo - b.orderNo)
             .forEach((item, idx) => {
-
               const div = $(`
-          <div class="course-item" data-idx="${idx}">
-            <span>${item.title}</span>
-            <span class="delete-btn">삭제</span>
-          </div>
-        `);
+                <div class="course-item" data-idx="${idx}">
+                  <span>${item.title}</span>
+                  <span class="delete-btn">삭제</span>
+                </div>`);
 
               list.append(div);
             });
@@ -465,14 +479,14 @@
       });
 
       if (coords.length > 1) {
-        const polyline = new kakao.maps.Polyline({
+        const poly = new kakao.maps.Polyline({
           path: coords,
           strokeWeight: day.dayNo === activeDay ? 4 : 2,
           strokeColor: day.dayNo === activeDay ? "#000" : "#aaa",
           strokeOpacity: 0.9
         });
-        polyline.setMap(map);
-        polylines.push(polyline);
+        poly.setMap(map);
+        polylines.push(poly);
       }
     });
 
@@ -498,7 +512,7 @@
   }
 
   /* ---------------- 관광지 / 숙소 목록 로드 ---------------- */
-  function loadPlaces(type, keyword = "", page = 0) {
+  async function loadPlaces(type, keyword = "", page = 0) {
     lastType = type;
     currentPage = page;
 
@@ -511,7 +525,10 @@
                             ? `/accommodations/list?keyword=${keyword}&page=${page}&size=${pageSize}`
                             : `/accommodations/simple?page=${page}&size=${pageSize}`);
 
-    $.get(url, function (res) {
+    try {
+      const response = await fetchWithRefresh(url);
+      const res = await response.json();
+
       const totalPages = res.data?.totalPages ?? 1;
       const places = res.data?.contents || res.data?.content || res.data;
 
@@ -531,24 +548,21 @@
                data-type="${type === "tour" ? "tsp" : "acc"}">
             <span>${p.title}</span>
             <span>+</span>
-          </div>
-        `);
+          </div>`);
 
         div.click(() =>
-                addToCourse(
-                        p.id,
-                        p.title,
-                        type === "tour" ? "tsp" : "acc",
-                        p.mapx,
-                        p.mapy
-                )
+                addToCourse(p.id, p.title, type === "tour" ? "tsp" : "acc", p.mapx, p.mapy)
         );
 
         $("#placeList").append(div);
       });
 
       renderPagination(totalPages);
-    });
+
+    } catch (e) {
+      console.error(e);
+      alert("목록을 불러오는 중 오류가 발생했습니다.");
+    }
   }
 
   /* ---------------- 페이지네이션 ---------------- */
@@ -565,19 +579,19 @@
 
     const prev = $("<button>&laquo; 이전</button>");
     if (currentPage === 0) prev.addClass("disabled");
-    else prev.click(() => loadPlaces(lastType, "", currentPage - 1));
+    else prev.click(() => loadPlaces(lastType, $("#searchInput").val().trim(), currentPage - 1));
     pg.append(prev);
 
     for (let i = start; i <= end; i++) {
       const btn = $(`<button>${i + 1}</button>`);
       if (i === currentPage) btn.addClass("active");
-      btn.click(() => loadPlaces(lastType, "", i));
+      btn.click(() => loadPlaces(lastType, $("#searchInput").val().trim(), i));
       pg.append(btn);
     }
 
     const next = $("<button>다음 &raquo;</button>");
     if (currentPage >= totalPages - 1) next.addClass("disabled");
-    else next.click(() => loadPlaces(lastType, "", currentPage + 1));
+    else next.click(() => loadPlaces(lastType, $("#searchInput").val().trim(), currentPage + 1));
     pg.append(next);
   }
 
@@ -628,7 +642,7 @@
   }
 
   /* ---------------- 저장 요청 ---------------- */
-  $("#saveBtn").click(function () {
+  $("#saveBtn").click(async function () {
     if (!confirm("수정 내용을 저장하시겠습니까?")) return;
 
     const req = {
@@ -643,27 +657,37 @@
       )
     };
 
-    $.ajax({
-      url: `/courses/${planId}`,
-      type: "PUT",
-      contentType: "application/json",
-      data: JSON.stringify(req),
-      success: () => {
-        alert("코스 수정이 완료되었습니다!");
-        window.location.href = `/plans/${planId}`;
-      },
-      error: xhr => {
+    try {
+      const response = await fetchWithRefresh(`/courses/${planId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(req)
+      });
+
+      if (!response.ok) {
         alert("코스 수정 중 오류가 발생했습니다.");
-        console.error(xhr.responseText);
+        return;
       }
-    });
+
+      alert("코스 수정이 완료되었습니다!");
+      location.href = `/plans/${planId}`;
+
+    } catch (e) {
+      console.error(e);
+      alert("수정 요청 중 오류가 발생했습니다.");
+    }
   });
 
-  /* ---------------- 수정 취소 ---------------- */
-  $("#cancelBtn").click(function () {
+  /* ================================
+        수정 취소
+  ================================= */
+  $("#cancelBtn").click(() => {
     if (confirm("정말 수정 내용을 취소하시겠습니까?")) {
-      window.location.href = `/plans/${planId}`;
+      location.href = `/plans/${planId}`;
     }
   });
 
 </script>
+
+</body>
+</html>

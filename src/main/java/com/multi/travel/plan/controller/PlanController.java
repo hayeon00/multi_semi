@@ -65,5 +65,18 @@ public class PlanController {
     }
 
 
+    @PostMapping("/{planId}/course")
+    public ResponseEntity<ResponseDto> attachCourseToPlan(
+            @PathVariable Long planId,
+            @RequestParam Long courseId
+    ) {
+        planService.attachCourse(planId, courseId);
+
+        return ResponseEntity.ok(
+                new ResponseDto(HttpStatus.OK, "코스가 계획에 성공적으로 추가되었습니다.", null)
+        );
+    }
+
+
 }
 
