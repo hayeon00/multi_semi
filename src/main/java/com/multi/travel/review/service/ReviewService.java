@@ -225,13 +225,26 @@ public class ReviewService {
     public ReviewDetailDto getReviewDetail(Long reviewId, String userId) {
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new RuntimeException("리뷰를 찾을 수 없습니다."));
-
-        // 본인 리뷰인지 확인 (선택사항)
-        if (!review.getMember().getLoginId().equals(userId)) {
-            throw new SecurityException("본인의 리뷰만 조회할 수 있습니다.");
+        // 1. 본인 리뷰인지 확인 (오류 대신 boolean 값으로)
+        boolean isOwner = false;
+        if (userId != null) {
+            isOwner = review.getMember().getLoginId().equals(userId);
         }
-
-        return toDto(review); // 이미지를 포함하여 DTO로 변환
+        // 2. toDto(review) 대신 DTO를 직접 빌드하여 isOwner 값 주입
+        return ReviewDetailDto.builder()
+                .reviewId(review.getId())
+                .title(review.getTitle())
+                .content(review.getContent())
+                .rating(review.getRating())
+                .writer(review.getMember().getUsername())
+                .createdAt(review.getCreatedAt())
+                .targetType(review.getTargetType())
+                .targetId(review.getTargetId())
+                .imageUrls(review.getImages().stream()
+                        .map(ReviewImage::getImageUrl)
+                        .collect(Collectors.toList()))
+                .isOwner(isOwner) // :왼쪽을_가리키는_손_모양: isOwner 값을 DTO에 담아서 반환
+                .build();
     }
 
 
