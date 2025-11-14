@@ -1,4 +1,4 @@
-package com.multi.travel.admin.controller.dto;
+package com.multi.travel.admin.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

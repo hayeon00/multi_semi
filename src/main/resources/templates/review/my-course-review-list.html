@@ -149,14 +149,19 @@
             reviews.forEach(r => {
                 const div = document.createElement("div");
                 div.className = "review-card";
+                div.style.cursor = "pointer";
+                div.onclick = () => location.href = `/reviews/detail?reviewId=${r.reviewId}`;
+
                 div.innerHTML = `
-                    <h3>${r.title}</h3>
-                    <p>${r.content}</p>
-                    <p class="rating">★ ${r.rating} / 5</p>
-                    <p style="font-size: 14px; color: #888;">작성자: ${r.writer}</p>
-                `;
+                <h3>${r.title}</h3>
+                <p>${r.content}</p>
+                <p class="rating">★ ${r.rating} / 5</p>
+                <p style="font-size: 14px; color: #888;">작성자: ${r.writer}</p>
+            `;
+
                 container.appendChild(div);
             });
+
 
             renderPagination(result.totalPages, result.number);
         } catch (e) {

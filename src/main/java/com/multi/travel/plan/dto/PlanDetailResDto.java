@@ -34,4 +34,8 @@ public class PlanDetailResDto {
     private String memberName;
     private Course course;          // 사용자 코스 정보
     private List<CoursePlaceDto> coursePlaces;
+
+
 }
+
+

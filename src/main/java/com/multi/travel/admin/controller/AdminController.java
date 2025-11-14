@@ -1,7 +1,7 @@
 package com.multi.travel.admin.controller;
 
-import com.multi.travel.admin.controller.dto.TourSpotReqDto;
-import com.multi.travel.admin.controller.dto.TourSpotResDto;
+import com.multi.travel.admin.dto.TourSpotReqDto;
+import com.multi.travel.admin.dto.TourSpotResDto;
 import com.multi.travel.admin.service.AdminService;
 import com.multi.travel.common.ResponseDto;
 import com.multi.travel.member.service.MemberService;
