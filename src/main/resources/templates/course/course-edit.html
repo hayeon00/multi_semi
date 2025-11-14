@@ -267,6 +267,12 @@
     <!-- 지도 -->
     <div id="map" class="map-panel"></div>
 
+    <!-- Day 추가/삭제 버튼 UI 추가 -->
+    <div style="display:flex; justify-content:flex-end; gap:10px; margin-bottom:10px;">
+      <button class="btn-secondary" id="addDayBtn">+ 일차 추가</button>
+      <button class="btn-secondary" id="removeDayBtn">- 일차 삭제</button>
+    </div>
+
     <!-- 우측 패널 -->
     <div class="right-panel">
 
@@ -649,6 +655,57 @@
       loadPlaces("acc", "", 0);
     });
   }
+
+  /* ================================
+      DAY 추가 / 삭제 기능
+================================ */
+
+  /* Day 추가 */
+  $("#addDayBtn").click(() => {
+    const last = days.length;
+    const newDayNo = last + 1;
+
+    days.push({
+      dayNo: newDayNo,
+      items: []
+    });
+
+    renderDayTabs(days.length);
+    activeDay = newDayNo;
+    renderCourseList();
+    renderMap();
+  });
+
+  /* Day 삭제 */
+  $("#removeDayBtn").click(() => {
+    if (days.length <= 1) {
+      alert("1일차는 삭제할 수 없습니다.");
+      return;
+    }
+
+    if (!confirm(`${days.length}일차를 삭제하시겠습니까?\n삭제 시 해당 일차의 코스는 이전 날로 이동됩니다.`))
+      return;
+
+    const removed = days.pop();  // 마지막 day 제거
+
+    // 제거된 마지막 날의 아이템을 모두 "하루 전"으로 이동
+    removed.items.forEach(item => {
+      const prevDay = days[days.length - 1];
+      prevDay.items.push({
+        ...item,
+        dayNo: prevDay.dayNo,
+        orderNo: prevDay.items.length + 1
+      });
+    });
+
+    // 활성 Day 조정
+    activeDay = days.length;
+
+    renderDayTabs(days.length);
+    renderCourseList();
+    renderMap();
+  });
+
 
   /* ---------------- 저장 요청 ---------------- */
   $("#saveBtn").click(async function () {

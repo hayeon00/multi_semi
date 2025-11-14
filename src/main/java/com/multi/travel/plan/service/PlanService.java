@@ -3,8 +3,6 @@ package com.multi.travel.plan.service;
 import com.multi.travel.acc.repository.AccRepository;
 import com.multi.travel.api.repository.TourSpotApiRepository;
 import com.multi.travel.category.CategoryRepository;
-import com.multi.travel.category.entity.Category;
-import com.multi.travel.course.dto.CourseItemReqDto;
 import com.multi.travel.course.dto.CoursePlaceDto;
 import com.multi.travel.course.entity.Course;
 import com.multi.travel.course.entity.CourseItem;
@@ -21,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -51,6 +50,7 @@ public class PlanService {
                 .startLocation(attraction.getTitle())
                 .startMapX(attraction.getMapx())
                 .startMapY(attraction.getMapy())
+                .tourSpotId(dto.getTourSpotId())      // 추가
                 .numberOfPeople(dto.getNumberOfPeople())
                 .startDate(dto.getStartDate())
                 .endDate(dto.getEndDate())
@@ -113,6 +113,7 @@ public class PlanService {
                 .startLocation(plan.getStartLocation())
                 .startMapX(plan.getStartMapX())
                 .startMapY(plan.getStartMapY())
+                .tourSpotId(plan.getTourSpotId())   // ← 이게 있어야 edit 시 유지됨
                 .isAiPlan(plan.isAiPlan())
                 .status(plan.getStatus())
                 .numberOfPeople(plan.getNumberOfPeople())
@@ -131,11 +132,16 @@ public class PlanService {
             throw new SecurityException("수정 권한이 없습니다.");
         }
 
-        // 출발지 관광지 정보 가져오기
+        // 기존 기간
+        int oldDays = (int) ChronoUnit.DAYS.between(plan.getStartDate(), plan.getEndDate()) + 1;
+
+        // 새로운 기간
+        int newDays = (int) ChronoUnit.DAYS.between(dto.getStartDate(), dto.getEndDate()) + 1;
+
+        // 먼저 TripPlan 기본 정보 업데이트
         TourSpot startSpot = tourSpotApiRepository.findById(dto.getTourSpotId())
                 .orElseThrow(() -> new IllegalArgumentException("관광지 정보를 찾을 수 없습니다."));
 
-        // 여행 기본 정보 업데이트
         plan.update(
                 dto.getTitle(),
                 dto.getNumberOfPeople(),
@@ -143,36 +149,36 @@ public class PlanService {
                 dto.getEndDate(),
                 startSpot.getTitle(),
                 startSpot.getMapx(),
-                startSpot.getMapy()
+                startSpot.getMapy(),
+                dto.getTourSpotId()
         );
 
-        // 🔄 새로운 Course 생성
-        Course newCourse = Course.builder()
-                .creator(plan.getMember())
-                .status("Y")
-                .build();
+        // 날짜가 줄어들면 코스 정리
+        if (plan.getCourse() != null && newDays < oldDays) {
+            Course course = plan.getCourse();
 
-        // 📦 CourseItem 추가
-        for (CourseItemReqDto itemDto : dto.getCourse().getItems()) {
-            CourseItem item = new CourseItem();
-            item.setCourse(newCourse);  // 연관관계 설정
-            item.setPlaceId(itemDto.getPlaceId());
-            item.setOrderNo(itemDto.getOrderNo());
-            item.setDayNo(itemDto.getDayNo());
+            List<CourseItem> items = course.getItems();
 
-            // 카테고리 설정
-            Category category = categoryRepository.findById(itemDto.getCategoryCode())
-                    .orElseThrow(() -> new IllegalArgumentException("카테고리를 찾을 수 없습니다. code=" + itemDto.getCategoryCode()));
-            item.setCategory(category);
+            int targetDay = newDays;
 
-            newCourse.addItem(item);  // 양방향 연관관계 편의 메서드
+            for (CourseItem item : items) {
+                if (item.getDayNo() > newDays) {
+                    // 뒤로 몰아넣기
+                    item.setDayNo(targetDay);
+                }
+            }
+
+            // targetDay의 order 재정렬
+            List<CourseItem> targetItems = items.stream()
+                    .filter(i -> i.getDayNo() == targetDay)
+                    .sorted(Comparator.comparingInt(CourseItem::getOrderNo))
+                    .toList();
+
+            int order = 1;
+            for (CourseItem item : targetItems) {
+                item.setOrderNo(order++);
+            }
         }
-
-        // ✅ 코스를 먼저 저장해야 Hibernate 에러 방지됨
-        Course savedCourse = courseRepository.save(newCourse);
-
-        // 🔗 저장된 코스를 여행 계획에 연결
-        plan.setCourse(savedCourse);
     }
 
 
