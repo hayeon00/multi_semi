@@ -1,225 +1,161 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>리뷰 상세보기</title>
-
+    <title>리뷰 상세</title>
     <style>
         body {
-            font-family: 'Noto Sans KR', sans-serif;
-            background:#f5f6f8;
-            margin:0;
-            padding:0;
+            font-family: 'Pretendard', sans-serif;
+            background: #f5f6f8;
+            margin: 0;
+            padding: 0;
         }
 
-        .container {
-            width: 1100px;
-            background:#fff;
+        .review-container {
+            max-width: 800px;
             margin: 40px auto;
+            background: #fff;
             padding: 30px;
-            border-radius: 16px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-
-        h1 {
-            font-size: 30px;
-            margin-bottom: 20px;
-            color:#2c3e50;
-        }
-
-        .section-title {
-            margin-top: 40px;
-            margin-bottom: 15px;
-            font-size: 22px;
-            color:#34495e;
-            font-weight: 700;
-        }
-
-        /* 리뷰 이미지 갤러리 */
-        .review-images {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-            margin-top: 15px;
-        }
-        .review-images img {
-            width: 250px;
-            height: 180px;
-            object-fit: cover;
             border-radius: 12px;
-            border:1px solid #ddd;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
         }
 
-        .review-content-box {
-            background:#fafafa;
-            padding:20px;
-            border-radius:12px;
-            font-size:17px;
-            line-height:1.6;
-            margin-top:10px;
+        h2 {
+            font-size: 24px;
+            color: #2c3e50;
         }
 
-        /* 여행 계획 */
-        .plan-box {
-            background:#fafafa;
-            padding:20px;
-            border-radius:12px;
-            margin-top:10px;
+        .review-meta {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 20px;
         }
 
-        /* 방문지 리스트 */
-        .spot-list {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin-top: 10px;
+        .review-content {
+            margin-top: 20px;
+            font-size: 16px;
+            line-height: 1.6;
+            color: #333;
         }
-        .spot-item {
-            background:#fbfbfb;
-            padding:15px;
-            border-radius:12px;
-            border:1px solid #e6e6e6;
-            display:flex;
-            gap:15px;
-            align-items:center;
+
+        .review-images {
+            margin-top: 30px;
         }
-        .spot-item img {
-            width:140px;
-            height:100px;
+
+        .review-images img {
+            width: 200px;
+            height: auto;
+            margin-right: 10px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
             object-fit: cover;
-            border-radius:8px;
-            border:1px solid #ddd;
-        }
-        .spot-info {
-            display:flex;
-            flex-direction:column;
-            justify-content:center;
         }
 
-        .label {
-            color:#999;
-            font-size:14px;
+        .action-buttons {
+            margin-top: 30px;
+            display: none;
         }
 
-        .rating {
-            font-size:20px;
-            font-weight:700;
-            color:#f39c12;
+        .action-buttons button {
+            padding: 10px 20px;
+            margin-right: 10px;
+            border: none;
+            border-radius: 8px;
+            background: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+
+        .action-buttons button:last-child {
+            background: #dc3545;
         }
     </style>
 </head>
 <body>
+<div class="review-container">
+    <h2 id="review-title">리뷰 제목</h2>
+    <p class="review-meta">
+        <strong>작성자:</strong> <span id="review-writer"></span> |
+        <strong>작성일:</strong> <span id="review-date"></span> |
+        <strong>평점:</strong> <span id="review-rating"></span>점
+    </p>
 
-<div class="container">
+    <div id="review-content" class="review-content"></div>
 
-    <!-- 동적 데이터 들어갈 구역 -->
-    <h1 id="review-title">리뷰 제목 불러오는 중...</h1>
+    <div id="image-section" class="review-images"></div>
 
-    <div class="rating" id="review-rating">⭐ 평점</div>
-
-    <h2 class="section-title">리뷰 사진</h2>
-    <div class="review-images" id="review-images">
-        로딩중...
+    <div id="action-buttons" class="action-buttons">
+        <button onclick="goEdit()">수정</button>
+        <button onclick="confirmDelete()">삭제</button>
     </div>
-
-    <h2 class="section-title">리뷰 내용</h2>
-    <div class="review-content-box" id="review-content">
-        로딩중...
-    </div>
-
-    <h2 class="section-title">여행 계획 정보</h2>
-    <div class="plan-box" id="plan-info">
-        로딩중...
-    </div>
-
-    <h2 class="section-title">코스 방문지 목록</h2>
-    <div class="spot-list" id="spot-list">
-        로딩중...
-    </div>
-
 </div>
 
 <script>
-    document.addEventListener("DOMContentLoaded", async () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const reviewId = urlParams.get("reviewId");
 
-        const url = new URL(window.location.href);
-        const reviewId = url.searchParams.get("reviewId");
+    if (!reviewId) {
+        alert("리뷰 ID가 없습니다.");
+    } else {
+        fetch(`/reviews/detail/${reviewId}`, {
+            method: 'GET',
+            credentials: 'include'
+        })
+            .then(response => {
+                if (!response.ok) throw new Error("리뷰를 불러오지 못했습니다.");
+                return response.json();
+            })
+            .then(data => {
+                document.getElementById("review-title").textContent = data.title;
+                document.getElementById("review-writer").textContent = data.writer;
+                document.getElementById("review-date").textContent = new Date(data.createdAt).toLocaleDateString();
+                document.getElementById("review-rating").textContent = data.rating;
+                document.getElementById("review-content").textContent = data.content;
 
-        if (!reviewId) {
-            alert("리뷰 ID가 없습니다.");
-            return;
-        }
+                const imageSection = document.getElementById("image-section");
+                if (data.imageUrls && data.imageUrls.length > 0) {
+                    data.imageUrls.forEach(url => {
+                        const img = document.createElement("img");
+                        img.src = url;
+                        img.alt = "리뷰 이미지";
+                        imageSection.appendChild(img);
+                    });
+                } else {
+                    imageSection.innerHTML = "<p>등록된 이미지가 없습니다.</p>";
+                }
 
-        try {
-            const res = await fetch(`/reviews/detail/${r.reviewId}`, {
-                method: "GET",
-                credentials: "include"
+                if (data.isOwner) {
+                    document.getElementById("action-buttons").style.display = "block";
+                }
+            })
+            .catch(error => {
+                console.error("에러:", error);
+                alert("리뷰 정보를 불러오는 중 오류가 발생했습니다.");
             });
+    }
 
-            if (!res.ok) {
-                alert("리뷰 정보를 불러올 수 없습니다.");
-                return;
-            }
+    function goEdit() {
+        window.location.href = `/reviews/edit?reviewId=${reviewId}`;
+    }
 
-            const data = await res.json();
-
-            // -----------------------------
-            // 1. 리뷰 제목 / 평점 / 내용
-            // -----------------------------
-            document.getElementById("review-title").textContent = data.title;
-            document.getElementById("review-rating").textContent = `⭐ ${data.rating} / 5`;
-            document.getElementById("review-content").textContent = data.content;
-
-            // -----------------------------
-            // 2. 리뷰 이미지
-            // -----------------------------
-            const imgBox = document.getElementById("review-images");
-
-            if (data.imageUrls && data.imageUrls.length > 0) {
-                imgBox.innerHTML = data.imageUrls
-                    .map(img => `<img src="${img}" alt="리뷰 이미지">`)
-                    .join("");
-            } else {
-                imgBox.innerHTML = `<p class="label">첨부된 사진이 없습니다.</p>`;
-            }
-
-            // -----------------------------
-            // 3. 여행 계획 정보
-            // -----------------------------
-            const plan = data.tripPlan;
-            const planInfo = `
-                <div><strong>계획명:</strong> ${plan.title}</div>
-                <div><strong>여행 기간:</strong> ${plan.startDate} ~ ${plan.endDate}</div>
-                <div><strong>총 여행일:</strong> ${plan.days}일</div>
-            `;
-            document.getElementById("plan-info").innerHTML = planInfo;
-
-            // -----------------------------
-            // 4. 관광지(코스 방문지) 리스트
-            // -----------------------------
-            const spots = data.course.items;
-            const spotList = document.getElementById("spot-list");
-
-            if (!spots || spots.length === 0) {
-                spotList.innerHTML = `<p class="label">방문한 관광지가 없습니다.</p>`;
-            } else {
-                spotList.innerHTML = spots.map(s => `
-                    <div class="spot-item">
-                        <img src="${s.imageUrl}" alt="장소 사진">
-                        <div class="spot-info">
-                            <div><strong>${s.name}</strong></div>
-                            <div class="label">${s.address}</div>
-                        </div>
-                    </div>
-                `).join("");
-            }
-
-        } catch (err) {
-            console.error(err);
-            alert("서버 오류가 발생했습니다.");
+    function confirmDelete() {
+        if (confirm("정말 이 리뷰를 삭제하시겠습니까?")) {
+            fetch(`/reviews/${reviewId}`, {
+                method: 'DELETE',
+                credentials: 'include'
+            })
+                .then(res => {
+                    if (!res.ok) throw new Error("삭제 실패");
+                    alert("리뷰가 삭제되었습니다.");
+                    window.location.href = '/mypage';
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert("삭제 중 오류가 발생했습니다.");
+                });
         }
-    });
+    }
 </script>
-
 </body>
 </html>
