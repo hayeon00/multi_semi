@@ -34,16 +34,16 @@ public class JwtFilter extends OncePerRequestFilter {
     };
 
     private static final String[] WILDCARD_PATHS = {
-            "/spots/view/**",
-            "/courses/view/**",
-            "/accommodations/view/**",
-            "/reviews/target",
-            "/members/view/**",
-            "/admin/view/**",
+          //  "/spots/view/**",
+          //  "/courses/view/**",
+         //   "/accommodations/view/**",
+          //  "/reviews/target",
+        //    "/members/view/**",
+         //   "/admin/view/**",
             "/auth/**",
             "/public/**",
             "/swagger-ui/**",
-            "/member/view/**"
+         //   "/member/view/**"
 
 
     };
@@ -159,8 +159,6 @@ public class JwtFilter extends OncePerRequestFilter {
         return uri.startsWith("/login") ||
                 uri.startsWith("/signup") ||
                 uri.startsWith("/css") ||
-                uri.startsWith("/admin/view") ||
-                uri.startsWith("/members/view") ||
                 uri.startsWith("/images") ||
                 uri.startsWith("/js") ||
                 uri.equals("/") ||

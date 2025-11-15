@@ -93,8 +93,10 @@ public class AuthController {
     /** ✅ 로그아웃 */
     @PostMapping("/logout")
     public ResponseEntity<ResponseDto> logout(HttpServletResponse response, HttpServletRequest request) {
-        // ✅ DB에 저장된 RefreshToken 삭제
+
+
         String accessToken = tokenService.resolveTokenFromCookies(request);
+
         if (accessToken != null) {
             tokenService.deleteRefreshToken(accessToken);
         }

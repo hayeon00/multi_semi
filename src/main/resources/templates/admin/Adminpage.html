@@ -259,7 +259,7 @@
         <div class="nav-menu">
             <a href="/">Home</a>
             <a href="/admin/view/adminpage">관리자페이지</a>
-            <a href="/logout">로그아웃</a>
+            <a href="#" onclick="logout(); return false;">로그아웃</a>
         </div>
     </div>
 </div>
@@ -316,6 +316,34 @@
         loadMemberData();
         loadTourSpotData();
     });
+
+    // 로그아웃 함수 (이 부분을 추가해야 함!)
+    async function logout() {
+        if (confirm('로그아웃 하시겠습니까?')) {
+            try {
+                const response = await fetch('/auth/logout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include'
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert('로그아웃 되었습니다.');
+                    window.location.href = '/login';
+                } else {
+                    alert('로그아웃에 실패했습니다.');
+                }
+            } catch (error) {
+                console.error('로그아웃 오류:', error);
+                alert('로그아웃 중 오류가 발생했습니다.');
+            }
+        }
+    }
+
 
     // 회원 데이터 불러오기
     async function loadMemberData() {
