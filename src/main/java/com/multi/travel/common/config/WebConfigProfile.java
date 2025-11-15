@@ -15,7 +15,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class WebConfigProfile implements WebMvcConfigurer {
 
-    @Value("${image.member.dir}")
+    @Value("${image.member.image-dir}")
     private String MEMBER_DIR;
 
     @Override

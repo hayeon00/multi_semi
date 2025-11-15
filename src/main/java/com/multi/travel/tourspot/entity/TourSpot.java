@@ -59,7 +59,7 @@ public class TourSpot {
     @Column(name = "sigungucode")
     private Integer sigungucode; // 시군구코드
 
-    @Column
+    @Column(name = "l_dong_regn_cd")
     private String lDongRegnCd;
 
     @Column(name = "first_image", length = 100)

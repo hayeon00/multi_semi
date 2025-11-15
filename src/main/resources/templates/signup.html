@@ -2,6 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="ko">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>회원가입 | Travel Planing</title>
     <link th:href="@{/css/signup.css}" rel="stylesheet">
 </head>
@@ -12,12 +13,13 @@
         <div class="header-content">
             <div class="logo-section">
                 <div class="logo-box">
-                    <img th:src="@{/images/logo.png}" alt="Logo">
+                    <img th:src="@{/images/logo.png}" alt="Logo" src="/api/placeholder/50/50">
                 </div>
                 <span class="site-title">TRAVEL PLANING</span>
             </div>
             <nav class="header-nav">
                 <a th:href="@{/spots/view/tourspotlist}" class="nav-link">Home</a>
+                <a th:href="@{/login}" class="nav-link">로그인</a>
             </nav>
         </div>
     </header>
@@ -27,8 +29,8 @@
         <div class="signup-layout">
             <!-- 왼쪽: 제목 및 설명 -->
             <div class="signup-title-section">
-                <h1 class="signup-title">회원가입 폼</h1>
-                <p class="signup-desc">정보를 입력하고<br>서비스를 시작해보세요</p>
+                <h1 class="signup-title">회원가입</h1>
+                <p class="signup-desc">정보를 입력하고<br>여행 계획을 시작해보세요!</p>
             </div>
 
             <!-- 오른쪽: 폼 -->
@@ -39,9 +41,10 @@
                         <input type="text"
                                id="loginId"
                                class="field-input"
-                               placeholder="Enter your ID"
+                               placeholder="아이디를 입력하세요"
                                autocomplete="username"
                                required>
+                        <span class="error-message" id="loginId-error">아이디는 필수 항목입니다</span>
                     </div>
 
                     <div class="form-field">
@@ -49,9 +52,10 @@
                         <input type="password"
                                id="password"
                                class="field-input"
-                               placeholder="Create a password"
+                               placeholder="비밀번호를 입력하세요"
                                autocomplete="new-password"
                                required>
+                        <span class="error-message" id="password-error">비밀번호는 필수 항목입니다</span>
                     </div>
 
                     <div class="form-field">
@@ -59,9 +63,10 @@
                         <input type="text"
                                id="username"
                                class="field-input"
-                               placeholder="Enter your name"
+                               placeholder="이름을 입력하세요"
                                autocomplete="name"
                                required>
+                        <span class="error-message" id="username-error">이름은 필수 항목입니다</span>
                     </div>
 
                     <div class="form-field">
@@ -69,9 +74,10 @@
                         <input type="tel"
                                id="tel"
                                class="field-input"
-                               placeholder="Enter your phone number"
+                               placeholder="010-0000-0000"
                                autocomplete="tel"
                                required>
+                        <span class="error-message" id="tel-error">올바른 전화번호를 입력하세요</span>
                     </div>
 
                     <div class="form-field">
@@ -79,17 +85,18 @@
                         <input type="email"
                                id="email"
                                class="field-input"
-                               placeholder="Enter your email"
+                               placeholder="example@email.com"
                                autocomplete="email"
                                required>
+                        <span class="error-message" id="email-error">올바른 이메일을 입력하세요</span>
                     </div>
 
                     <div class="button-group">
                         <button type="button" class="btn btn-cancel" onclick="location.href='/login'">
-                            취소
+                            <span>취소</span>
                         </button>
                         <button type="submit" class="btn btn-signup">
-                            계정 생성
+                            <span>계정 생성</span>
                         </button>
                     </div>
                 </form>
@@ -97,7 +104,7 @@
                 <div class="message" id="msg"></div>
 
                 <div class="login-link">
-                    이미 계정이 있으신가요? <a href="/login">로그인</a>
+                    이미 계정이 있으신가요? <a href="/login">로그인하기</a>
                 </div>
             </div>
         </div>
@@ -110,32 +117,101 @@
 </footer>
 
 <script>
+    // ✅ 입력 검증
+    function validateForm() {
+        let isValid = true;
+
+        const loginId = document.getElementById("loginId");
+        const password = document.getElementById("password");
+        const username = document.getElementById("username");
+        const tel = document.getElementById("tel");
+        const email = document.getElementById("email");
+
+        // 아이디 검증
+        if (!loginId.value.trim()) {
+            loginId.classList.add('error');
+            document.getElementById('loginId-error').classList.add('show');
+            isValid = false;
+        } else {
+            loginId.classList.remove('error');
+            loginId.classList.add('success');
+            document.getElementById('loginId-error').classList.remove('show');
+        }
+
+        // 비밀번호 검증
+        if (!password.value.trim() || password.value.length < 4) {
+            password.classList.add('error');
+            document.getElementById('password-error').textContent = '비밀번호는 4자 이상이어야 합니다';
+            document.getElementById('password-error').classList.add('show');
+            isValid = false;
+        } else {
+            password.classList.remove('error');
+            password.classList.add('success');
+            document.getElementById('password-error').classList.remove('show');
+        }
+
+        // 이름 검증
+        if (!username.value.trim()) {
+            username.classList.add('error');
+            document.getElementById('username-error').classList.add('show');
+            isValid = false;
+        } else {
+            username.classList.remove('error');
+            username.classList.add('success');
+            document.getElementById('username-error').classList.remove('show');
+        }
+
+        // 전화번호 검증
+        const telPattern = /^[0-9-]+$/;
+        if (!tel.value.trim() || !telPattern.test(tel.value)) {
+            tel.classList.add('error');
+            document.getElementById('tel-error').classList.add('show');
+            isValid = false;
+        } else {
+            tel.classList.remove('error');
+            tel.classList.add('success');
+            document.getElementById('tel-error').classList.remove('show');
+        }
+
+        // 이메일 검증
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!email.value.trim() || !emailPattern.test(email.value)) {
+            email.classList.add('error');
+            document.getElementById('email-error').classList.add('show');
+            isValid = false;
+        } else {
+            email.classList.remove('error');
+            email.classList.add('success');
+            document.getElementById('email-error').classList.remove('show');
+        }
+
+        return isValid;
+    }
+
+    // ✅ 회원가입 처리
     async function signup() {
+        console.log("=== 회원가입 시작 ===");
+
+        // 입력 검증
+        if (!validateForm()) {
+            showMessage("입력 내용을 확인해주세요.", "error");
+            return;
+        }
+
         const loginId = document.getElementById("loginId").value.trim();
         const password = document.getElementById("password").value.trim();
         const username = document.getElementById("username").value.trim();
         const tel = document.getElementById("tel").value.trim();
         const email = document.getElementById("email").value.trim();
 
-        // 입력 검증
-        if (!loginId || !password || !username || !tel || !email) {
-            showMessage("모든 정보를 입력해주세요.", "error");
-            return;
-        }
+        console.log("입력된 값:", { loginId, username, tel, email });
 
-        // 이메일 형식 검증
-        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailPattern.test(email)) {
-            showMessage("올바른 이메일 형식을 입력해주세요.", "error");
-            return;
-        }
-
-        // 전화번호 형식 검증 (선택사항)
-        const telPattern = /^[0-9-]+$/;
-        if (!telPattern.test(tel)) {
-            showMessage("전화번호는 숫자와 하이픈(-)만 입력 가능합니다.", "error");
-            return;
-        }
+        // 버튼 비활성화 및 로딩 상태
+        const signupBtn = document.querySelector('.btn-signup');
+        const originalContent = signupBtn.innerHTML;
+        signupBtn.innerHTML = '<span>가입 중...</span>';
+        signupBtn.disabled = true;
+        signupBtn.classList.add('loading');
 
         try {
             const response = await fetch("/auth/signup", {
@@ -155,17 +231,24 @@
             console.log("응답 바디:", text);
 
             if (response.ok) {
-                showMessage("회원가입 성공! 🎉 로그인 페이지로 이동합니다.", "success");
+                showMessage("회원가입 성공! 로그인 페이지로 이동합니다.", "success");
                 setTimeout(() => window.location.href = "/login", 1500);
             } else {
                 showMessage("회원가입 실패. 입력값을 다시 확인하세요.", "error");
+                signupBtn.innerHTML = originalContent;
+                signupBtn.disabled = false;
+                signupBtn.classList.remove('loading');
             }
         } catch (e) {
             console.error("회원가입 오류:", e);
             showMessage("서버 오류가 발생했습니다.", "error");
+            signupBtn.innerHTML = originalContent;
+            signupBtn.disabled = false;
+            signupBtn.classList.remove('loading');
         }
     }
 
+    // ✅ 메시지 표시
     function showMessage(text, type) {
         const msgBox = document.getElementById("msg");
         msgBox.textContent = text;
@@ -173,23 +256,43 @@
         msgBox.style.display = "block";
     }
 
-    // 실시간 입력 검증 (선택사항)
-    document.getElementById("email").addEventListener("blur", function() {
-        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (this.value && !emailPattern.test(this.value)) {
-            this.style.borderColor = "#e74c3c";
-        } else {
-            this.style.borderColor = "";
-        }
-    });
+    // ✅ 실시간 입력 검증
+    document.addEventListener('DOMContentLoaded', () => {
+        const inputs = document.querySelectorAll('.field-input');
 
-    document.getElementById("tel").addEventListener("blur", function() {
-        const telPattern = /^[0-9-]+$/;
-        if (this.value && !telPattern.test(this.value)) {
-            this.style.borderColor = "#e74c3c";
-        } else {
-            this.style.borderColor = "";
-        }
+        inputs.forEach(input => {
+            // 포커스 해제 시 검증
+            input.addEventListener('blur', () => {
+                validateForm();
+            });
+
+            // 입력 시 에러 상태 제거
+            input.addEventListener('input', () => {
+                input.classList.remove('error', 'success');
+                const errorMsg = document.getElementById(`${input.id}-error`);
+                if (errorMsg) {
+                    errorMsg.classList.remove('show');
+                }
+            });
+        });
+
+        // 이메일 실시간 검증
+        document.getElementById("email").addEventListener("blur", function() {
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (this.value && !emailPattern.test(this.value)) {
+                this.classList.add('error');
+                document.getElementById('email-error').classList.add('show');
+            }
+        });
+
+        // 전화번호 실시간 검증
+        document.getElementById("tel").addEventListener("blur", function() {
+            const telPattern = /^[0-9-]+$/;
+            if (this.value && !telPattern.test(this.value)) {
+                this.classList.add('error');
+                document.getElementById('tel-error').classList.add('show');
+            }
+        });
     });
 </script>
 </body>

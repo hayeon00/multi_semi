@@ -3,526 +3,380 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>관리자 페이지 - TRAVEL PLANING</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+    <title>관리자 대시보드 | Travel Planing</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <link rel="stylesheet" th:href="@{/css/adminpage.css}">
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f5f5f0;
-        }
-
-        /* 헤더 스타일 */
-        .header {
-            background-color: #d3d3d3;
-            padding: 20px 40px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-
-        .logo-section {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .logo {
-            width: 60px;
-            height: 60px;
-            background-color: #fff;
-            border: 2px solid #333;
-            border-radius: 8px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 5px;
-        }
-
-        .logo-text {
-            font-size: 10px;
-            font-weight: bold;
-            margin-bottom: 2px;
-        }
-
-        .logo-icon {
-            font-size: 24px;
-        }
-
-        .site-title {
-            font-size: 28px;
-            font-weight: bold;
-            color: #333;
-        }
-
-        .user-info {
-            color: #333;
-            font-size: 14px;
-        }
-
-        .nav-menu {
-            display: flex;
-            gap: 20px;
-        }
-
-        .nav-menu a {
-            text-decoration: none;
-            color: #333;
-            padding: 8px 16px;
-            border-radius: 4px;
-            transition: background-color 0.3s;
-        }
-
-        .nav-menu a:hover {
-            background-color: #bbb;
-        }
-
-        /* 컨테이너 */
-        .container {
-            padding: 40px;
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        .page-title {
-            font-size: 32px;
-            font-weight: bold;
-            margin-bottom: 40px;
-            color: #333;
-        }
-
-        /* 그리드 레이아웃 */
-        .admin-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            margin-bottom: 30px;
-        }
-
-        /* 카드 스타일 */
-        .info-card {
-            background-color: #e0e0e0;
-            border-radius: 12px;
-            padding: 25px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-
-        .info-card.full-width {
-            grid-column: 1 / -1;
-        }
-
-        .info-card.highlight {
-            border: 3px solid #4a90e2;
-        }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #bbb;
-        }
-
-        .card-title {
-            font-size: 20px;
-            font-weight: bold;
-            color: #333;
-        }
-
-        .more-btn {
-            background-color: #333;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: background-color 0.3s;
-        }
-
-        .more-btn:hover {
-            background-color: #555;
-        }
-
-        /* 테이블 스타일 */
-        .data-table {
-            width: 100%;
-            background-color: white;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        .data-table table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .data-table thead {
-            background-color: #666;
-            color: white;
-        }
-
-        .data-table th,
-        .data-table td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-
-        .data-table th {
-            font-weight: 600;
-            font-size: 14px;
-        }
-
-        .data-table tbody tr:hover {
-            background-color: #f9f9f9;
-        }
-
-        .data-table td {
-            font-size: 13px;
-            color: #333;
-        }
-
-        .data-table td img {
-            display: block;
-            margin: 0 auto;
-        }
-
-        /* 빈 데이터 메시지 */
-        .empty-message {
-            text-align: center;
-            padding: 40px;
-            color: #999;
-            font-size: 16px;
-        }
-
-        /* 상태 배지 */
-        .status-badge {
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .status-active {
-            background-color: #4caf50;
-            color: white;
-        }
-
-        .status-inactive {
-            background-color: #f44336;
-            color: white;
-        }
-
-        /* 로딩 스피너 */
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #666;
-        }
-
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #333;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 10px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
 </head>
 <body>
 <!-- 헤더 -->
-<div class="header">
-    <div class="logo-section">
-        <div class="logo">
-            <div class="logo-text">Logo</div>
-            <div class="logo-icon">🖼️</div>
-        </div>
-        <div class="site-title">TRAVEL PLANING</div>
+<header>
+    <div class="header-left">
+        <img th:src="@{/images/logo.png}" alt="Logo" src="/api/placeholder/50/50">
+        <div class="title">TRAVEL PLANING</div>
     </div>
-    <div style="display: flex; align-items: center; gap: 30px;">
-        <div class="user-info">{관리자} 님 환영합니다.</div>
-        <div class="nav-menu">
-            <a href="/">Home</a>
-            <a href="/admin/view/adminpage">관리자페이지</a>
-            <a href="#" onclick="logout(); return false;">로그아웃</a>
+    <div class="header-right">
+        <div class="welcome-text">
+            <span class="admin-badge">관리자</span>님 환영합니다.
         </div>
+        <nav class="nav">
+            <a th:href="@{/spots/view/tourspotlist}" class="nav-link">
+                <span class="nav-icon">🏠</span>
+                <span>홈</span>
+            </a>
+            <a th:href="@{/admin/view/dashboard}" class="nav-link active">
+                <span class="nav-icon">📊</span>
+                <span>대시보드</span>
+            </a>
+            <a th:href="@{/admin/view/members}" class="nav-link">
+                <span class="nav-icon">👥</span>
+                <span>회원관리</span>
+            </a>
+            <a th:href="@{/admin/view/tourspot}" class="nav-link">
+                <span class="nav-icon">🗺️</span>
+                <span>관광지관리</span>
+            </a>
+            <a th:href="@{/admin/view/acc}" class="nav-link">
+                <span class="nav-icon">🏨</span>
+                <span>숙소관리</span>
+            </a>
+            <a href="javascript:void(0);" class="nav-link logout" onclick="handleLogout()">
+                <span class="nav-icon">🚪</span>
+                <span>로그아웃</span>
+            </a>
+        </nav>
     </div>
-</div>
+</header>
 
 <!-- 메인 컨텐츠 -->
-<div class="container">
-    <h1 class="page-title">관리자 대시보드</h1>
+<main>
+    <!-- 페이지 헤더 -->
+    <div class="page-header">
+        <h1 class="page-title">
+            <span class="title-icon">📊</span>
+            관리자 대시보드
+        </h1>
+        <p class="page-desc">시스템의 전체 현황을 한눈에 확인하세요</p>
+    </div>
 
-    <div class="admin-grid">
+    <!-- 통계 카드 -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-header">
+                <span class="stat-label">전체 회원</span>
+                <span class="stat-icon">👥</span>
+            </div>
+            <div class="stat-value" id="totalMembers">-</div>
+            <div class="stat-change">📈 활성 회원 중심</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-header">
+                <span class="stat-label">전체 관광지</span>
+                <span class="stat-icon">🗺️</span>
+            </div>
+            <div class="stat-value" id="totalTourspots">-</div>
+            <div class="stat-change">✨ 최신 데이터</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-header">
+                <span class="stat-label">전체 숙소</span>
+                <span class="stat-icon">🏨</span>
+            </div>
+            <div class="stat-value" id="totalAccs">-</div>
+            <div class="stat-change">🔄 실시간 업데이트</div>
+        </div>
+    </div>
+
+    <!-- 데이터 테이블 그리드 -->
+    <div class="data-grid">
         <!-- 회원 정보 카드 -->
-        <div class="info-card">
-            <div class="card-header">
-                <h2 class="card-title">회원 정보</h2>
+        <div class="data-card">
+            <div class="data-card-header">
+                <h2 class="card-title">
+                    <span>👥</span>
+                    회원 정보
+                </h2>
                 <button class="more-btn" onclick="location.href='/admin/view/members'">더보기</button>
             </div>
-            <div class="data-table" id="memberTable">
-                <div class="loading">
-                    <div class="spinner"></div>
-                    <div>회원 정보를 불러오는 중...</div>
+            <div class="table-wrapper">
+                <div id="memberTable">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <div>회원 정보를 불러오는 중...</div>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- 숙소 정보 카드 -->
-        <div class="info-card">
-            <div class="card-header">
-                <h2 class="card-title">숙소 정보</h2>
+        <div class="data-card">
+            <div class="data-card-header">
+                <h2 class="card-title">
+                    <span>🏨</span>
+                    숙소 정보
+                </h2>
                 <button class="more-btn" onclick="location.href='/admin/view/acc'">더보기</button>
             </div>
-            <div class="data-table" id="accTable">
-                <div class="loading">
-                    <div class="spinner"></div>
-                    <div>숙소 정보를 불러오는 중...</div>
+            <div class="table-wrapper">
+                <div id="accTable">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <div>숙소 정보를 불러오는 중...</div>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- 관광지 정보 카드 (전체 너비) -->
-        <div class="info-card full-width highlight">
-            <div class="card-header">
-                <h2 class="card-title">관광지 정보</h2>
+        <div class="data-card full-width">
+            <div class="data-card-header">
+                <h2 class="card-title">
+                    <span>🗺️</span>
+                    관광지 정보
+                </h2>
                 <button class="more-btn" onclick="location.href='/admin/view/tourspot'">더보기</button>
             </div>
-            <div class="data-table" id="tourspotTable">
-                <div class="loading">
-                    <div class="spinner"></div>
-                    <div>관광지 정보를 불러오는 중...</div>
+            <div class="table-wrapper">
+                <div id="tourspotTable">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <div>관광지 정보를 불러오는 중...</div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
+</main>
+
+<!-- 푸터 -->
+<footer>
+    <p>&copy; 2025 Travel Planing. All rights reserved.</p>
+</footer>
+
+<script th:src="@{/js/common.js}"></script>
 
 <script>
     // 페이지 로드 시 데이터 불러오기
     document.addEventListener('DOMContentLoaded', function() {
         loadMemberData();
         loadTourSpotData();
+        loadAccData();
     });
-
-    // 로그아웃 함수 (이 부분을 추가해야 함!)
-    async function logout() {
-        if (confirm('로그아웃 하시겠습니까?')) {
-            try {
-                const response = await fetch('/auth/logout', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    credentials: 'include'
-                });
-
-                const result = await response.json();
-
-                if (response.ok) {
-                    alert('로그아웃 되었습니다.');
-                    window.location.href = '/login';
-                } else {
-                    alert('로그아웃에 실패했습니다.');
-                }
-            } catch (error) {
-                console.error('로그아웃 오류:', error);
-                alert('로그아웃 중 오류가 발생했습니다.');
-            }
-        }
-    }
-
 
     // 회원 데이터 불러오기
     async function loadMemberData() {
         try {
-            console.log('회원 데이터 요청 시작...');
-            const response = await fetch('/admin/members');
-            console.log('응답 상태:', response.status);
+            const response = await fetchWithRefresh('/admin/members', {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                throw new Error('회원 데이터 로드 실패');
+            }
 
             const result = await response.json();
-            console.log('회원 API 응답:', result);
-            console.log('result.status:', result.status);
-            console.log('result.data:', result.data);
-
-            // ResponseDto 구조: { status, message, data }
-            // status는 HttpStatus 객체일 수 있음
-            const statusValue = result.status?.value || result.status;
-            const isSuccess = statusValue === 200 || statusValue === 'OK' || result.message?.includes('성공');
-
-            console.log('성공 여부:', isSuccess);
-            console.log('데이터 개수:', result.data?.length);
 
             if (result.data && result.data.length > 0) {
-                const members = result.data.slice(0, 5); // 최대 5개만 표시
+                // 통계 업데이트
+                document.getElementById('totalMembers').textContent = result.data.length;
+
+                const members = result.data.slice(0, 5);
 
                 let html = `
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th style="width: 50px;">ID</th>
-                                    <th style="width: 100px;">아이디</th>
-                                    <th style="width: 100px;">이름</th>
-                                    <th style="width: 180px;">이메일</th>
-                                    <th style="width: 110px;">전화번호</th>
-                                    <th style="width: 110px;">권한</th>
-                                    <th style="width: 60px;">상태</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                    `;
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>아이디</th>
+                                <th>이름</th>
+                                <th>이메일</th>
+                                <th>전화번호</th>
+                                <th>권한</th>
+                                <th>상태</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
 
                 members.forEach(member => {
                     html += `
-                            <tr>
-                                <td>${member.id || '-'}</td>
-                                <td>${member.loginId || '-'}</td>
-                                <td>${member.username || '-'}</td>
-                                <td>${member.email || '-'}</td>
-                                <td>${member.tel || '-'}</td>
-                                <td>${member.role || '-'}</td>
-                                <td>${member.status || '-'}</td>
-                            </tr>
-                        `;
+                        <tr>
+                            <td>${member.id || '-'}</td>
+                            <td><strong>${member.loginId || '-'}</strong></td>
+                            <td>${member.username || '-'}</td>
+                            <td>${member.email || '-'}</td>
+                            <td>${member.tel || '-'}</td>
+                            <td>
+                                <span class="badge badge-${member.role === 'ADMIN' ? 'admin' : 'user'}">
+                                    ${member.role || '-'}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="status-badge ${member.status === 'Y' ? 'status-active' : 'status-inactive'}">
+                                    ${member.status === 'Y' ? '✓ 활성' : '✗ 비활성'}
+                                </span>
+                            </td>
+                        </tr>
+                    `;
                 });
 
                 html += `
-                            </tbody>
-                        </table>
-                    `;
+                        </tbody>
+                    </table>
+                `;
 
                 document.getElementById('memberTable').innerHTML = html;
             } else {
-                document.getElementById('memberTable').innerHTML = '<div class="empty-message">등록된 회원이 없습니다.</div>';
+                document.getElementById('totalMembers').textContent = '0';
+                document.getElementById('memberTable').innerHTML = `
+                    <div class="empty-state">
+                        <span class="empty-icon">👥</span>
+                        <p>등록된 회원이 없습니다.</p>
+                    </div>
+                `;
             }
         } catch (error) {
             console.error('회원 데이터 로드 실패:', error);
-            document.getElementById('memberTable').innerHTML = '<div class="empty-message">데이터를 불러올 수 없습니다.</div>';
+            document.getElementById('totalMembers').textContent = '0';
+            document.getElementById('memberTable').innerHTML = `
+                <div class="empty-state">
+                    <span class="empty-icon">⚠️</span>
+                    <p>데이터를 불러올 수 없습니다.</p>
+                </div>
+            `;
         }
     }
 
     // 관광지 데이터 불러오기
     async function loadTourSpotData() {
         try {
-            console.log('관광지 데이터 요청 시작...');
-            const response = await fetch('/admin/tourspot/list?page=0&size=5&sort=id');
-            console.log('응답 상태:', response.status);
+            const response = await fetchWithRefresh('/admin/tourspot/list?page=0&size=5&sort=id', {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                throw new Error('관광지 데이터 로드 실패');
+            }
 
             const result = await response.json();
-            console.log('관광지 API 응답:', result);
-            console.log('result.status:', result.status);
-            console.log('result.data:', result.data);
-
-            // ResponseDto 구조: { status, message, data }
-            const statusValue = result.status?.value || result.status;
-            const isSuccess = statusValue === 200 || statusValue === 'OK' || result.message?.includes('성공');
-
-            console.log('성공 여부:', isSuccess);
-            console.log('데이터 구조:', result.data);
 
             if (result.data && result.data.content && result.data.content.length > 0) {
+                // 통계 업데이트 - totalElements가 전체 개수
+                const totalCount = result.data.totalElements || result.data.content.length;
+                document.getElementById('totalTourspots').textContent = totalCount;
+
                 const tourspots = result.data.content;
 
                 let html = `
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th style="width: 50px;">ID</th>
-                                    <th style="width: 120px;">이미지</th>
-                                    <th style="width: 200px;">제목</th>
-                                    <th>주소</th>
-                                    <th style="width: 80px;">추천수</th>
-                                    <th style="width: 60px;">상태</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                    `;
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>이미지</th>
+                                <th>제목</th>
+                                <th>주소</th>
+                                <th>추천수</th>
+                                <th>상태</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
 
                 tourspots.forEach(spot => {
-                    // 이미지 URL 처리
                     const imgSrc = spot.firstImage || '/images/no-image.png';
                     const recCount = spot.recCount || 0;
 
                     html += `
-                            <tr>
-                                <td>${spot.id || '-'}</td>
-                                <td><img src="${imgSrc}" alt="${spot.title}" style="width: 100px; height: 70px; object-fit: cover; border-radius: 4px;" onerror="this.src='/images/no-image.png'"></td>
-                                <td>${spot.title || '-'}</td>
-                                <td>${spot.address || '-'}</td>
-                                <td>${recCount}</td>
-                                <td>${spot.status || '-'}</td>
-                            </tr>
-                        `;
+                        <tr>
+                            <td>${spot.id || '-'}</td>
+                            <td>
+                                <img src="${imgSrc}"
+                                     alt="${spot.title}"
+                                     onerror="this.src='/images/no-image.png'">
+                            </td>
+                            <td>${spot.title || '-'}</td>
+                            <td>${spot.address || '-'}</td>
+                            <td><span class="rec-count">${recCount}</span></td>
+                            <td>
+                                <span class="status-badge ${spot.status === 'Y' ? 'status-active' : 'status-inactive'}">
+                                    ${spot.status === 'Y' ? '✓ 활성' : '✗ 비활성'}
+                                </span>
+                            </td>
+                        </tr>
+                    `;
                 });
 
                 html += `
-                            </tbody>
-                        </table>
-                    `;
+                        </tbody>
+                    </table>
+                `;
 
                 document.getElementById('tourspotTable').innerHTML = html;
             } else {
-                document.getElementById('tourspotTable').innerHTML = '<div class="empty-message">등록된 관광지가 없습니다.</div>';
+                document.getElementById('totalTourspots').textContent = '0';
+                document.getElementById('tourspotTable').innerHTML = `
+                    <div class="empty-state">
+                        <span class="empty-icon">🗺️</span>
+                        <p>등록된 관광지가 없습니다.</p>
+                    </div>
+                `;
             }
         } catch (error) {
             console.error('관광지 데이터 로드 실패:', error);
-            document.getElementById('tourspotTable').innerHTML = '<div class="empty-message">데이터를 불러올 수 없습니다.</div>';
+            document.getElementById('totalTourspots').textContent = '0';
+            document.getElementById('tourspotTable').innerHTML = `
+                <div class="empty-state">
+                    <span class="empty-icon">⚠️</span>
+                    <p>데이터를 불러올 수 없습니다.</p>
+                </div>
+            `;
         }
     }
 
+    // 숙소 데이터 불러오기
     async function loadAccData() {
         try {
-            console.log('숙소 데이터 요청 시작...');
-            const response = await fetch('/accommodations/list?page=0&size=5&sort=id');
-            console.log('응답 상태:', response.status);
+            const response = await fetchWithRefresh('/accommodations/list?page=0&size=5&sort=id', {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                throw new Error('숙소 데이터 로드 실패');
+            }
 
             const result = await response.json();
             console.log('숙소 API 응답:', result);
-            console.log('result.status:', result.status);
-            console.log('result.data:', result.data);
 
-            const statusValue = result.status?.value || result.status;
-            const isSuccess = statusValue === 200 || statusValue === 'OK' || result.message?.includes('성공');
-
-            console.log('성공 여부:', isSuccess);
-            console.log('데이터 구조:', result.data);
-
-            // ★★★ result.data.contents 사용 (accService 구조 그대로)
             if (result.data && result.data.contents && result.data.contents.length > 0) {
+                // ⭐ totalElements 사용
+                document.getElementById('totalAccs').textContent = result.data.totalElements || 0;
+
                 const accs = result.data.contents;
 
                 let html = `
-                <table>
+                <table class="data-table">
                     <thead>
                         <tr>
-                            <th style="width: 50px;">ID</th>
-                            <th style="width: 120px;">이미지</th>
-                            <th style="width: 200px;">제목</th>
+                            <th>ID</th>
+                            <th>이미지</th>
+                            <th>제목</th>
                             <th>주소</th>
-                            <th style="width: 80px;">추천수</th>
-                            <th style="width: 60px;">상태</th>
+                            <th>추천수</th>
+                            <th>상태</th>
                         </tr>
                     </thead>
                     <tbody>
             `;
 
                 accs.forEach(acc => {
-                    // 이미지 처리 동일
                     const imgSrc = acc.firstImage || '/images/no-image.png';
                     const recCount = acc.recCount || 0;
 
@@ -532,13 +386,16 @@
                         <td>
                             <img src="${imgSrc}"
                                  alt="${acc.title}"
-                                 style="width: 100px; height: 70px; object-fit: cover; border-radius: 4px;"
                                  onerror="this.src='/images/no-image.png'">
                         </td>
                         <td>${acc.title || '-'}</td>
                         <td>${acc.address || '-'}</td>
-                        <td>${recCount}</td>
-                        <td>${acc.status || '-'}</td>
+                        <td><span class="rec-count">${recCount}</span></td>
+                        <td>
+                            <span class="status-badge ${acc.status === 'Y' ? 'status-active' : 'status-inactive'}">
+                                ${acc.status === 'Y' ? '✓ 활성' : '✗ 비활성'}
+                            </span>
+                        </td>
                     </tr>
                 `;
                 });
@@ -550,23 +407,49 @@
 
                 document.getElementById('accTable').innerHTML = html;
             } else {
-                document.getElementById('accTable').innerHTML =
-                    '<div class="empty-message">등록된 숙소가 없습니다.</div>';
+                document.getElementById('totalAccs').textContent = '0';
+                document.getElementById('accTable').innerHTML = `
+                <div class="empty-state">
+                    <span class="empty-icon">🏨</span>
+                    <p>등록된 숙소가 없습니다.</p>
+                </div>
+            `;
             }
         } catch (error) {
             console.error('숙소 데이터 로드 실패:', error);
-            document.getElementById('accTable').innerHTML =
-                '<div class="empty-message">데이터를 불러올 수 없습니다.</div>';
+            document.getElementById('totalAccs').textContent = '0';
+            document.getElementById('accTable').innerHTML = `
+            <div class="empty-state">
+                <span class="empty-icon">⚠️</span>
+                <p>데이터를 불러올 수 없습니다.</p>
+            </div>
+        `;
         }
+
     }
 
+    async function handleLogout() {
+        try {
+            const response = await fetch('/auth/logout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include' // 쿠키 포함
+            });
 
-    // 자동 실행
-    window.addEventListener("DOMContentLoaded", loadAccData);
-
-    // ⭐ 페이지 로드 시 자동 실행
-    window.addEventListener("DOMContentLoaded", loadAccSummary);
-
+            if (response.ok) {
+                alert('로그아웃 되었습니다.');
+                window.location.href = '/login';
+            } else {
+                const result = await response.json();
+                alert(result.message || '로그아웃에 실패했습니다.');
+            }
+        } catch (error) {
+            console.error('로그아웃 오류:', error);
+            alert('로그아웃 처리 중 오류가 발생했습니다.');
+        }
+    }
 </script>
 </body>
 </html>

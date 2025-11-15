@@ -18,23 +18,32 @@
             <span class="admin-badge">관리자</span>님 환영합니다.
         </div>
         <nav class="nav">
-            <a th:href="@{/admin/view/dashboard}" class="nav-link">
+            <a th:href="@{/spots/view/tourspotlist}" class="nav-link">
                 <span class="nav-icon">🏠</span>
+                <span>홈</span>
+            </a>
+            <a th:href="@{/admin/view/dashboard}" class="nav-link active">
+                <span class="nav-icon">📊</span>
                 <span>대시보드</span>
             </a>
             <a th:href="@{/admin/view/members}" class="nav-link">
                 <span class="nav-icon">👥</span>
                 <span>회원관리</span>
             </a>
-            <a th:href="@{/admin/view/tourspot}" class="nav-link active">
+            <a th:href="@{/admin/view/tourspot}" class="nav-link">
                 <span class="nav-icon">🗺️</span>
                 <span>관광지관리</span>
             </a>
-            <a th:href="@{/logout}" class="nav-link logout">
+            <a th:href="@{/admin/view/acc}" class="nav-link">
+                <span class="nav-icon">🏨</span>
+                <span>숙소관리</span>
+            </a>
+            <a href="javascript:void(0);" class="nav-link logout" onclick="handleLogout()">
                 <span class="nav-icon">🚪</span>
                 <span>로그아웃</span>
             </a>
         </nav>
+
     </div>
 </header>
 
@@ -313,6 +322,29 @@
         } catch (err) {
             console.error("오류:", err);
             alert("처리 중 오류가 발생했습니다.");
+        }
+    }
+
+    async function handleLogout() {
+        try {
+            const response = await fetch('/auth/logout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include' // 쿠키 포함
+            });
+
+            if (response.ok) {
+                alert('로그아웃 되었습니다.');
+                window.location.href = '/login';
+            } else {
+                const result = await response.json();
+                alert(result.message || '로그아웃에 실패했습니다.');
+            }
+        } catch (error) {
+            console.error('로그아웃 오류:', error);
+            alert('로그아웃 처리 중 오류가 발생했습니다.');
         }
     }
 </script>

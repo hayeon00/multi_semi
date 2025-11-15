@@ -84,6 +84,7 @@ public class AccService {
 
         Map<String, Object> response = new HashMap<>();
         response.put("totalPages", accPage.getTotalPages());
+        response.put("totalElements", accPage.getTotalElements());
         response.put("contents", convertToResAccDTO(accPage.getContent()));
         return response;
     }
@@ -98,6 +99,7 @@ public class AccService {
         }
         Map<String, Object> response = new HashMap<>();
         response.put("totalPages", accPage.getTotalPages());
+        response.put("totalElements", accPage.getTotalElements());
         response.put("contents", convertToResAccDTO(accPage.getContent()));
         return response;
     }
