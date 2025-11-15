@@ -15,6 +15,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -96,17 +97,20 @@ public class Acc {
     private Double distanceKm;
 
     public void updateInfo(AccDTO accDTO) {
-        if(accDTO.getAddress() != null) this.address = accDTO.getAddress();
-        if(accDTO.getTitle() != null) this.title = accDTO.getTitle();
-        if(accDTO.getDescription() != null) this.description = accDTO.getDescription();
-        if(accDTO.getTel() != null) this.tel = accDTO.getTel();
-        if(accDTO.getMapx() != null) this.mapx = accDTO.getMapx();
-        if(accDTO.getMapy() != null) this.mapy = accDTO.getMapy();
-        if(accDTO.getAreacode() != null) this.areacode = accDTO.getAreacode();
-        if(accDTO.getSigungucode() != null) this.sigungucode = accDTO.getSigungucode();
-        if(accDTO.getLDongRegnCd() != null) this.lDongRegnCd = accDTO.getLDongRegnCd();
-        if(accDTO.getStatus() != null) this.status = accDTO.getStatus();
-        if(accDTO.getContentId() != null) this.contentId = accDTO.getContentId();
+
+        if (StringUtils.hasText(accDTO.getAddress())) this.address = accDTO.getAddress();
+        if (StringUtils.hasText(accDTO.getTitle())) this.title = accDTO.getTitle();
+        if (StringUtils.hasText(accDTO.getDescription())) this.description = accDTO.getDescription();
+        if (StringUtils.hasText(accDTO.getTel())) this.tel = accDTO.getTel();
+        if (StringUtils.hasText(accDTO.getLDongRegnCd())) this.lDongRegnCd = accDTO.getLDongRegnCd();
+        if (StringUtils.hasText(accDTO.getStatus())) this.status = accDTO.getStatus();
+
+        // 숫자는 null 체크만 필요
+        if (accDTO.getMapx() != null) this.mapx = accDTO.getMapx();
+        if (accDTO.getMapy() != null) this.mapy = accDTO.getMapy();
+        if (accDTO.getAreacode() != null) this.areacode = accDTO.getAreacode();
+        if (accDTO.getSigungucode() != null) this.sigungucode = accDTO.getSigungucode();
+        if (accDTO.getContentId() != null) this.contentId = accDTO.getContentId();
     }
 
     public void changeStatus() {

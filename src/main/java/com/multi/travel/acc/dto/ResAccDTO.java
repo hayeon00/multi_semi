@@ -23,6 +23,7 @@ public class ResAccDTO {
     private String title;
     private Integer recCount;
     private String firstImage;
+    private String status;  // 활성화 상태
     private BigDecimal mapx;
     private BigDecimal mapy;
 }
