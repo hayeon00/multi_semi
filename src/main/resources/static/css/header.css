@@ -1,0 +1,210 @@
+/* =========================================
+   HEADER Base
+========================================= */
+.header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    width: 100%;
+    max-height: 200px;
+    overflow: hidden;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    padding: 18px 0;
+}
+
+.header-container {
+    max-width: 2250px;
+    min-width: 1200px;
+    margin: 0 auto;
+
+    display: grid;
+    grid-template-columns: 1fr auto 1fr; /* 좌 / 중 / 우 */
+    align-items: center;
+
+    padding: 0 120px; /* 양쪽 여백 증가 */
+}
+
+
+/* =========================================
+   Left (유저정보)
+========================================= */
+.left-area {
+    display: flex;
+    align-items: center;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.user-icon {
+    font-size: 70px;
+    color: white;
+}
+
+.username, .welcome {
+    font-size: 45px;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+
+/* =========================================
+   Center (로고)
+========================================= */
+.center-area {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+}
+
+.center-area .logo {
+    width: 90px;
+    height: 90px;
+    background: white;
+    padding: 10px;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.center-area .title {
+    font-size: 60px;
+    font-weight: 800;
+    color: white;
+    letter-spacing: 1.4px;
+}
+
+
+/* =========================================
+    (메뉴)
+========================================= */
+.right-area {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+}
+
+/* 메뉴 줄 */
+.common-nav,
+.admin-nav,
+.login-nav{
+    display: flex;
+    gap: 14px;
+}
+
+
+/* =========================================
+   버튼 통합 nav-link (직사각형 + 중앙정렬)
+========================================= */
+.nav-link,
+.logout-btn {
+    display: flex;
+    flex-direction: row; /* 아이콘 왼쪽 + 글자 오른쪽 */
+    align-items: center; /* 세로 중앙 정렬 */
+    justify-content: center; /* 가로는 왼쪽 정렬 */
+
+    width: 230px;
+    height: 65px; /* 고정 높이 → 중앙정렬 정확 */
+    padding: 0 25px 0 0;
+
+    gap: 16px; /* 아이콘 ↔ 글자 간 간격 */
+
+    border-radius: 16px;
+    text-decoration: none;
+    box-sizing: border-box;
+
+    background: rgba(255, 255, 255, 0.20);
+    color: white;
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 1; /* ⭐ 텍스트 위아래 여백 제거 → 정확한 수직 중앙정렬 */
+
+    backdrop-filter: blur(6px);
+    transition: all 0.25s ease;
+}
+
+/* hover */
+.nav-link:hover,
+.logout-btn:hover {
+    background: rgba(255, 255, 255, 0.40);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.25);
+}
+
+/* logout만 별도 색상 */
+.logout-btn {
+    background: rgba(255, 75, 75, 0.35) !important;
+    border: none;
+}
+
+.logout-btn:hover {
+    background: rgba(255, 75, 75, 0.50) !important;
+}
+
+/* 아이콘 */
+.icon {
+    font-size: 28px;
+    flex-shrink: 0;
+}
+
+/* 폼 버튼의 정렬 문제 해결 */
+.common-nav form {
+    display: inline-flex;
+}
+
+/* =========================================
+    🔥 반응형 처리: 화면이 1700px 이하로 줄어들면
+    왼쪽 / 가운데 / 오른쪽 → 세로 정렬로 전환
+========================================= */
+@media (max-width: 1700px) {
+
+    .header-container {
+        grid-template-columns: 1fr; /* 한 줄로 */
+        justify-items: center; /* 가운데 정렬 */
+        row-gap: 30px;
+        padding: 20px 40px;
+    }
+
+    /* 유저 정보 중앙 */
+    .left-area {
+        justify-content: center;
+        text-align: center;
+    }
+
+    /* 제목 + 로고도 중앙 */
+    .center-area {
+        justify-content: center;
+    }
+
+    /* 버튼 영역도 중앙 */
+    .right-area {
+        align-items: center;
+    }
+
+    /* 버튼들 wrap 적용 */
+    .common-nav,
+    .admin-nav,
+    .login-nav {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    /* 버튼 크기는 그대로 but 줄바꿈 가능 */
+    .nav-link,
+    .logout-btn {
+        width: 230px;
+        height: 65px;
+    }
+
+    /* 유저 텍스트 크기 조금 줄이기 */
+    .username, .welcome {
+        font-size: 32px;
+    }
+
+    .center-area .title {
+        font-size: 48px;
+    }
+}

@@ -40,4 +40,12 @@ public class PlanViewController {
         model.addAttribute("kakaoKey", kakaoKey);
         return "plan/plan-detail";
     }
+
+    @GetMapping("/edit")
+    public String showEditPage(@RequestParam Long planId, Model model) {
+        model.addAttribute("planId", planId);
+        model.addAttribute("kakaoKey", kakaoKey);
+        return "plan/plan-edit";
+    }
+
 }

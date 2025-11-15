@@ -287,10 +287,13 @@
         <div class="info-card">
             <div class="card-header">
                 <h2 class="card-title">숙소 정보</h2>
-                <button class="more-btn">더보기</button>
+                <button class="more-btn" onclick="location.href='/admin/view/acc'">더보기</button>
             </div>
-            <div class="data-table">
-                <div class="empty-message">숙소 정보 API를 구현해주세요</div>
+            <div class="data-table" id="accTable">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <div>숙소 정보를 불러오는 중...</div>
+                </div>
             </div>
         </div>
 
@@ -481,6 +484,89 @@
             document.getElementById('tourspotTable').innerHTML = '<div class="empty-message">데이터를 불러올 수 없습니다.</div>';
         }
     }
+
+    async function loadAccData() {
+        try {
+            console.log('숙소 데이터 요청 시작...');
+            const response = await fetch('/accommodations/list?page=0&size=5&sort=id');
+            console.log('응답 상태:', response.status);
+
+            const result = await response.json();
+            console.log('숙소 API 응답:', result);
+            console.log('result.status:', result.status);
+            console.log('result.data:', result.data);
+
+            const statusValue = result.status?.value || result.status;
+            const isSuccess = statusValue === 200 || statusValue === 'OK' || result.message?.includes('성공');
+
+            console.log('성공 여부:', isSuccess);
+            console.log('데이터 구조:', result.data);
+
+            // ★★★ result.data.contents 사용 (accService 구조 그대로)
+            if (result.data && result.data.contents && result.data.contents.length > 0) {
+                const accs = result.data.contents;
+
+                let html = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">ID</th>
+                            <th style="width: 120px;">이미지</th>
+                            <th style="width: 200px;">제목</th>
+                            <th>주소</th>
+                            <th style="width: 80px;">추천수</th>
+                            <th style="width: 60px;">상태</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+                accs.forEach(acc => {
+                    // 이미지 처리 동일
+                    const imgSrc = acc.firstImage || '/images/no-image.png';
+                    const recCount = acc.recCount || 0;
+
+                    html += `
+                    <tr>
+                        <td>${acc.id || '-'}</td>
+                        <td>
+                            <img src="${imgSrc}"
+                                 alt="${acc.title}"
+                                 style="width: 100px; height: 70px; object-fit: cover; border-radius: 4px;"
+                                 onerror="this.src='/images/no-image.png'">
+                        </td>
+                        <td>${acc.title || '-'}</td>
+                        <td>${acc.address || '-'}</td>
+                        <td>${recCount}</td>
+                        <td>${acc.status || '-'}</td>
+                    </tr>
+                `;
+                });
+
+                html += `
+                    </tbody>
+                </table>
+            `;
+
+                document.getElementById('accTable').innerHTML = html;
+            } else {
+                document.getElementById('accTable').innerHTML =
+                    '<div class="empty-message">등록된 숙소가 없습니다.</div>';
+            }
+        } catch (error) {
+            console.error('숙소 데이터 로드 실패:', error);
+            document.getElementById('accTable').innerHTML =
+                '<div class="empty-message">데이터를 불러올 수 없습니다.</div>';
+        }
+    }
+
+
+    // 자동 실행
+    window.addEventListener("DOMContentLoaded", loadAccData);
+
+    // ⭐ 페이지 로드 시 자동 실행
+    window.addEventListener("DOMContentLoaded", loadAccSummary);
+
 </script>
 </body>
 </html>

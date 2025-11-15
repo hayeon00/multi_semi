@@ -148,6 +148,7 @@ public class AccService {
                 .address(accDTO.getAddress())
                 .title(accDTO.getTitle())
                 .tel(accDTO.getTel())
+                .description(accDTO.getDescription())
                 .mapx(accDTO.getMapx())
                 .mapy(accDTO.getMapy())
                 .areacode(accDTO.getAreacode())
@@ -158,77 +159,72 @@ public class AccService {
                 .status("Y")
                 .recCount(0)
                 .build();
-        accRepository.save(newAcc);
-
+        accRepository.save(newAcc); // 🔹 ID 생성 위해 먼저 저장해야 함
         MultipartFile imageFile = accDTO.getImageFile();
-        String savedFileName = null;
         try {
-            // 새 이미지 업로드 처리
             if (imageFile != null && !imageFile.isEmpty()) {
-
-                // 확장자 추출 (.png / .jpg 등)
-                String extension = imageFile.getOriginalFilename()
-                        .substring(imageFile.getOriginalFilename().lastIndexOf("."));
-
-                // 🔹 loginId 기반 유니크 파일명 생성 (공용 폴더에 저장)
-                String uniqueFileName = newAcc.getId() + "_" + UUID.randomUUID().toString().replace("-", "") + extension;
-
-                savedFileName = FileUploadUtils.saveFile(IMAGE_DIR, uniqueFileName, imageFile);
-
-                // 🔹 새 파일명 DB 반영
-                newAcc.updateImage(savedFileName);
+                // ⭐ 확장자 제외한 기본 파일명 생성
+                String baseName = newAcc.getId() + "_" + UUID.randomUUID().toString().replace("-", "");
+                // ⭐ 실제 저장 (saveFile이 확장자 자동 추가)
+                String savedFileName = FileUploadUtils.saveFile(IMAGE_DIR, baseName, imageFile);
+                // ⭐ DB엔 URL 형태로 저장
+                String imageUrl = IMAGE_URL + savedFileName;
+                newAcc.updateImage(imageUrl);
             } else {
-                // 기본 이미지 파일명 지정 (예: default_acc.jpg)
+                // 기본 이미지 저장
                 newAcc.updateImage(DEFAULT_IMAGE);
             }
         } catch (IOException e) {
-            if (savedFileName != null) {
-                FileUploadUtils.deleteFile(IMAGE_DIR, savedFileName);
-            }
             throw new RuntimeException("숙소 이미지 저장 실패", e);
         }
         return AccEntityToDTO(newAcc);
     }
 
+
     @Transactional
-    public AccDTO updateAcc(AccDTO accDTO) { //관리자 전용
-        Acc acc = accRepository.findById(accDTO.getId()).orElseThrow(() -> new AccommodationNotFound(accDTO.getId()));
+    public AccDTO updateAcc(AccDTO accDTO) {
+
+        Acc acc = accRepository.findById(accDTO.getId())
+                .orElseThrow(() -> new AccommodationNotFound(accDTO.getId()));
 
         MultipartFile imageFile = accDTO.getImageFile();
-        String savedFileName = null;
-        try {
-            String oldImage = acc.getFirstImage();
 
-            // 새 이미지 업로드 처리
+        try {
+
+            // ⭐ 새 이미지가 있을 경우에만 처리
             if (imageFile != null && !imageFile.isEmpty()) {
 
-                // 확장자 추출 (.png / .jpg 등)
-                String extension = imageFile.getOriginalFilename()
-                        .substring(imageFile.getOriginalFilename().lastIndexOf("."));
+                // 기존 이미지 URL
+                String oldImageUrl = acc.getFirstImage();
 
-                // 🔹 loginId 기반 유니크 파일명 생성 (공용 폴더에 저장)
-                String uniqueFileName = acc.getId() + "_" + UUID.randomUUID().toString().replace("-", "") + extension;
+                // ⭐ 파일명(확장자 제외) 생성
+                String baseName = acc.getId() + "_" + UUID.randomUUID().toString().replace("-", "");
 
-                savedFileName = FileUploadUtils.saveFile(IMAGE_DIR, uniqueFileName, imageFile);
+                // ⭐ saveFile()에서 확장자 자동 부여 + 저장
+                String savedFileName = FileUploadUtils.saveFile(IMAGE_DIR, baseName, imageFile);
+
+                // ⭐ 저장된 이미지 URL 생성
                 String imageUrl = IMAGE_URL + savedFileName;
-                if (oldImage != null && !oldImage.isEmpty() && !oldImage.equals(DEFAULT_IMAGE)) {
-                    FileUploadUtils.deleteFile(IMAGE_DIR, oldImage);
-                    log.info("[Acc] 기존 이미지 삭제: {}", oldImage);
+
+                // ⭐ 기존 이미지 삭제 (기본 이미지가 아닐 경우)
+                if (oldImageUrl != null && !oldImageUrl.isEmpty() && !oldImageUrl.equals(DEFAULT_IMAGE)) {
+                    String oldFileName = oldImageUrl.replace(IMAGE_URL, ""); // URL → 파일명 변환
+                    FileUploadUtils.deleteFile(IMAGE_DIR, oldFileName);
                 }
-                // 🔹 새 파일명 DB 반영
+
+                // 엔티티 반영
                 acc.updateImage(imageUrl);
             }
+
         } catch (IOException e) {
-            if (savedFileName != null) FileUploadUtils.deleteFile(IMAGE_DIR, savedFileName);
             throw new RuntimeException("숙소 이미지 저장 실패", e);
-        } catch (Exception e) {
-            throw new RuntimeException("숙소 업데이트 중 예기치 못한 오류 발생", e);
         }
 
-
+        // ⭐ 나머지 필드 업데이트
         acc.updateInfo(accDTO);
         return AccEntityToDTO(acc);
     }
+
 
     @Transactional
     public AccDTO deleteAcc(@Valid Long accId) { //관리자 전용
@@ -264,6 +260,9 @@ public class AccService {
                         .address(list.getAddress())
                         .recCount(list.getRecCount())
                         .firstImage(list.getFirstImage())
+                        .status(list.getStatus())
+                        .mapx(list.getMapx())
+                        .mapy(list.getMapy())
                         .build()
                 ).toList();
     }

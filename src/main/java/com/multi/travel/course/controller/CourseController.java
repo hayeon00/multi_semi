@@ -168,4 +168,17 @@ public class CourseController {
                 new ResponseDto(HttpStatus.OK, "코스 수정 완료", updated)
         );
     }
+
+    /** 계획 기반 코스 검색 */
+    @GetMapping("/filter")
+    public ResponseEntity<ResponseDto> getCoursesForPlan(
+            @RequestParam Long planId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "6") int size
+    ) {
+        Page<CourseResDto> result = courseService.getCoursesForPlan(planId, page, size);
+        return ResponseEntity.ok(new ResponseDto(HttpStatus.OK, "계획 기반 코스 목록 조회 성공", result));
+    }
+
+
 }

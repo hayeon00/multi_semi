@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      lang="ko"
+      layout:decorate="~{/common/layout}">
+
+<head layout:fragment="head">
+    <meta charset="UTF-8">
+    <title>숙소 관리 | Travel Planning</title>
+
+    <!-- admin 공통 -->
+    <link rel="stylesheet" th:href="@{/css/admin_acc.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <link rel="stylesheet" th:href="@{/css/admin_tourspot.css}">
+
+</head>
+
+<body>
+
+<div layout:fragment="content">
+
+    <main>
+        <div class="admin-container">
+
+            <!-- ⭐ 사이드바 -->
+            <aside class="admin-sidebar">
+                <div class="sidebar-header">
+                    <h2 class="admin-title">숙소 관리</h2>
+                    <p class="admin-sub">등록된 숙소를 관리하고 새로운 숙소를 추가합니다</p>
+                </div>
+
+                <div class="stats-card">
+                    <div class="stat-item">
+                        <span class="stat-label">전체 숙소</span>
+                        <span class="stat-value" id="totalAccs">-</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">활성 숙소</span>
+                        <span class="stat-value active" id="activeAccs">-</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">비활성 숙소</span>
+                        <span class="stat-value inactive" id="inactiveAccs">-</span>
+                    </div>
+                </div>
+
+                <button class="btn-add-acc" onclick="location.href='/admin/view/acc/add'">
+                    <span class="add-icon">➕</span>
+                    <span>숙소 추가하기</span>
+                </button>
+            </aside>
+
+            <!-- ⭐ 메인 콘텐츠 -->
+            <section class="admin-content">
+
+                <!-- 검색창 -->
+                <div class="search-container">
+                    <div class="search-box">
+                        <input type="text"
+                               id="searchInput"
+                               placeholder="🔍 숙소 제목으로 검색..."
+                               onkeydown="if(event.key==='Enter') loadAccs(0);">
+
+                        <button class="btn btn-search" onclick="loadAccs(0)">검색</button>
+                        <button class="btn btn-reset" onclick="resetSearch()">전체 보기</button>
+                    </div>
+                </div>
+
+                <!-- 숙소 테이블 -->
+                <div class="table-container">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th width="60">번호</th>
+                            <th width="100">대표 이미지</th>
+                            <th width="200">제목</th>
+                            <th width="250">주소</th>
+                            <th width="80">추천 수</th>
+                            <th width="80">상태</th>
+                            <th width="120">관리</th>
+                        </tr>
+                        </thead>
+                        <tbody id="accTableBody"></tbody>
+                    </table>
+                </div>
+
+                <!-- 페이지네이션 -->
+                <div id="pagination" class="pagination"></div>
+
+            </section>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Travel Planning. All rights reserved.</p>
+    </footer>
+
+    <!-- JS -->
+    <script>
+        let currentPage = 0;
+        const API_URL = "/accommodations/list";
+
+        window.onload = () => loadAccs(0);
+
+        function loadAccs(page) {
+            currentPage = page;
+            const keyword = document.getElementById("searchInput").value.trim();
+            const query = `?page=${page}&keyword=${encodeURIComponent(keyword)}`;
+
+            fetch(API_URL + query)
+                .then(res => res.json())
+                .then(result => {
+                    if (!result?.data) return;
+
+                    const {contents, totalPages} = result.data;
+
+                    renderTable(contents);
+                    renderPagination(totalPages);
+                    updateStats(contents);
+                });
+        }
+
+        function renderTable(list) {
+            const tbody = document.getElementById("accTableBody");
+            tbody.innerHTML = "";
+
+            if (!list.length) {
+                tbody.innerHTML = `
+                    <tr class="empty-row">
+                        <td colspan="7">
+                            <div class="empty-state">
+                                <span class="empty-icon">🛏️</span>
+                                <p>등록된 숙소가 없습니다</p>
+                            </div>
+                        </td>
+                    </tr>`;
+                return;
+            }
+
+            list.forEach((acc, idx) => {
+                const img = acc.firstImage || "/images/no-image.png";
+
+                tbody.innerHTML += `
+                    <tr class="clickable-row" onclick="location.href='/admin/view/acc/edit/${acc.id}'">
+                        <td class="text-center">${idx + 1}</td>
+                        <td class="text-center"><img src="${img}" class="tourspot-thumbnail"></td>
+                        <td>${acc.title}</td>
+                        <td>${acc.address}</td>
+                        <td class="text-center">
+                            <span class="rec-count" th:text="${acc.recCount}">0</span>
+                        </td>
+                        <td class="text-center">
+                            <span class="status-badge ${acc.status === 'Y' ? 'status-active' : 'status-inactive'}">
+                                ${acc.status === 'Y' ? '✓ 활성' : '✗ 비활성'}
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            ${acc.status === 'Y'
+                    ? `<button class="btn-action btn-deactivate" onclick="event.stopPropagation(); toggleAccStatus(${acc.id}, 'N')">비활성화</button>`
+                    : `<button class="btn-action btn-activate" onclick="event.stopPropagation(); toggleAccStatus(${acc.id}, 'Y')">복구</button>`
+                }
+                        </td>
+                    </tr>`;
+            });
+        }
+
+        function renderPagination(totalPages) {
+            const container = document.getElementById("pagination");
+            container.innerHTML = "";
+            if (totalPages <= 1) return;
+
+            let start = Math.max(0, currentPage - 2);
+            let end = Math.min(totalPages, start + 10);
+
+            // 이전 버튼
+            if (currentPage > 0) {
+                container.innerHTML += `
+            <a class="page-btn prev-btn" onclick="loadAccs(${currentPage - 1})">‹ 이전</a>`;
+            }
+
+            // 표시할 페이지 번호(최대 5개)
+            for (let i = start; i < end; i++) {
+                container.innerHTML += `
+            <a class="page-number ${i === currentPage ? 'active' : ''}"
+               onclick="loadAccs(${i})">${i + 1}</a>`;
+            }
+
+            // 다음 버튼
+            if (currentPage + 1 < totalPages) {
+                container.innerHTML += `
+            <a class="page-btn next-btn" onclick="loadAccs(${currentPage + 1})">다음 ›</a>`;
+            }
+        }
+
+
+        function updateStats(list) {
+            const total = list.length;
+            const active = list.filter(a => a.status === 'Y').length;
+
+            document.getElementById("totalAccs").textContent = total;
+            document.getElementById("activeAccs").textContent = active;
+            document.getElementById("inactiveAccs").textContent = total - active;
+        }
+
+        function resetSearch() {
+            document.getElementById("searchInput").value = "";
+            loadAccs(0);
+        }
+
+        function toggleAccStatus(id, status) {
+            const msg = status === 'N'
+                ? "해당 숙소를 비활성화하시겠습니까?"
+                : "해당 숙소를 복구하시겠습니까?";
+
+            if (!confirm(msg)) return;
+
+            fetchWithRefresh(`/admin/accommodations/update?id=${id}&status=${status}`, {method: "PUT"})
+                .then(res => {
+                    if (res.ok) {
+                        alert("변경 완료!");
+                        loadAccs(currentPage);
+                    }
+                });
+        }
+    </script>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,125 @@
+/* header 전체 스타일 */
+.header {
+    width: 100%;
+    background: #ffffff;
+    padding: 12px 20px;
+    border-bottom: 1px solid #ececec;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* 내부 컨테이너 */
+.header-container {
+    min-width: 1400px; /* ⭐ 최소 너비 강제 */
+
+    margin: 0 auto;
+
+    display: grid;
+
+    /* 좌측, 중앙, 우측 너비 조절 → 좌우를 더 벌림 */
+    grid-template-columns: 2fr auto 2fr;
+
+    align-items: center;
+
+    padding: 0 80px; /* 헤더 내부 여백도 확장 */
+}
+
+.left-area {
+    justify-self: start; /* 왼쪽 끝으로 */
+}
+
+.center-area {
+    justify-self: center; /* 가운데 */
+}
+
+.right-area {
+    justify-self: end; /* 오른쪽 끝으로 */
+}
+
+/* 화면 전체 좌우 여백 */
+.page-container {
+    padding-left: 120px;
+    padding-right: 120px;
+    min-width: 1020px;
+}
+
+
+/* 로고 영역 */
+.logo-area {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.logo {
+    height: 40px;
+}
+
+.title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #333;
+}
+
+/* 메뉴 영역 */
+.user-menu {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+}
+
+/* 로그인 정보 표시 */
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.95rem;
+    color: #555;
+}
+
+.user-icon {
+    font-size: 1.3rem;
+    color: #777;
+}
+
+.username {
+    font-weight: 600;
+    color: #333;
+}
+
+/* 네비게이션 */
+.nav-menu {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.nav-menu a {
+    font-size: 0.95rem;
+    text-decoration: none;
+    color: #444;
+    padding: 6px 10px;
+    transition: 0.2s;
+    border-radius: 6px;
+}
+
+.nav-menu a:hover {
+    background-color: #f3f6ff;
+    color: #255ff4;
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+    .header-container {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .nav-menu {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+    }
+}

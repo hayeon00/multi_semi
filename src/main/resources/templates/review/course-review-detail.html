@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>리뷰 상세</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pretendard&display=swap">
+    <style>
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background: #F5F6F8;
+            margin: 0;
+            padding: 0;
+        }
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fff;
+            padding: 15px 40px;
+            border-bottom: 1px solid #E0E0E0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .page-header h1 {
+            font-size: 20px;
+            margin: 0;
+            color: #2C3E50;
+            font-weight: 700;
+        }
+        .page-header nav a {
+            margin-left: 15px;
+            color: #555;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .content-wrapper {
+            max-width: 800px;
+            margin: 40px auto;
+            background: #fff;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        h2 {
+            margin-bottom: 10px;
+            font-size: 26px;
+            color: #2C3E50;
+            font-weight: 700;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 15px;
+        }
+        .review-meta {
+            color: #555;
+            font-size: 15px;
+            margin-bottom: 25px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px 15px;
+        }
+        .review-meta strong {
+            color: #333;
+        }
+        .rating-display {
+            font-weight: 600;
+            color: #F39C12;
+        }
+        .review-content {
+            margin-top: 20px;
+            font-size: 16px;
+            line-height: 1.7;
+            color: #333;
+            min-height: 100px;
+        }
+        .review-images {
+            margin-top: 30px;
+            border-top: 1px solid #eee;
+            padding-top: 30px;
+        }
+        .image-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 15px;
+        }
+        .review-images img {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+            border-radius: 12px;
+            border: 1px solid #E0E0E0;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 40px;
+            border-top: 1px solid #eee;
+            padding-top: 30px;
+        }
+        .button-group button {
+            flex: 1; /* ✅ 버튼 너비 균등화 */
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-back {
+            background: #95A5A6;
+        }
+        .btn-back:hover {
+            background: #7F8C8D;
+        }
+        .btn-edit {
+            background: #2ECC71;
+        }
+        .btn-edit:hover {
+            background: #27AE60;
+        }
+        .btn-delete {
+            background: #E74C3C;
+        }
+        .btn-delete:hover {
+            background: #C0392B;
+        }
+    </style>
+</head>
+<body>
+<div class="page-header">
+    <h1>TRAVEL PLANNING</h1>
+    <nav>
+        <span>사용자님 환영합니다.</span>
+        <a href="/">Home</a>
+        <a href="/mypage">마이페이지</a>
+        <a href="/logout">로그아웃</a>
+    </nav>
+</div>
+<div class="content-wrapper">
+    <h2 id="review-title">리뷰 제목을 불러오는 중...</h2>
+    <p class="review-meta">
+        <span><strong>작성자:</strong> <span id="review-writer">...</span></span>
+        <span><strong>작성일:</strong> <span id="review-date">...</span></span>
+        <span><strong class="rating-display">★ <span id="review-rating">0</span></strong></span>
+    </p>
+    <div id="review-content" class="review-content"></div>
+    <div id="image-section" class="review-images"></div>
+    <div id="action-buttons" class="button-group">
+        <button type="button" class="btn-back" onclick="history.back()">뒤로가기</button>
+        <button onclick="goEdit()" class="btn-edit">수정</button>
+        <button onclick="confirmDelete()" class="btn-delete">삭제</button>
+    </div>
+</div>
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const reviewId = urlParams.get("reviewId");
+    if (!reviewId) {
+        alert("리뷰 ID가 없습니다.");
+    } else {
+        fetch(`/reviews/detail/${reviewId}`, {
+            method: 'GET',
+            credentials: 'include'
+        })
+            .then(response => {
+                if (!response.ok) throw new Error("리뷰를 불러오지 못했습니다.");
+                return response.json();
+            })
+            .then(data => {
+                document.getElementById("review-title").textContent = data.title;
+                document.getElementById("review-writer").textContent = data.writer;
+                document.getElementById("review-date").textContent = new Date(data.createdAt).toLocaleDateString();
+                document.getElementById("review-rating").textContent = data.rating;
+                document.getElementById("review-content").textContent = data.content;
+                const imageSection = document.getElementById("image-section");
+
+                if (data.imageUrls && data.imageUrls.length > 0) {
+                    const gallery = document.createElement("div");
+                    gallery.className = "image-gallery";
+                    data.imageUrls.forEach(url => {
+                        const img = document.createElement("img");
+                        img.src = url;
+                        img.alt = "리뷰 이미지";
+                        gallery.appendChild(img);
+                    });
+                    imageSection.appendChild(gallery);
+                } else {
+                    imageSection.innerHTML = "<p>등록된 이미지가 없습니다.</p>";
+                }
+            })
+            .catch(error => {
+                console.error("에러:", error);
+                alert("리뷰 정보를 불러오는 중 오류가 발생했습니다.");
+            });
+    }
+
+    function goEdit() {
+        window.location.href = `/reviews/view/edit?reviewId=${reviewId}`;
+    }
+
+    function confirmDelete() {
+        if (confirm("정말 이 리뷰를 삭제하시겠습니까?")) {
+            fetch(`/reviews/${reviewId}`, {
+                method: 'DELETE',
+                credentials: 'include'
+            })
+                .then(res => {
+                    if (!res.ok) throw new Error("삭제 실패");
+                    alert("리뷰가 삭제되었습니다.");
+                    window.location.href = '/reviews/view/search/my';
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert("삭제 중 오류가 발생했습니다.");
+                });
+        }
+    }
+</script>
+</body>
+</html>

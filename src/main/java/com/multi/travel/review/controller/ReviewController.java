@@ -1,8 +1,10 @@
 package com.multi.travel.review.controller;
 
 import com.multi.travel.auth.dto.CustomUser;
+import com.multi.travel.review.dto.ComplexReviewReqDto;
 import com.multi.travel.review.dto.ReviewDetailDto;
 import com.multi.travel.review.dto.ReviewReqDto;
+import com.multi.travel.review.dto.ReviewTargetDto;
 import com.multi.travel.review.service.ReviewService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,13 +14,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
-@Controller
+@RestController
 @RequiredArgsConstructor
 @Slf4j
 @RequestMapping("/reviews")
@@ -26,7 +27,7 @@ public class ReviewController {
 
     private final ReviewService reviewService;
 
-    //리뷰등록
+    // 리뷰 등록
     @PostMapping
     public ResponseEntity<ReviewDetailDto> createReview(
             @ModelAttribute ReviewReqDto dto,
@@ -35,12 +36,10 @@ public class ReviewController {
     ) {
         log.debug("🔐 인증된 사용자 userId: {}", user.getUserId());
         ReviewDetailDto result = reviewService.createReview(dto, images, user.getUserId());
-
         return ResponseEntity.ok(result);
     }
 
-
-    //리뷰 수정
+    // 리뷰 수정
     @PutMapping("/{reviewId}")
     public ResponseEntity<ReviewDetailDto> updateReview(
             @PathVariable Long reviewId,
@@ -52,8 +51,7 @@ public class ReviewController {
         return ResponseEntity.ok(updated);
     }
 
-
-    //리뷰 삭제
+    // 리뷰 삭제
     @DeleteMapping("/{reviewId}")
     public ResponseEntity<String> deleteReview(
             @PathVariable Long reviewId,
@@ -63,6 +61,17 @@ public class ReviewController {
         return ResponseEntity.ok("리뷰가 성공적으로 삭제되었습니다.");
     }
 
+    // 리뷰 상세조회
+    @GetMapping("/detail/{reviewId}")
+    public ResponseEntity<ReviewDetailDto> getReviewDetail(
+            @PathVariable Long reviewId,
+            @AuthenticationPrincipal CustomUser user
+    ) {
+        ReviewDetailDto dto = reviewService.getReviewDetail(reviewId, user.getUserId());
+        return ResponseEntity.ok(dto);
+    }
+
+
 
     // 내가 쓴 리뷰 조회 (페이징)
     @GetMapping("/my")
@@ -70,10 +79,8 @@ public class ReviewController {
             @AuthenticationPrincipal CustomUser user,
             Pageable pageable
     ) {
-
         Pageable fixedPageable = PageRequest.of(pageable.getPageNumber(), 10, Sort.by(Sort.Direction.DESC, "createdAt"));
-
-        Page<ReviewDetailDto> myReviews = reviewService.getReviewsByUser(user.getUserId(), pageable);
+        Page<ReviewDetailDto> myReviews = reviewService.getReviewsByUser(user.getUserId(), fixedPageable);
         return ResponseEntity.ok(myReviews);
     }
 
@@ -89,6 +96,20 @@ public class ReviewController {
 
         Page<ReviewDetailDto> reviews = reviewService.getReviewsByTarget(targetType, targetId, pageable);
         return ResponseEntity.ok(reviews);
+    }
+
+    // ReviewController.java
+    @GetMapping("/course")
+    public ResponseEntity<ReviewTargetDto> getCourseReviewTarget(@RequestParam("planId") Long planId) {
+        ReviewTargetDto courseTarget = reviewService.getCourseReviewTarget(planId);
+        return ResponseEntity.ok(courseTarget);
+    }
+
+
+    @PostMapping("/complex")
+    public ResponseEntity<String> createComplexReview( @RequestPart("dto") ComplexReviewReqDto dto, @RequestPart(value = "images", required = false) List<MultipartFile> images, // 코스 전체 이미지
+                                                    @AuthenticationPrincipal CustomUser user ) {
+        reviewService.createComplexReview(dto, images, user.getUserId()); return ResponseEntity.ok("리뷰가 성공적으로 등록되었습니다.");
     }
 
 

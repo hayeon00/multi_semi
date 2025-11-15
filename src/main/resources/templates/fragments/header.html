@@ -1,0 +1,77 @@
+<header th:fragment="commonHeader"
+        class="header"
+        xmlns:th="http://www.thymeleaf.org"
+        xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+    <div class="header-container">
+
+        <!-- ========= 좌측 : 로그인 유저 정보 ========= -->
+        <div class="left-area">
+
+            <!-- 로그인 O -->
+            <div class="user-info" sec:authorize="isAuthenticated()">
+                <i class="fas fa-user-circle user-icon"></i>
+                <span class="username" sec:authentication="principal.userId"></span>
+                <span class="welcome">님 환영합니다.</span>
+            </div>
+
+            <!-- 로그인 X -->
+            <div class="user-info" sec:authorize="isAnonymous()">
+                <i class="fas fa-user user-icon"></i>
+                <span class="welcome">로그인해주세요.</span>
+            </div>
+
+        </div>
+
+
+        <!-- ========= 중앙 : 로고 ========= -->
+        <div class="center-area">
+            <a th:href="@{/}">
+                <img th:src="@{/images/logo.png}" alt="Logo" class="logo">
+            </a>
+            <span class="title">TRAVEL PLANNING</span>
+        </div>
+
+
+        <!-- ========= 우측 : 메뉴 ========= -->
+        <div class="right-area">
+
+            <!-- PUBLIC & USER 메뉴 -->
+            <nav class="common-nav">
+
+                <a th:href="@{/}" class="nav-link">
+                    <span class="icon">🏠</span> Home
+                </a>
+                <form th:action="@{/auth/logout}" method="post" sec:authorize="isAuthenticated()">
+                    <button type="submit" class="logout-btn">
+                        <span class="icon">🚪</span> 로그아웃
+                    </button>
+                </form>
+            </nav>
+
+            <nav class="login-nav">
+                <a th:href="@{/login}" class="nav-link" sec:authorize="isAnonymous()">
+                    <span class="icon">🔐</span> 로그인
+                </a>
+
+                <a th:href="@{/member/view/join}" class="nav-link" sec:authorize="isAnonymous()">
+                    <span class="icon">✍️</span> 회원가입
+                </a>
+                <a th:href="@{/member/view/mypage}" class="nav-link" sec:authorize="hasRole('USER')">
+                    <span class="icon">🙍‍♂️</span> 마이페이지
+                </a>
+
+            </nav>
+
+            <!-- ADMIN 메뉴 -->
+            <nav class="admin-nav" sec:authorize="hasRole('ADMIN')">
+                <a th:href="@{/admin/view/adminpage}" class="nav-link">
+                    <span class="icon">🛠️</span> 관리자 페이지
+                </a>
+                <a th:href="@{/admin/view/dashboard}" class="nav-link">
+                    <span class="icon">📊</span> 대시보드
+                </a>
+            </nav>
+        </div>
+    </div>
+</header>

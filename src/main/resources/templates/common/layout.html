@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>TRAVEL PLANNING</title>
+
+    <!-- 공통 CSS -->
+    <link rel="stylesheet" th:href="@{/css/layout.css}">
+    <link rel="stylesheet" th:href="@{/css/header.css}">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <!-- ⭐ 자식이 head 내용을 추가할 수 있도록 fragment 선언 -->
+    <th:block layout:fragment="head"></th:block>
+</head>
+
+<body>
+
+<!-- 공통 헤더 -->
+<div th:replace="~{/fragments/header :: commonHeader}"></div>
+
+<!-- ⭐ 여기로 자식 페이지 content가 삽입된다 -->
+<main class="page-container" layout:fragment="content"></main>
+
+<!-- 공통 JS -->
+<script src="/js/common.js"></script>
+
+<!-- ⭐ 자식 페이지가 필요하면 JS 추가 가능 -->
+<th:block layout:fragment="script"></th:block>
+
+</body>
+</html>

@@ -70,5 +70,7 @@ public interface TspRepository extends JpaRepository<TourSpot,Long> {
                                                                    Pageable pageable);
 
 
+    /** 출발 좌표로 관광지 찾기 */
+    Optional<TourSpot> findByMapxAndMapy(BigDecimal mapx, BigDecimal mapy);
 
 }
