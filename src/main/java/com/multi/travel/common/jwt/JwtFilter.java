@@ -34,8 +34,18 @@ public class JwtFilter extends OncePerRequestFilter {
     };
 
     private static final String[] WILDCARD_PATHS = {
+          //  "/spots/view/**",
+          //  "/courses/view/**",
+         //   "/accommodations/view/**",
+          //  "/reviews/target",
+        //    "/members/view/**",
+         //   "/admin/view/**",
+            "/auth/**",
             "/public/**",
-            "/swagger-ui/**"
+            "/swagger-ui/**",
+         //   "/member/view/**"
+
+
     };
 
 
@@ -154,4 +164,5 @@ public class JwtFilter extends OncePerRequestFilter {
                 uri.equals("/") ||
                 uri.startsWith("/favicon");
     }
+
 }

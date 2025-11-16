@@ -1,5 +1,6 @@
 package com.multi.travel.member.service;
 
+import com.multi.travel.common.util.FileUploadUtils;
 import com.multi.travel.member.dto.MemberReqDto;
 import com.multi.travel.member.dto.MemberResDto;
 import com.multi.travel.member.entity.Member;
@@ -14,9 +15,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,10 +26,10 @@ import java.util.stream.Collectors;
 @Slf4j
 public class MemberService {
 
-    @Value("${image.member.dir}")
+    @Value("${image.member.image-dir}")
     private String MEMBER_IMAGE_DIR;
 
-    @Value("${image.member.url}")
+    @Value("${image.member.image-url}")
     private String MEMBER_IMAGE_URL;
 
     private final MemberRepository memberRepository;
@@ -86,12 +87,13 @@ public class MemberService {
 
     /** ✅ 회원정보 수정 (이미지 포함) */
     @Transactional
-    public void updateMember(String loginId, MemberReqDto dto) {
+    public void updateMember(String loginId, MemberReqDto dto, MultipartFile file) {
         log.info("========================================");
         log.info("[MemberService] 회원정보 수정 시작");
         log.info("loginId: {}", loginId);
         log.info("전달받은 DTO: username={}, email={}, tel={}",
                 dto.getUsername(), dto.getEmail(), dto.getTel());
+        log.info("file: {}", file != null ? file.getOriginalFilename() : "없음");
         log.info("========================================");
 
         // 1. 회원 조회
@@ -108,7 +110,10 @@ public class MemberService {
         String savedFileName = null;
 
         try {
-            // 2. 기본 정보 업데이트
+            // 기존 이미지 (URL 또는 파일명)
+            String oldImage = member.getImage();
+
+            // 2. ✅ 기본 정보 업데이트
             if (dto.getUsername() != null && !dto.getUsername().isEmpty()) {
                 log.info("username 변경: {} -> {}", member.getUsername(), dto.getUsername());
                 member.setUsername(dto.getUsername());
@@ -124,74 +129,58 @@ public class MemberService {
                 member.setTel(dto.getTel());
             }
 
-            // 3. 이미지 파일 처리
-            MultipartFile imageFile = dto.getImageFile();
-
-            if (imageFile != null && !imageFile.isEmpty()) {
-                log.info("새 이미지 업로드 시작: {}", imageFile.getOriginalFilename());
-
-                // 기존 이미지 파일명
-                String oldImage = member.getImage();
+            // 3. ✅ 새 이미지 업로드가 있을 경우 (관광지 방식과 동일)
+            if (file != null && !file.isEmpty()) {
+                log.info("새 이미지 업로드 시작: {}", file.getOriginalFilename());
 
                 // 확장자 추출
-                String extension = imageFile.getOriginalFilename()
-                        .substring(imageFile.getOriginalFilename().lastIndexOf("."));
+                String extension = file.getOriginalFilename()
+                        .substring(file.getOriginalFilename().lastIndexOf("."));
 
-                // 회원명 기반 유니크 파일명 생성
-                String uniqueFileName = dto.getUsername().replaceAll("\\s+", "_")
-                        + "_" + System.currentTimeMillis()
+                // 회원 loginId 기반 유니크 파일명 생성
+                String uniqueFileName = member.getLoginId() + "_"
+                        + UUID.randomUUID().toString().replace("-", "")
                         + extension;
 
-                // 디렉토리가 없으면 생성
-                File dir = new File(MEMBER_IMAGE_DIR);  // ✅ 수정!
-                if (!dir.exists()) {
-                    boolean created = dir.mkdirs();
-                    log.info("디렉토리 생성: {}, 성공: {}", MEMBER_IMAGE_DIR, created);
-                }
+                // ✅ FileUploadUtils 사용 (관광지와 동일)
+                savedFileName = FileUploadUtils.saveFile(MEMBER_IMAGE_DIR, uniqueFileName, file);
+                log.info("✅ 새 이미지 저장 완료: {}", savedFileName);
 
-                // 새 파일 저장
-                String filePath = MEMBER_IMAGE_DIR + uniqueFileName;  // ✅ 수정!
-                imageFile.transferTo(new File(filePath));
-                savedFileName = uniqueFileName;
-
-                log.info("새 이미지 저장 완료: {}", savedFileName);
-
-                // 기존 이미지 삭제 (기본 이미지가 아닌 경우에만)
+                // ✅ 기존 이미지 삭제 (URL → 파일명 변환)
                 if (oldImage != null && !oldImage.isEmpty()
-                        && !oldImage.equals("default.img")) {
+                        && !oldImage.equals("default.img")
+                        && !oldImage.equals(MEMBER_IMAGE_URL + "default.img")) {
 
-                    File oldFile = new File(MEMBER_IMAGE_DIR + oldImage);  // ✅ 수정!
-                    if (oldFile.exists()) {
-                        boolean deleted = oldFile.delete();
-                        log.info("기존 이미지 삭제: {}, 성공: {}", oldImage, deleted);
-                    }
+                    // URL에서 파일명만 추출
+                    String oldFileName = oldImage.replace(MEMBER_IMAGE_URL, "");
+                    FileUploadUtils.deleteFile(MEMBER_IMAGE_DIR, oldFileName);
+                    log.info("✅ 기존 이미지 삭제: {}", oldFileName);
                 }
 
-                // DB에 파일명만 저장
-                member.setImage(savedFileName);
-                log.info("DB 이미지 필드 업데이트: {}", savedFileName);
+                // ✅ DB에는 접근 가능한 URL 형태로 저장 (관광지와 동일)
+                member.setImage(MEMBER_IMAGE_URL + savedFileName);
+                log.info("✅ DB 이미지 필드 업데이트: {}", member.getImage());
 
             } else {
-                log.info("이미지 변경 없음 - 기존 이미지 유지: {}", member.getImage());
+                // ✅ 이미지 변경 없음 — 기존 이미지 그대로 유지
+                log.info("이미지 변경 없음 - 기존 이미지 유지: {}", oldImage);
+                member.setImage(oldImage);
             }
 
-            // 4. 명시적 저장
-            Member savedMember = memberRepository.saveAndFlush(member);
+            // 4. 변경 감지로 UPDATE 반영
+            memberRepository.save(member);
 
             log.info("========================================");
             log.info("[MemberService] 회원정보 수정 완료");
             log.info("저장된 정보: username={}, email={}, tel={}, image={}",
-                    savedMember.getUsername(), savedMember.getEmail(),
-                    savedMember.getTel(), savedMember.getImage());
+                    member.getUsername(), member.getEmail(),
+                    member.getTel(), member.getImage());
             log.info("========================================");
 
         } catch (IOException e) {
             // 실패 시 임시로 저장된 이미지 삭제
             if (savedFileName != null) {
-                File tempFile = new File(MEMBER_IMAGE_DIR + savedFileName);  // ✅ 수정!
-                if (tempFile.exists()) {
-                    tempFile.delete();
-                }
+                FileUploadUtils.deleteFile(MEMBER_IMAGE_DIR, savedFileName);
             }
             log.error("[MemberService] 이미지 저장 중 오류 발생", e);
             throw new RuntimeException("회원 이미지 저장 실패", e);

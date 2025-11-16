@@ -53,40 +53,109 @@ public class SecurityConfigjwt {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 
                 )
+                .logout(AbstractHttpConfigurer::disable)
                 .securityContext((context) -> context.requireExplicitSave(false))
 
                 .authorizeHttpRequests(auth -> auth
-                        // ✅ 정적 리소스는 로그인 없이 접근 허용
+                        // ========================================
+                        // 1. 정적 리소스
+                        // ========================================
                         .requestMatchers(
                                 "/css/**",
                                 "/js/**",
                                 "/images/**",
                                 "/fonts/**",
                                 "/static/**",
-                                "/admin/view/**",
-                                "/member/view/**"
-
+                                "/favicon.ico",
+                                "/error"
                         ).permitAll()
-                        .requestMatchers("/login", "/signup", "/css/**", "/images/**").permitAll()
-                        .requestMatchers("/auth/**", "/api/auth/**","/spots/view/tourspotlist").permitAll()
-                        .requestMatchers("/**").permitAll() // /api/plans, /api/courses 요청 시 로그인 없이도 테스트 가능하게 설정
-                        // TODO: 전체 구현 완료 시 삭제 예정
 
+                        // ========================================
+                        // 2. 인증 관련
+                        // ========================================
+                        .requestMatchers("/auth/**", "/signup", "/login").permitAll()
 
-                        .requestMatchers(HttpMethod.GET, "/reviews", "/reviews/**", "/api/plans", "/api/courses","member/view/**" ).permitAll()
-                        // ✅ 로그인/회원가입/토큰 관련 경로 허용
+                        // ========================================
+                        // 3. View 경로 (페이지 렌더링)
+                        // ========================================
+
+                        // 3-1. 공개 View 페이지 (로그인 불필요)
                         .requestMatchers(
-                                "/login",
-                                "/signup",
-                                "/auth/**",
-                                "/api/auth/**"
+                                "/spots/view/**",           // 관광지 목록, 상세
+                                "/accommodations/view/**",  // 숙박 목록, 상세
+                                "/courses/view/**",         // 코스 목록, 상세
+                                "/reviews/view/**"          // 리뷰 목록, 상세
                         ).permitAll()
 
-                        // ✅ 관리자 뷰 페이지(Thymeleaf HTML)는 로그인 없이 접근 허용
-                        //   (AccessToken 만료 시에도 페이지가 열리도록)
-                        .requestMatchers("/admin/view/**").permitAll()
+                        // 3-2. 인증 필요 View 페이지 (로그인 필수)
+                        .requestMatchers(
+                                "/members/view/mypage",     // 마이페이지
+                                "/members/view/update",     // 회원정보 수정 페이지
+                                "/plans/view/**"            // 여행 계획 페이지
+                        ).authenticated()
 
-                        // ✅ 나머지 모든 요청(API)은 JWT 인증 필요
+                        // 3-3. 관리자 View 페이지
+                        .requestMatchers("/admin/view/**").hasRole("ADMIN")
+
+                        // ========================================
+                        // 4. API - GET 요청 (공개 조회)
+                        // ========================================
+                        .requestMatchers(HttpMethod.GET,
+                                "/categories/**",
+                                "/spots/**",              // ✅ /spots/detail 포함
+                                "/api/**",
+                                "/accommodations/**",
+                                "/reviews/**",
+                                "/courses/**"
+                        ).permitAll()
+
+                        // ========================================
+                        // 5. API - POST 요청 (인증 필요)
+                        // ========================================
+                        .requestMatchers(HttpMethod.POST,
+                                "/courses/**",
+                                "/plans/**",
+                                "/reviews/**",
+                                "/accommodations/**",
+                                "/recommend/**"
+                        ).hasAnyRole("USER", "ADMIN")
+
+                        // ========================================
+                        // 6. API - PUT 요청 (인증 필요)
+                        // ========================================
+                        .requestMatchers(HttpMethod.PUT,
+                                "/courses/**",
+                                "/plans/**",
+                                "/reviews/**",
+                                "/members/**",
+                                "/accommodations/**"
+                        ).hasAnyRole("USER", "ADMIN")
+
+                        // ========================================
+                        // 7. API - DELETE 요청 (인증 필요)
+                        // ========================================
+                        .requestMatchers(HttpMethod.DELETE,
+                                "/spots/**",
+                                "/courses/**",
+                                "/plans/**",
+                                "/reviews/**",
+                                "/members/**",
+                                "/accommodations/**"
+                        ).hasAnyRole("USER", "ADMIN")
+
+                        // ========================================
+                        // 8. Members API (모든 메서드 인증 필요)
+                        // ========================================
+                        .requestMatchers("/members/**").hasAnyRole("USER", "ADMIN")
+
+                        // ========================================
+                        // 9. 관리자 전용
+                        // ========================================
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
+
+                        // ========================================
+                        // 10. 나머지
+                        // ========================================
                         .anyRequest().authenticated()
                 )
 
