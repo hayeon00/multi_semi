@@ -1,9 +1,10 @@
 package com.multi.travel.review.repository;
 
-import com.multi.travel.review.entity.Review;
 import com.multi.travel.review.entity.ReviewImage;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
 
 /**
  * Please explain the class!!!
@@ -16,5 +17,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ReviewImageRepository extends JpaRepository<ReviewImage, Long> {
 
-    void deleteByReview(Review review);
+
+    Optional<ReviewImage> findByImageUrl(String imageUrl);
 }

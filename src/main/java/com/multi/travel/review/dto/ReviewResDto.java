@@ -6,9 +6,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * Please explain the class!!!
- *
- * @author : rlagkdus
+ * 리뷰 조회 결과를 클라이언트에 전달할 때 사용되는 응답 DTO
+ * 마이페이지에서 작성한 리뷰 목록 조회 시 응답 형태
+ * @author : hayeon
  * @filename : ReviewResDto
  * @since : 2025. 11. 8. 토요일
  */
