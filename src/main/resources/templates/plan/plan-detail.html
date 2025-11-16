@@ -1,281 +1,278 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{/common/layout}"
+      lang="ko">
+
 <head>
-    <script src="/js/common.js"></script>
-    <meta charset="UTF-8">
-    <title>여행 계획 상세</title>
+    <th:block layout:fragment="head">
 
-    <!-- Kakao Map -->
-    <script th:src="@{|https://dapi.kakao.com/v2/maps/sdk.js?appkey=${kakaoKey}&autoload=false|}"></script>
+        <meta charset="UTF-8">
+        <title>계획 상세 | Travel Planning</title>
 
-    <!-- jQuery (DOM 조작용) -->
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+        <script th:src="@{|https://dapi.kakao.com/v2/maps/sdk.js?appkey=${kakaoKey}&autoload=false|}"></script>
+        <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
-    <style>
-        .back-nav-wrapper {
-            margin-bottom: 15px;
-        }
+        <style>
+            .back-nav-wrapper { margin-bottom: 15px; }
+            .btn-back-nav {
+                background: #e5e5e5; padding: 6px 12px;
+                border-radius: 8px; border: none;
+                cursor: pointer; font-size: 14px;
+                transition: 0.2s;
+            }
+            .btn-back-nav:hover { background: #d0d0d0; }
 
-        .btn-back-nav {
-            background: #e5e5e5;
-            padding: 6px 12px;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
-            font-size: 14px;
-            transition: 0.2s;
-        }
+            body {
+                font-family: Pretendard, sans-serif;
+                background: #f5f6f8;
+                margin: 0; padding: 0;
+            }
 
-        .btn-back-nav:hover {
-            background: #d0d0d0;
-        }
+            .content-wrapper {
+                width: 1100px; margin: 40px auto;
+                background: #fff; border-radius: 20px;
+                padding: 30px;
+                box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            }
 
+            .plan-top { display: flex; justify-content: space-between; align-items: center; }
+            .plan-title { font-size: 26px; font-weight: 700; }
+            .plan-info { font-size: 16px; opacity: 0.8; }
 
-        body {
-            font-family: Pretendard, sans-serif;
-            background: #f5f6f8;
-            margin: 0;
-            padding: 0;
-        }
-        header { background: #d9d9d9; padding: 20px 30px; display: flex; justify-content: space-between; align-items: center; }
-        header .title { font-size: 28px; font-weight: bold; }
-        .content-wrapper { width: 1100px; margin: 40px auto; background: #fff; border-radius: 20px; padding: 30px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        .plan-top { display: flex; justify-content: space-between; align-items: center; }
-        .plan-title { font-size: 26px; font-weight: 700; }
-        .plan-info { font-size: 16px; opacity: 0.8; }
-        .main-area { margin-top: 20px; display: flex; gap: 20px; }
-        #map { width: 600px; height: 450px; border-radius: 15px; overflow: hidden; }
-        .course-panel { background: #fafafa; padding: 20px; width: 360px; border-radius: 15px; box-shadow: 0 0 8px rgba(0,0,0,0.1); }
-        .day-tabs { display: flex; gap: 8px; margin-bottom: 15px; }
-        .day-tabs button { padding: 6px 12px; background: #ddd; border: none; border-radius: 8px; cursor: pointer; }
-        .day-tabs button.active { background: #000; color: #fff; }
-        .course-item { padding: 10px; background: white; border-radius: 10px; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
-        .course-index { background: #eee; width: 26px; height: 26px; border-radius: 50%; text-align: center; line-height: 26px; font-size: 13px; }
-        .button-area { text-align: center; margin-top: 25px; }
-        .button-area button { padding: 12px 28px; border: none; border-radius: 10px; font-size: 16px; margin: 0 8px; cursor: pointer; }
-        .btn-edit { background: #4A90E2; color: #fff; }
-        .btn-delete { background: #FF6B6B; color: #fff; }
-    </style>
+            .main-area { margin-top: 20px; display: flex; gap: 20px; }
+
+            #map {
+                width: 600px; height: 450px;
+                border-radius: 15px; overflow: hidden;
+            }
+
+            .course-panel {
+                background: #fafafa; padding: 20px;
+                width: 360px; border-radius: 15px;
+                box-shadow: 0 0 8px rgba(0,0,0,0.1);
+            }
+
+            .day-tabs { display: flex; gap: 8px; margin-bottom: 15px; }
+            .day-tabs button {
+                padding: 6px 12px; background: #ddd;
+                border: none; border-radius: 8px; cursor: pointer;
+            }
+            .day-tabs button.active { background: #000; color: #fff; }
+
+            .course-item {
+                padding: 10px; background: white;
+                border-radius: 10px; margin-bottom: 10px;
+                display: flex; align-items: center; gap: 10px;
+            }
+
+            .course-index {
+                background: #eee; width: 26px; height: 26px;
+                border-radius: 50%; text-align: center;
+                line-height: 26px; font-size: 13px;
+            }
+
+            .button-area {
+                text-align: center; margin-top: 25px;
+            }
+
+            .button-area button {
+                padding: 12px 28px; border: none;
+                border-radius: 10px; font-size: 16px;
+                margin: 0 8px; cursor: pointer;
+            }
+
+            .btn-edit { background: #4A90E2; color: #fff; }
+            .btn-delete { background: #FF6B6B; color: #fff; }
+
+        </style>
+
+    </th:block>
 </head>
 
 <body>
 
-<header>
-    <div class="title">TRAVEL PLANING</div>
-    <div>
-        <span>{사용자} 님 환영합니다.</span>
-        <a href="/" style="margin-left:20px;">Home</a>
-        <a href="/member/view/mypage" style="margin-left:10px;">마이페이지</a>
-        <a href="/logout" style="margin-left:10px;">로그아웃</a>
-    </div>
-</header>
+<main layout:fragment="content">
 
-<div class="content-wrapper">
-    <div class="back-nav-wrapper">
-        <button class="btn-back-nav" onclick="window.history.back()">← 이전 페이지</button>
-    </div>
+    <div class="content-wrapper">
 
-    <!-- 계획 기본 정보 -->
-    <div class="plan-top">
-        <div>
-            <div class="plan-title" id="planTitle"></div>
+        <div class="back-nav-wrapper">
+            <button class="btn-back-nav" onclick="window.history.back()">← 이전 페이지</button>
+        </div>
+
+        <div class="plan-top">
+            <div>
+                <div class="plan-title" id="planTitle"></div>
+                <div class="plan-info"><span id="people"></span> 명</div>
+            </div>
+
             <div class="plan-info">
-                <span id="people"></span> 명
+                <span id="startDate"></span> ~ <span id="endDate"></span>
             </div>
         </div>
 
-        <div class="plan-info">
-            <span id="startDate"></span> ~ <span id="endDate"></span>
+        <div class="main-area">
+            <div id="map"></div>
+
+            <div class="course-panel">
+                <div class="day-tabs" id="dayTabs"></div>
+                <div id="courseList"></div>
+            </div>
         </div>
-    </div>
 
-    <!-- 지도 + 코스 -->
-    <div class="main-area">
-        <div id="map"></div>
-
-        <div class="course-panel">
-            <div class="day-tabs" id="dayTabs"></div>
-            <div id="courseList"></div>
+        <div class="button-area">
+            <button class="btn-edit" onclick="location.href='/plans/view/edit?planId='+planId">계획 수정하기</button>
+            <button class="btn-edit" style="background:#6C5CE7;" onclick="location.href='/courses/view/edit?planId='+planId">코스 수정하기</button>
+            <button class="btn-delete" onclick="deletePlan()">계획 삭제하기</button>
         </div>
+
     </div>
 
-    <div class="button-area">
-        <button class="btn-edit" onclick="location.href='/plans/view/edit?planId='+planId;">계획 수정하기</button>
-        <button class="btn-edit" style="background:#6C5CE7;"
-                onclick="location.href='/courses/view/edit?planId='+planId">
-            코스 수정하기
-        </button>
+</main>
 
-        <button class="btn-delete" onclick="deletePlan()">계획 삭제하기</button>
-    </div>
+<th:block layout:fragment="script">
+    <script th:inline="javascript">
+        const planId = [[${planId}]];
+        let plan;
+        let activeDay = 1;
+        let map;
+        let markers = [];
+        let polylines = [];
 
-</div>
+        $(document).ready(() => loadPlan());
 
-<script th:inline="javascript">
-    const planId = [[${planId}]];
-    let plan;
-    let activeDay = 1;
-    let map;
-    let markers = [];
-    let polylines = [];
+        async function loadPlan() {
+            try {
+                const response = await fetchWithRefresh(`/plans/${planId}`);
+                const res = await response.json();
 
-    /* 초기 로딩 */
-    $(document).ready(() => {
-        loadPlan();
-    });
+                if (!res || !res.data) {
+                    alert("계획 정보를 불러오지 못했습니다.");
+                    return;
+                }
 
-    /* 계획 상세 조회 */
-    async function loadPlan() {
-        try {
-            const response = await fetchWithRefresh(`/plans/${planId}`);
-            const res = await response.json();
+                plan = res.data;
 
-            if (!res || !res.data) {
-                alert("계획 정보를 불러오지 못했습니다.");
-                return;
+                $("#planTitle").text(plan.title);
+                $("#people").text(plan.numberOfPeople);
+                $("#startDate").text(plan.startDate);
+                $("#endDate").text(plan.endDate);
+
+                kakao.maps.load(() => {
+                    initMap();
+                    renderDayTabs();
+                    renderCourseList();
+                    drawMapPaths();
+                });
+
+            } catch (err) {
+                alert("계획 조회 중 오류가 발생했습니다.");
             }
-
-            plan = res.data;
-
-            $("#planTitle").text(plan.title);
-            $("#people").text(plan.numberOfPeople);
-            $("#startDate").text(plan.startDate);
-            $("#endDate").text(plan.endDate);
-
-            kakao.maps.load(() => {
-                initMap();
-                renderDayTabs();
-                renderCourseList();
-                drawMapPaths();
-            });
-
-        } catch (err) {
-            console.error(err);
-            alert("계획 조회 중 오류가 발생했습니다.");
         }
-    }
 
-    /* 지도 초기화 */
-    function initMap() {
-        const centerY = parseFloat(plan.startMapY) || 37.4979;
-        const centerX = parseFloat(plan.startMapX) || 127.0276;
+        function initMap() {
+            const centerY = parseFloat(plan.startMapY) || 37.4979;
+            const centerX = parseFloat(plan.startMapX) || 127.0276;
 
-        map = new kakao.maps.Map(document.getElementById("map"), {
-            center: new kakao.maps.LatLng(centerY, centerX),
-            level: 6
-        });
-    }
-
-    /* 일자 수 계산 */
-    function getTotalDays(start, end) {
-        return (new Date(end) - new Date(start)) / (1000 * 60 * 60 * 24) + 1;
-    }
-
-    /* DAY 탭 렌더링 */
-    function renderDayTabs() {
-        const totalDays = getTotalDays(plan.startDate, plan.endDate);
-        const tabs = $("#dayTabs").empty();
-
-        for (let i = 1; i <= totalDays; i++) {
-            const btn = $(`<button>${i}일차</button>`);
-            if (i === 1) btn.addClass("active");
-
-            btn.click(() => {
-                activeDay = i;
-                $(".day-tabs button").removeClass("active");
-                btn.addClass("active");
-                renderCourseList();
-                drawMapPaths();
+            map = new kakao.maps.Map(document.getElementById("map"), {
+                center: new kakao.maps.LatLng(centerY, centerX),
+                level: 6
             });
-
-            tabs.append(btn);
         }
-    }
 
-    /* 코스 리스트 렌더링 */
-    function renderCourseList() {
-        const list = $("#courseList").empty();
+        function getTotalDays(start, end) {
+            return (new Date(end) - new Date(start)) / (1000 * 60 * 60 * 24) + 1;
+        }
 
-        const items = plan.coursePlaces.filter(c => c.dayNo === activeDay);
+        function renderDayTabs() {
+            const totalDays = getTotalDays(plan.startDate, plan.endDate);
+            const tabs = $("#dayTabs").empty();
 
-        items.forEach((item, idx) => {
-            list.append(`
+            for (let i = 1; i <= totalDays; i++) {
+                const btn = $(`<button>${i}일차</button>`);
+                if (i === 1) btn.addClass("active");
+
+                btn.click(() => {
+                    activeDay = i;
+                    $(".day-tabs button").removeClass("active");
+                    btn.addClass("active");
+                    renderCourseList();
+                    drawMapPaths();
+                });
+
+                tabs.append(btn);
+            }
+        }
+
+        function renderCourseList() {
+            const list = $("#courseList").empty();
+            const items = plan.coursePlaces.filter(c => c.dayNo === activeDay);
+
+            items.forEach((item, idx) => {
+                list.append(`
                 <div class="course-item">
                     <div class="course-index">${idx + 1}</div>
                     <div>${item.title}</div>
-                </div>
-            `);
-        });
-    }
-
-    /* 지도 표시 */
-    function drawMapPaths() {
-        clearMap();
-
-        const items = plan.coursePlaces.filter(c => c.dayNo === activeDay);
-        const bounds = new kakao.maps.LatLngBounds();
-        const coords = [];
-
-        items.forEach(item => {
-            if (!item.mapx || !item.mapy) return;
-
-            const pos = new kakao.maps.LatLng(parseFloat(item.mapy), parseFloat(item.mapx));
-            coords.push(pos);
-
-            const marker = new kakao.maps.Marker({ map, position: pos });
-            markers.push(marker);
-            bounds.extend(pos);
-        });
-
-        if (coords.length > 1) {
-            const line = new kakao.maps.Polyline({
-                map,
-                path: coords,
-                strokeWeight: 4,
-                strokeColor: "#3182F6"
+                </div>`);
             });
-            polylines.push(line);
         }
 
-        if (!bounds.isEmpty()) {
-            map.setBounds(bounds);
-        }
-    }
+        function drawMapPaths() {
+            clearMap();
 
-    /* 지도 초기화 */
-    function clearMap() {
-        markers.forEach(m => m.setMap(null));
-        polylines.forEach(p => p.setMap(null));
-        markers = [];
-        polylines = [];
-    }
+            const items = plan.coursePlaces.filter(c => c.dayNo === activeDay);
+            const bounds = new kakao.maps.LatLngBounds();
+            const coords = [];
 
-    /* ================================
-       삭제 기능
-    ================================= */
-    async function deletePlan() {
-        if (!confirm("정말 이 여행 계획을 삭제하시겠습니까?")) return;
+            items.forEach(item => {
+                if (!item.mapx || !item.mapy) return;
 
-        try {
-            const response = await fetchWithRefresh(`/plans/${planId}`, {
-                method: "DELETE"
+                const pos = new kakao.maps.LatLng(parseFloat(item.mapy), parseFloat(item.mapx));
+                coords.push(pos);
+
+                markers.push(new kakao.maps.Marker({ map, position: pos }));
+                bounds.extend(pos);
             });
 
-            if (!response.ok) {
-                alert("삭제에 실패했습니다.");
-                return;
+            if (coords.length > 1) {
+                polylines.push(new kakao.maps.Polyline({
+                    map,
+                    path: coords,
+                    strokeWeight: 4,
+                    strokeColor: "#3182F6"
+                }));
             }
 
-            alert("여행 계획이 삭제되었습니다.");
-            location.href = "/member/view/mypage";
-
-        } catch (err) {
-            console.error(err);
-            alert("삭제 중 오류가 발생했습니다.");
+            if (!bounds.isEmpty()) map.setBounds(bounds);
         }
-    }
 
-</script>
+        function clearMap() {
+            markers.forEach(m => m.setMap(null));
+            polylines.forEach(p => p.setMap(null));
+            markers = [];
+            polylines = [];
+        }
+
+        async function deletePlan() {
+            if (!confirm("정말 이 여행 계획을 삭제하시겠습니까?")) return;
+
+            try {
+                const response = await fetchWithRefresh(`/plans/${planId}`, { method: "DELETE" });
+
+                if (!response.ok) {
+                    alert("삭제에 실패했습니다.");
+                    return;
+                }
+
+                alert("여행 계획이 삭제되었습니다.");
+                location.href = "/member/view/mypage";
+
+            } catch (err) {
+                alert("삭제 중 오류가 발생했습니다.");
+            }
+        }
+    </script>
+</th:block>
 
 </body>
 </html>

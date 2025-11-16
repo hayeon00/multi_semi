@@ -1,234 +1,207 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{/common/layout}"
+      lang="ko">
+
 <head>
-  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-  <script src="/js/common.js"></script>
-  <meta charset="UTF-8">
-  <title>여행 계획 수정</title>
+  <th:block layout:fragment="head">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <meta charset="UTF-8">
+    <title>여행 계획 수정</title>
 
-  <style>
-    .back-nav-wrapper {
-      margin-bottom: 15px;
-    }
+    <style>
+      .back-nav-wrapper { margin-bottom: 15px; }
+      .btn-back-nav {
+        background: #e5e5e5;
+        padding: 6px 12px;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
+        transition: 0.2s;
+      }
+      .btn-back-nav:hover { background: #d0d0d0; }
 
-    .btn-back-nav {
-      background: #e5e5e5;
-      padding: 6px 12px;
-      border-radius: 8px;
-      border: none;
-      cursor: pointer;
-      font-size: 14px;
-      transition: 0.2s;
-    }
+      body { font-family: Pretendard, sans-serif; background: #eef1f4; margin: 0; padding: 0; }
 
-    .btn-back-nav:hover {
-      background: #d0d0d0;
-    }
+      .wrapper {
+        width: 650px;
+        margin: 50px auto;
+        background: #fff;
+        padding: 40px 50px;
+        border-radius: 18px;
+        box-shadow: 0 4px 18px rgba(0,0,0,0.12);
+      }
 
-    body {
-      font-family: Pretendard, sans-serif;
-      background: #eef1f4;
-      margin: 0;
-      padding: 0;
-    }
+      h2 {
+        margin: 0 0 25px 0;
+        padding-bottom: 10px;
+        font-size: 24px;
+        border-bottom: 2px solid #ddd;
+      }
 
-    .wrapper {
-      width: 650px;
-      margin: 50px auto;
-      background: #fff;
-      padding: 40px 50px;
-      border-radius: 18px;
-      box-shadow: 0 4px 18px rgba(0,0,0,0.12);
-    }
+      .row { margin-bottom: 22px; }
 
-    h2 {
-      margin: 0 0 25px 0;
-      padding-bottom: 10px;
-      font-size: 24px;
-      border-bottom: 2px solid #ddd;
-    }
+      .row label {
+        font-weight: 600;
+        display: block;
+        margin-bottom: 6px;
+        color: #333;
+      }
 
-    .row {
-      margin-bottom: 22px;
-    }
+      .row input {
+        width: 100%;
+        padding: 12px 14px;
+        border-radius: 10px;
+        border: 1px solid #c8c8c8;
+        font-size: 15px;
+        transition: all .2s;
+      }
 
-    .row label {
-      font-weight: 600;
-      display: block;
-      margin-bottom: 6px;
-      color: #333;
-    }
+      .row input:focus {
+        border-color: #4A90E2;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.25);
+      }
 
-    .row input {
-      width: 100%;
-      padding: 12px 14px;
-      border-radius: 10px;
-      border: 1px solid #c8c8c8;
-      font-size: 15px;
-      transition: all .2s;
-    }
+      #startLocation {
+        background: #f5f5f5;
+        color: #666;
+        cursor: not-allowed;
+      }
 
-    .row input:focus {
-      border-color: #4A90E2;
-      outline: none;
-      box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.25);
-    }
+      .btn-area {
+        margin-top: 35px;
+        text-align: center;
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+      }
 
-    #startLocation {
-      background: #f5f5f5;
-      color: #666;
-      cursor: not-allowed;
-    }
+      .btn-save, .btn-cancel {
+        padding: 12px 32px;
+        border: none;
+        border-radius: 10px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: 0.2s;
+      }
 
-    .btn-area {
-      margin-top: 35px;
-      text-align: center;
-      display: flex;
-      justify-content: center;
-      gap: 15px;
-    }
+      .btn-save { background: #4A90E2; color: white; }
+      .btn-save:hover { background: #357ac8; }
 
-    .btn-save, .btn-cancel {
-      padding: 12px 32px;
-      border: none;
-      border-radius: 10px;
-      font-size: 16px;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-
-    .btn-save {
-      background: #4A90E2;
-      color: white;
-    }
-
-    .btn-save:hover {
-      background: #357ac8;
-    }
-
-    .btn-cancel {
-      background: #bbb;
-      color: white;
-    }
-
-    .btn-cancel:hover {
-      background: #a2a2a2;
-    }
-  </style>
+      .btn-cancel { background: #bbb; color: white; }
+      .btn-cancel:hover { background: #a2a2a2; }
+    </style>
+  </th:block>
 </head>
 
 <body>
 
-<div class="wrapper">
-  <div class="back-nav-wrapper">
-    <button class="btn-back-nav" onclick="window.history.back()">← 이전 페이지</button>
+<main layout:fragment="content">
+  <div class="wrapper">
+    <div class="back-nav-wrapper">
+      <button class="btn-back-nav" onclick="window.history.back()">← 이전 페이지</button>
+    </div>
+
+    <h2>여행 계획 수정</h2>
+
+    <div class="row">
+      <label>여행 제목</label>
+      <input type="text" id="title">
+    </div>
+
+    <div class="row">
+      <label>여행 인원</label>
+      <input type="number" id="people">
+    </div>
+
+    <div class="row">
+      <label>출발일</label>
+      <input type="date" id="startDate">
+    </div>
+
+    <div class="row">
+      <label>도착일</label>
+      <input type="date" id="endDate">
+    </div>
+
+    <div class="row">
+      <label>출발지 (읽기 전용)</label>
+      <input type="text" id="startLocation" readonly>
+    </div>
+
+    <div class="btn-area">
+      <button class="btn-save" onclick="savePlan()">수정 저장</button>
+      <button class="btn-cancel" onclick="location.href='/plans/view/'+planId">취소</button>
+    </div>
   </div>
+</main>
 
-  <h2>여행 계획 수정</h2>
+<th:block layout:fragment="script">
+  <script th:inline="javascript">
+    const planId = [[${planId}]];
+    let originPlan;
 
-  <div class="row">
-    <label>여행 제목</label>
-    <input type="text" id="title">
-  </div>
-
-  <div class="row">
-    <label>여행 인원</label>
-    <input type="number" id="people">
-  </div>
-
-  <div class="row">
-    <label>출발일</label>
-    <input type="date" id="startDate">
-  </div>
-
-  <div class="row">
-    <label>도착일</label>
-    <input type="date" id="endDate">
-  </div>
-
-  <div class="row">
-    <label>출발지 (읽기 전용)</label>
-    <input type="text" id="startLocation" readonly>
-  </div>
-
-  <div class="btn-area">
-    <button class="btn-save" onclick="savePlan()">수정 저장</button>
-    <button class="btn-cancel" onclick="location.href='/plans/view/'+planId">취소</button>
-  </div>
-</div>
-
-<script th:inline="javascript">
-  const planId = [[${planId}]];
-  let originPlan;
-
-  $(document).ready(() => {
-    loadPlan();
-  });
-
-  // ===============================
-  // 날짜 검증 함수
-  // ===============================
-  function validateDates() {
-    const start = $("#startDate").val();
-    const end = $("#endDate").val();
-
-    if (start && end && start > end) {
-      alert("도착일은 출발일보다 빠를 수 없습니다.");
-      $("#endDate").val(originPlan.endDate); // 원래 저장되어 있던 날짜로 초기화
-      return false;
-    }
-    return true;
-  }
-
-  $("#startDate").on("change", validateDates);
-  $("#endDate").on("change", validateDates);
-
-  // ===============================
-  // 계획 데이터 불러오기
-  // ===============================
-  async function loadPlan() {
-    const res = await fetchWithRefresh(`/plans/${planId}`);
-    const json = await res.json();
-    originPlan = json.data;
-
-    $("#title").val(originPlan.title);
-    $("#people").val(originPlan.numberOfPeople);
-    $("#startDate").val(originPlan.startDate);
-    $("#endDate").val(originPlan.endDate);
-    $("#startLocation").val(originPlan.startLocation);
-  }
-
-  // ===============================
-  // 수정 저장
-  // ===============================
-  async function savePlan() {
-
-    // 저장 전 마지막 검증
-    if (!validateDates()) return;
-
-    const dto = {
-      title: $("#title").val(),
-      numberOfPeople: $("#people").val(),
-      startDate: $("#startDate").val(),
-      endDate: $("#endDate").val(),
-      tourSpotId: originPlan.tourSpotId,
-      course: originPlan.course
-    };
-
-    const response = await fetchWithRefresh(`/plans/${planId}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(dto)
+    $(document).ready(() => {
+      loadPlan();
     });
 
-    if (response.ok) {
-      alert("여행 계획이 수정되었습니다!");
-      location.href = `/plans/view/${planId}`;
-    } else {
-      alert("수정 중 오류가 발생했습니다.");
+    function validateDates() {
+      const start = $("#startDate").val();
+      const end = $("#endDate").val();
+
+      if (start && end && start > end) {
+        alert("도착일은 출발일보다 빠를 수 없습니다.");
+        $("#endDate").val(originPlan.endDate);
+        return false;
+      }
+      return true;
     }
-  }
-</script>
+
+    $("#startDate").on("change", validateDates);
+    $("#endDate").on("change", validateDates);
+
+    async function loadPlan() {
+      const res = await fetchWithRefresh(`/plans/${planId}`);
+      const json = await res.json();
+      originPlan = json.data;
+
+      $("#title").val(originPlan.title);
+      $("#people").val(originPlan.numberOfPeople);
+      $("#startDate").val(originPlan.startDate);
+      $("#endDate").val(originPlan.endDate);
+      $("#startLocation").val(originPlan.startLocation);
+    }
+
+    async function savePlan() {
+      if (!validateDates()) return;
+
+      const dto = {
+        title: $("#title").val(),
+        numberOfPeople: $("#people").val(),
+        startDate: $("#startDate").val(),
+        endDate: $("#endDate").val(),
+        tourSpotId: originPlan.tourSpotId,
+        course: originPlan.course
+      };
+
+      const response = await fetchWithRefresh(`/plans/${planId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(dto)
+      });
+
+      if (response.ok) {
+        alert("여행 계획이 수정되었습니다!");
+        location.href = `/plans/view/${planId}`;
+      } else {
+        alert("수정 중 오류가 발생했습니다.");
+      }
+    }
+  </script>
+</th:block>
 
 </body>
 </html>

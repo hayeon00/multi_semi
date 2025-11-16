@@ -1,870 +1,647 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{/common/layout}"
+      lang="ko">
+
 <head>
-    <script src="/js/common.js"></script>
+    <th:block layout:fragment="head">
 
-    <meta charset="UTF-8">
-    <title>코스 수정</title>
 
-    <!-- Kakao API -->
-    <script th:src="@{|https://dapi.kakao.com/v2/maps/sdk.js?appkey=${kakaoKey}&autoload=false|}"></script>
+        <meta charset="UTF-8">
+        <title>코스 수정</title>
 
-    <!-- jQuery (DOM 조작 및 sortable만 사용) -->
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
-    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+        <!-- Kakao API -->
+        <script th:src="@{|https://dapi.kakao.com/v2/maps/sdk.js?appkey=${kakaoKey}&autoload=false|}"></script>
 
-    <style>
-        .back-nav-wrapper {
-            margin-bottom: 15px;
-        }
+        <!-- jQuery (DOM 조작 및 sortable만 사용) -->
+        <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+        <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+        <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
 
-        .btn-back-nav {
-            background: #e5e5e5;
-            padding: 6px 12px;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
-            font-size: 14px;
-            transition: 0.2s;
-        }
+        <style>
+            .back-nav-wrapper { margin-bottom: 15px; }
+            .btn-back-nav {
+                background: #e5e5e5; padding: 6px 12px; border-radius: 8px;
+                border: none; cursor: pointer; font-size: 14px; transition: 0.2s;
+            }
+            .btn-back-nav:hover { background: #d0d0d0; }
 
-        .btn-back-nav:hover {
-            background: #d0d0d0;
-        }
+            body {
+                font-family: Pretendard, sans-serif;
+                background: #f5f6f8; margin: 0; padding: 0;
+            }
 
-        body {
-            font-family: Pretendard, sans-serif;
-            background: #f5f6f8;
-            margin: 0;
-            padding: 0;
-        }
+            .content-wrapper {
+                width: 1200px; margin: 30px auto; background: #fff;
+                border-radius: 20px; padding: 20px;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            }
 
-        .page-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #ddd;
-            padding: 15px 40px;
-        }
+            .plan-header {
+                display: flex; justify-content: space-between;
+                align-items: center; gap: 10px; margin-bottom: 15px;
+            }
 
-        .page-header h1 {
-            margin: 0;
-            font-size: 20px;
-        }
+            .plan-title-view,
+            .plan-date-view,
+            .plan-people-view {
+                font-size: 16px; padding: 6px 12px; background: #fafafa;
+                border-radius: 10px; border: 1px solid #ddd; min-width: 130px;
+                display: inline-block; text-align: center;
+            }
 
-        .page-header nav a {
-            margin-left: 15px;
-            color: #333;
-            text-decoration: none;
-        }
+            .date-people-box {
+                display: flex; align-items: center; gap: 10px;
+            }
 
-        .content-wrapper {
-            width: 1200px;
-            margin: 30px auto;
-            background: #fff;
-            border-radius: 20px;
-            padding: 20px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
+            .main-area {
+                display: flex; justify-content: space-between; gap: 15px;
+            }
 
-        /* ---------------- 계획 정보 (조회용 UI) ---------------- */
-        .plan-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: nowrap;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
+            .left-panel, .map-panel, .right-panel {
+                border-radius: 15px; background: #fafafa;
+                padding: 15px; box-shadow: 0 0 8px rgba(0,0,0,0.1);
+            }
 
-        .plan-title-view,
-        .plan-date-view,
-        .plan-people-view {
-            font-size: 16px;
-            padding: 6px 12px;
-            background: #fafafa;
-            border-radius: 10px;
-            border: 1px solid #ddd;
-            display: inline-block;
-            min-width: 130px;
-            text-align: center;
-        }
+            .left-panel { width: 320px; height: 550px; display: flex; flex-direction: column; }
+            .map-panel { width: 520px; height: 550px; }
+            .right-panel { width: 280px; height: 550px; overflow-y: auto; }
 
-        .date-people-box {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+            .tab-menu button {
+                margin: 5px 3px; padding: 5px 10px;
+                border-radius: 8px; border: none;
+                cursor: pointer; background: #ccc;
+            }
+            .tab-menu button.active { background: #000; color: #fff; }
 
-        /* ---------------- 메인 3분할 레이아웃 ---------------- */
-        .main-area {
-            display: flex;
-            justify-content: space-between;
-            gap: 15px;
-        }
+            .search-box { margin-bottom: 10px; }
+            .search-box input {
+                width: 100%; padding: 8px 10px;
+                border-radius: 10px; border: 1px solid #ccc;
+                font-size: 14px; box-sizing: border-box;
+            }
 
-        .left-panel, .map-panel, .right-panel {
-            border-radius: 15px;
-            background: #fafafa;
-            padding: 15px;
-            box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
-        }
+            .place-item {
+                background: #fff; border-radius: 10px;
+                padding: 8px 10px; margin: 5px 0;
+                cursor: pointer; display: flex; justify-content: space-between;
+            }
+            .place-item:hover { background: #eef2ff; }
 
-        .left-panel {
-            width: 320px;
-            height: 550px;
-            display: flex;
-            flex-direction: column;
-        }
+            .day-tabs-wrapper {
+                display: flex; align-items: center;
+                gap: 5px; margin-bottom: 10px;
+            }
 
-        .map-panel {
-            width: 520px;
-            height: 550px;
-        }
+            .tab-arrow {
+                border: none; background: #e0e0e0;
+                padding: 5px 10px; border-radius: 6px; cursor: pointer;
+            }
 
-        .right-panel {
-            width: 280px;
-            height: 550px;
-            overflow-y: auto;
-        }
+            .day-tabs {
+                display: flex; gap: 5px; overflow-x: auto;
+                white-space: nowrap; flex: 1; scrollbar-width: none;
+            }
+            .day-tabs::-webkit-scrollbar { display: none; }
 
-        /* ---------------- 검색 / 탭 ---------------- */
-        .tab-menu button {
-            margin: 5px 3px;
-            padding: 5px 10px;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
-            background: #ccc;
-        }
+            .day-tabs button {
+                padding: 6px 10px; border-radius: 8px;
+                border: none; background: #ccc; cursor: pointer;
+            }
+            .day-tabs button.active { background: #000; color: #fff; }
 
-        .tab-menu button.active {
-            background: #000;
-            color: #fff;
-        }
+            .course-item {
+                background: #fff; padding: 8px 10px; border-radius: 10px;
+                margin: 5px 0; cursor: grab; display: flex; justify-content: space-between;
+            }
+            .course-item:hover { background: #eef2ff; }
 
-        .search-box {
-            padding: 0 2px;
-            margin-bottom: 10px;
-        }
+            .delete-btn { display: none; color: red; cursor: pointer; }
+            .course-item:hover .delete-btn { display: inline; }
 
-        .search-box input {
-            width: 100%;
-            padding: 8px 10px;
-            border-radius: 10px;
-            border: 1px solid #ccc;
-            font-size: 14px;
-            box-sizing: border-box;
-        }
+            .button-area {
+                text-align: center; margin-top: 20px;
+            }
+            .button-area button {
+                padding: 10px 25px; border-radius: 10px;
+                border: none; cursor: pointer; font-size: 16px;
+                margin: 0 5px;
+            }
+            .btn-primary { background: #000; color: #fff; }
+            .btn-secondary { background: #ccc; }
 
-        .place-item {
-            background: #fff;
-            border-radius: 10px;
-            padding: 8px 10px;
-            margin: 5px 0;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+            #pagination {
+                display: flex; justify-content: center; gap: 4px;
+                margin-top: 10px; overflow-x: auto; white-space: nowrap;
+            }
+            #pagination::-webkit-scrollbar { display: none; }
+            #pagination button {
+                border: none; background: transparent;
+                padding: 4px 8px; border-radius: 8px; cursor: pointer;
+            }
+            #pagination button.active { background: #000; color: #fff; }
+            #pagination button.disabled { color: #ccc; cursor: default; }
 
-        .place-item:hover {
-            background: #eef2ff;
-        }
+            .day-control-area {
+                display: flex; justify-content: flex-end;
+                gap: 12px; margin: 12px 0;
+            }
+            .day-control-btn {
+                background: #e5e5e5; border: none;
+                padding: 8px 16px; font-size: 14px;
+                border-radius: 8px; cursor: pointer;
+            }
+            .day-control-btn:hover { background: #d0d0d0; }
 
-        /* ---------------- 일차 탭 (좌우 화살표 포함) ---------------- */
-        .day-tabs-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            margin-bottom: 10px;
-        }
+        </style>
 
-        .tab-arrow {
-            border: none;
-            background: #e0e0e0;
-            padding: 5px 10px;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-
-        .day-tabs {
-            display: flex;
-            gap: 5px;
-            overflow-x: auto;
-            white-space: nowrap;
-            flex: 1;
-            scrollbar-width: none;
-        }
-
-        .day-tabs::-webkit-scrollbar {
-            display: none;
-        }
-
-        .day-tabs button {
-            padding: 6px 10px;
-            border-radius: 8px;
-            border: none;
-            background: #ccc;
-            cursor: pointer;
-            white-space: nowrap;
-        }
-
-        .day-tabs button.active {
-            background: #000;
-            color: #fff;
-        }
-
-        /* ---------------- 코스 리스트 ---------------- */
-        .course-item {
-            background: #fff;
-            padding: 8px 10px;
-            border-radius: 10px;
-            margin: 5px 0;
-            cursor: grab;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .course-item:hover {
-            background: #eef2ff;
-        }
-
-        .delete-btn {
-            display: none;
-            color: red;
-            cursor: pointer;
-        }
-
-        .course-item:hover .delete-btn {
-            display: inline;
-        }
-
-        /* ---------------- 하단 버튼 ---------------- */
-        .button-area {
-            text-align: center;
-            margin-top: 20px;
-        }
-
-        .button-area button {
-            padding: 10px 25px;
-            border-radius: 10px;
-            border: none;
-            cursor: pointer;
-            font-size: 16px;
-            margin: 0 5px;
-        }
-
-        .btn-primary {
-            background: #000;
-            color: #fff;
-        }
-
-        .btn-secondary {
-            background: #ccc;
-            color: #333;
-        }
-
-        /* ---------------- 페이지네이션 ---------------- */
-        #pagination {
-            display: flex;
-            justify-content: center;
-            gap: 4px;
-            margin-top: 10px;
-            overflow-x: auto;
-            white-space: nowrap;
-            scrollbar-width: none;
-        }
-
-        #pagination::-webkit-scrollbar {
-            display: none;
-        }
-
-        #pagination button {
-            border: none;
-            background: transparent;
-            padding: 4px 8px;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-
-        #pagination button:hover {
-            background: #eee;
-        }
-
-        #pagination button.active {
-            background: #000;
-            color: #fff;
-            font-weight: bold;
-        }
-
-        #pagination button.disabled {
-            color: #ccc;
-            cursor: default;
-        }
-
-        /* Day 추가/삭제 버튼 영역 */
-        .day-control-area {
-            display: flex;
-            justify-content: flex-end;
-            gap: 12px;
-            margin: 12px 0;
-        }
-
-        .day-control-btn {
-            background: #e5e5e5;
-            border: none;
-            padding: 8px 16px;
-            font-size: 14px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all .15s ease;
-        }
-
-        .day-control-btn:hover {
-            background: #d0d0d0;
-        }
-
-    </style>
+    </th:block>
 </head>
+
+
 <body>
 
-<div class="page-header">
-    <h1>TRAVEL PLANNING</h1>
-    <nav>
-        <span>{사용자} 님 환영합니다.</span>
-        <a href="/">Home</a>
-        <a href="/member/view/mypage">마이페이지</a>
-        <a href="/logout">로그아웃</a>
-    </nav>
-</div>
+<main layout:fragment="content">
 
-<div class="content-wrapper">
-    <div class="back-nav-wrapper">
-        <button class="btn-back-nav" onclick="window.history.back()">← 이전 페이지</button>
-    </div>
+    <div class="content-wrapper">
+        <div class="back-nav-wrapper">
+            <button class="btn-back-nav" onclick="window.history.back()">← 이전 페이지</button>
+        </div>
 
-    <!-- 조회용 여행 정보 -->
-    <div class="plan-header">
-        <span class="plan-title-view" id="titleView"></span>
+        <div class="plan-header">
+            <span class="plan-title-view" id="titleView"></span>
 
-        <div class="date-people-box">
-            <span class="plan-date-view" id="dateRangeView"></span>
-            <span class="plan-people-view" id="peopleView"></span>
+            <div class="date-people-box">
+                <span class="plan-date-view" id="dateRangeView"></span>
+                <span class="plan-people-view" id="peopleView"></span>
+            </div>
+        </div>
+
+        <div class="main-area">
+
+            <div class="left-panel">
+                <div class="tab-menu">
+                    <button id="tab-tour" class="active">관광지</button>
+                    <button id="tab-acc">숙소</button>
+                </div>
+
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="검색어 입력..."/>
+                </div>
+
+                <div id="placeList"></div>
+                <div id="pagination"></div>
+            </div>
+
+            <div id="map" class="map-panel"></div>
+
+            <div class="right-panel">
+
+                <div class="day-control-area">
+                    <button id="addDayBtn" class="day-control-btn">+ 일차 추가</button>
+                    <button id="removeDayBtn" class="day-control-btn">- 일차 삭제</button>
+                </div>
+
+                <div class="day-tabs-wrapper">
+                    <button class="tab-arrow" id="tabLeftBtn">◀</button>
+                    <div class="day-tabs" id="dayTabs"></div>
+                    <button class="tab-arrow" id="tabRightBtn">▶</button>
+                </div>
+
+                <div id="courseList"></div>
+            </div>
+        </div>
+
+        <div class="button-area">
+            <button id="cancelBtn" class="btn-secondary">수정취소</button>
+            <button id="saveBtn" class="btn-primary">수정완료</button>
         </div>
     </div>
 
-    <div class="main-area">
-
-        <!-- 좌측: 관광지/숙소 목록 -->
-        <div class="left-panel">
-
-            <div class="tab-menu">
-                <button id="tab-tour" class="active">관광지</button>
-                <button id="tab-acc">숙소</button>
-            </div>
-
-            <div class="search-box">
-                <input type="text" id="searchInput" placeholder="검색어 입력..."/>
-            </div>
-
-            <div id="placeList"></div>
-            <div id="pagination"></div>
-
-        </div>
-
-        <!-- 지도 -->
-        <div id="map" class="map-panel"></div>
+</main>
 
 
-        <!-- 우측 패널 -->
-        <div class="right-panel">
-            <!-- 일차 추가 및 삭제 -->
-            <div class="day-control-area">
-                <button id="addDayBtn" class="day-control-btn">+ 일차 추가</button>
-                <button id="removeDayBtn" class="day-control-btn">- 일차 삭제</button>
-            </div>
+<th:block layout:fragment="script">
 
-            <div class="day-tabs-wrapper">
-                <button class="tab-arrow" id="tabLeftBtn">◀</button>
-                <div class="day-tabs" id="dayTabs"></div>
-                <button class="tab-arrow" id="tabRightBtn">▶</button>
-            </div>
+    <script th:inline="javascript">
 
-            <div id="courseList"></div>
-        </div>
-    </div>
+        const planId = [[${planId}]];
+        let map, markers = [], polylines = [];
+        let days = [];
+        let activeDay = 1;
 
-    <div class="button-area">
-        <button id="cancelBtn" class="btn-secondary">수정취소</button>
-        <button id="saveBtn" class="btn-primary">수정완료</button>
-    </div>
-</div>
+        let currentPage = 0;
+        const pageSize = 10;
+        let lastType = "tour";
 
-<script th:inline="javascript">
-
-    const planId = [[${planId}]];
-    let map, markers = [], polylines = [];
-    let days = [];
-    let activeDay = 1;
-
-    let currentPage = 0;
-    const pageSize = 10;
-    let lastType = "tour";
-
-    /* ---------------- 초기 로딩 ---------------- */
-    $(document).ready(() => {
-        kakao.maps.load(async () => {
-            initMap();
-            await loadPlan();
-            setupTabs();
-            setupSearch();
-        });
-    });
-
-    /* ---------------- 지도 초기화 ---------------- */
-    function initMap() {
-        map = new kakao.maps.Map(document.getElementById("map"), {
-            center: new kakao.maps.LatLng(37.4979, 127.0276),
-            level: 6
-        });
-    }
-
-    /* ================================
-        여행 계획 + 기존 코스 불러오기
-    ================================= */
-    async function loadPlan() {
-        try {
-            const response = await fetchWithRefresh(`/plans/${planId}`);
-            const res = await response.json();
-
-            const plan = res.data;
-
-            // 조회용 UI에 세팅
-            $("#titleView").text(plan.title);
-            $("#dateRangeView").text(`${plan.startDate} ~ ${plan.endDate}`);
-            $("#peopleView").text(`${plan.numberOfPeople}명`);
-
-            // 일차 계산
-            const daysCount = dayDiff(plan.startDate, plan.endDate);
-
-            // 일자 배열 생성
-            days = Array.from({length: daysCount}, (_, i) => ({
-                dayNo: i + 1,
-                items: []
-            }));
-
-            // 기존 저장된 coursePlaces 채우기
-            if (plan.coursePlaces?.length) {
-                plan.coursePlaces.forEach(p => {
-                    const day = days.find(d => d.dayNo === p.dayNo);
-                    if (day) {
-                        day.items.push({
-                            id: p.placeId || p.id,    // 어떤 형식이 오든 id가 들어가게 보정
-                            title: p.title,
-                            categoryCode: p.categoryCode || p.category || p.catCode || (p.accId ? "acc" : "tsp"),
-                            orderNo: p.orderNo,
-                            dayNo: p.dayNo,
-                            mapx: p.mapx,
-                            mapy: p.mapy
-                        });
-                    }
-                });
-            }
-
-            renderDayTabs(daysCount);
-            renderCourseList();
-            renderMap();
-
-            await loadPlaces("tour", "", 0);
-
-        } catch (e) {
-            console.error(e);
-            alert("계획 정보를 불러오는 중 문제가 발생했습니다.");
-        }
-    }
-
-    function dayDiff(start, end) {
-        return Math.ceil((new Date(end) - new Date(start)) / (1000 * 60 * 60 * 24)) + 1;
-    }
-
-    /* ---------------- 일차 탭 렌더링 ---------------- */
-    function renderDayTabs(count) {
-        const tabs = $("#dayTabs").empty();
-
-        for (let i = 1; i <= count; i++) {
-            const btn = $(`<button class="${i === 1 ? 'active' : ''}">${i}일차</button>`);
-
-            btn.click(() => {
-                activeDay = i;
-
-                $(".day-tabs button").removeClass("active");
-                btn.addClass("active");
-
-                // 중앙 정렬 스크롤
-                const box = document.getElementById("dayTabs");
-                const rectBtn = btn[0].getBoundingClientRect();
-                const rectBox = box.getBoundingClientRect();
-                box.scrollBy({
-                    left: (rectBtn.left + rectBtn.width / 2) - (rectBox.left + rectBox.width / 2),
-                    behavior: "smooth"
-                });
-
-                renderCourseList();
-                renderMap();
+        $(document).ready(() => {
+            kakao.maps.load(async () => {
+                initMap();
+                await loadPlan();
+                setupTabs();
+                setupSearch();
             });
-
-            tabs.append(btn);
-        }
-    }
-
-    $("#tabLeftBtn").click(() => {
-        document.getElementById("dayTabs").scrollBy({left: -150, behavior: "smooth"});
-    });
-    $("#tabRightBtn").click(() => {
-        document.getElementById("dayTabs").scrollBy({left: 150, behavior: "smooth"});
-    });
-</script>
-<script>
-
-    /* ---------------- 코스 리스트 ---------------- */
-    function renderCourseList() {
-        const list = $("#courseList").empty();
-        const currentDay = days.find(d => d.dayNo === activeDay);
-
-        currentDay.items
-            .sort((a, b) => a.orderNo - b.orderNo)
-            .forEach((item, idx) => {
-                const div = $(`
-                <div class="course-item" data-idx="${idx}">
-                  <span>${item.title}</span>
-                  <span class="delete-btn">삭제</span>
-                </div>`);
-
-                list.append(div);
-            });
-
-        // 삭제
-        $(".delete-btn").click(function () {
-            const idx = $(this).closest(".course-item").data("idx");
-            currentDay.items.splice(idx, 1);
-            renderCourseList();
-            renderMap();
         });
 
-        // 드래그 정렬
-        $("#courseList").sortable({
-            update: function () {
-                const reordered = [];
-                $("#courseList .course-item").each(function (idx) {
-                    reordered.push(currentDay.items[$(this).data("idx")]);
-                });
+        function initMap() {
+            map = new kakao.maps.Map(document.getElementById("map"), {
+                center: new kakao.maps.LatLng(37.4979, 127.0276),
+                level: 6
+            });
+        }
 
-                currentDay.items = reordered.map((it, idx) => ({
-                    ...it,
-                    orderNo: idx + 1
+        async function loadPlan() {
+            try {
+                const response = await fetchWithRefresh(`/plans/${planId}`);
+                const res = await response.json();
+
+                const plan = res.data;
+
+                $("#titleView").text(plan.title);
+                $("#dateRangeView").text(`${plan.startDate} ~ ${plan.endDate}`);
+                $("#peopleView").text(`${plan.numberOfPeople}명`);
+
+                const daysCount = dayDiff(plan.startDate, plan.endDate);
+
+                days = Array.from({length: daysCount}, (_, i) => ({
+                    dayNo: i + 1,
+                    items: []
                 }));
 
+                if (plan.coursePlaces?.length) {
+                    plan.coursePlaces.forEach(p => {
+                        const d = days.find(day => day.dayNo === p.dayNo);
+                        if (d) {
+                            d.items.push({
+                                id: p.placeId || p.id,
+                                title: p.title,
+                                categoryCode: p.categoryCode || p.category || p.catCode || (p.accId ? "acc" : "tsp"),
+                                orderNo: p.orderNo,
+                                dayNo: p.dayNo,
+                                mapx: p.mapx,
+                                mapy: p.mapy
+                            });
+                        }
+                    });
+                }
+
+                renderDayTabs(daysCount);
                 renderCourseList();
                 renderMap();
+
+                await loadPlaces("tour", "", 0);
+
+            } catch (e) {
+                console.error(e);
+                alert("불러오기 실패");
             }
-        });
-    }
+        }
 
-    /* ---------------- 지도 렌더링 ---------------- */
-    function renderMap() {
-        clearMap();
-        const bounds = new kakao.maps.LatLngBounds();
+        function dayDiff(start, end) {
+            return Math.ceil((new Date(end) - new Date(start)) / (1000*60*60*24)) + 1;
+        }
 
-        days.forEach(day => {
-            const coords = [];
+        function renderDayTabs(count) {
+            const tabs = $("#dayTabs").empty();
 
-            day.items.forEach(item => {
-                const lat = parseFloat(item.mapy);
-                const lng = parseFloat(item.mapx);
-                if (isNaN(lat) || isNaN(lng)) return;
+            for (let i = 1; i <= count; i++) {
+                const btn = $(`<button class="${i===1?"active":""}">${i}일차</button>`);
 
-                const pos = new kakao.maps.LatLng(lat, lng);
-                coords.push(pos);
+                btn.click(() => {
+                    activeDay = i;
+                    $(".day-tabs button").removeClass("active");
+                    btn.addClass("active");
 
-                const marker = new kakao.maps.Marker({
-                    map,
-                    position: pos,
-                    title: `[${day.dayNo}일차] ${item.title}`,
-                    image: new kakao.maps.MarkerImage(
-                        day.dayNo === activeDay
-                            ? "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png"
-                            : "https://t1.daumcdn.net/mapjsapi/images/marker.png",
-                        new kakao.maps.Size(24, 35)
-                    )
+                    const box = document.getElementById("dayTabs");
+                    const rectBtn = btn[0].getBoundingClientRect();
+                    const rectBox = box.getBoundingClientRect();
+
+                    box.scrollBy({
+                        left: (rectBtn.left+rectBtn.width/2)-(rectBox.left+rectBox.width/2),
+                        behavior: "smooth"
+                    });
+
+                    renderCourseList();
+                    renderMap();
                 });
 
-                markers.push(marker);
-                bounds.extend(pos);
+                tabs.append(btn);
+            }
+        }
+
+        $("#tabLeftBtn").click(() => {
+            document.getElementById("dayTabs").scrollBy({left:-150,behavior:"smooth"});
+        });
+        $("#tabRightBtn").click(() => {
+            document.getElementById("dayTabs").scrollBy({left:150,behavior:"smooth"});
+        });
+
+    </script>
+
+    <script>
+
+        function renderCourseList() {
+            const list = $("#courseList").empty();
+            const d = days.find(day => day.dayNo === activeDay);
+
+            d.items
+                .sort((a,b)=>a.orderNo-b.orderNo)
+                .forEach((item,idx)=>{
+                    list.append(`
+                    <div class="course-item" data-idx="${idx}">
+                        <span>${item.title}</span>
+                        <span class="delete-btn">삭제</span>
+                    </div>
+                `);
+                });
+
+            $(".delete-btn").click(function(){
+                const idx=$(this).closest(".course-item").data("idx");
+                d.items.splice(idx,1);
+                renderCourseList();
+                renderMap();
             });
 
-            if (coords.length > 1) {
-                const poly = new kakao.maps.Polyline({
-                    path: coords,
-                    strokeWeight: day.dayNo === activeDay ? 4 : 2,
-                    strokeColor: day.dayNo === activeDay ? "#000" : "#aaa",
-                    strokeOpacity: 0.9
-                });
-                poly.setMap(map);
-                polylines.push(poly);
-            }
-        });
+            $("#courseList").sortable({
+                update:function(){
+                    const ordered=[];
+                    $("#courseList .course-item").each(function(idx){
+                        ordered.push(d.items[$(this).data("idx")]);
+                    });
 
-        if (!bounds.isEmpty()) {
-            map.setBounds(bounds);
+                    d.items = ordered.map((it,idx)=>({
+                        ...it, orderNo: idx+1
+                    }));
+
+                    renderCourseList();
+                    renderMap();
+                }
+            });
         }
-    }
 
-    function clearMap() {
-        markers.forEach(m => m.setMap(null));
-        polylines.forEach(p => p.setMap(null));
-        markers = [];
-        polylines = [];
-    }
+        function renderMap() {
+            clearMap();
+            const bounds = new kakao.maps.LatLngBounds();
 
-    /* ---------------- 검색 기능 ---------------- */
-    function setupSearch() {
-        $("#searchInput").on("keyup", function () {
-            const keyword = $(this).val().trim();
-            const type = $("#tab-tour").hasClass("active") ? "tour" : "acc";
-            loadPlaces(type, keyword, 0);
-        });
-    }
+            days.forEach(day=>{
+                const coords=[];
 
-    /* ---------------- 관광지 / 숙소 목록 로드 ---------------- */
-    async function loadPlaces(type, keyword = "", page = 0) {
-        lastType = type;
-        currentPage = page;
+                day.items.forEach(item=>{
+                    const lat=parseFloat(item.mapy);
+                    const lng=parseFloat(item.mapx);
+                    if(isNaN(lat)||isNaN(lng)) return;
 
-        let url =
-            type === "tour"
-                ? (keyword
-                    ? `/spots/list?keyword=${keyword}&page=${page}&size=${pageSize}`
-                    : `/spots/simple?page=${page}&size=${pageSize}`)
-                : (keyword
-                    ? `/accommodations/list?keyword=${keyword}&page=${page}&size=${pageSize}`
-                    : `/accommodations/simple?page=${page}&size=${pageSize}`);
+                    const pos=new kakao.maps.LatLng(lat,lng);
+                    coords.push(pos);
 
-        try {
-            const response = await fetchWithRefresh(url);
-            const res = await response.json();
+                    const marker=new kakao.maps.Marker({
+                        map, position:pos,
+                        title:`[${day.dayNo}일차] ${item.title}`,
+                        image:new kakao.maps.MarkerImage(
+                            day.dayNo===activeDay
+                                ?"https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png"
+                                :"https://t1.daumcdn.net/mapjsapi/images/marker.png",
+                            new kakao.maps.Size(24,35)
+                        )
+                    });
 
-            const places = res.data?.contents ?? res.data?.content ?? [];
+                    markers.push(marker);
+                    bounds.extend(pos);
+                });
 
-            $("#placeList").empty();
+                if(coords.length>1){
+                    const line=new kakao.maps.Polyline({
+                        path:coords,
+                        strokeWeight: day.dayNo===activeDay?4:2,
+                        strokeColor: day.dayNo===activeDay?"#000":"#aaa",
+                        strokeOpacity:0.9
+                    });
+                    line.setMap(map);
+                    polylines.push(line);
+                }
+            });
 
-            if (!places.length) {
-                $("#placeList").append("<div>데이터가 없습니다.</div>");
+            if(!bounds.isEmpty()) map.setBounds(bounds);
+        }
+
+        function clearMap(){
+            markers.forEach(m=>m.setMap(null));
+            polylines.forEach(p=>p.setMap(null));
+            markers=[]; polylines=[];
+        }
+
+        function setupSearch(){
+            $("#searchInput").on("keyup",()=>{
+                const keyword=$("#searchInput").val().trim();
+                const type=$("#tab-tour").hasClass("active")?"tour":"acc";
+                loadPlaces(type,keyword,0);
+            });
+        }
+
+        async function loadPlaces(type, keyword="", page=0){
+            lastType=type; currentPage=page;
+
+            let url =
+                type==="tour"
+                    ? (keyword
+                        ? `/spots/list?keyword=${keyword}&page=${page}&size=${pageSize}`
+                        : `/spots/simple?page=${page}&size=${pageSize}`)
+                    : (keyword
+                        ? `/accommodations/list?keyword=${keyword}&page=${page}&size=${pageSize}`
+                        : `/accommodations/simple?page=${page}&size=${pageSize}`);
+
+            try{
+                const response = await fetchWithRefresh(url);
+                const res = await response.json();
+
+                const places = res.data?.contents ?? res.data?.content ?? [];
+
+                $("#placeList").empty();
+
+                if(!places.length){
+                    $("#placeList").append("<div>데이터가 없습니다.</div>");
+                    return;
+                }
+
+                places.forEach(p=>{
+                    const div=$(`
+                    <div class="place-item"
+                         data-id="${p.id}"
+                         data-mapx="${p.mapx}"
+                         data-mapy="${p.mapy}"
+                         data-type="${type==="tour"?"tsp":"acc"}">
+                      <span>${p.title}</span>
+                      <span>+</span>
+                    </div>
+                `);
+
+                    div.click(()=>{
+                        addToCourse(p.id,p.title,(type==="tour"?"tsp":"acc"),p.mapx,p.mapy);
+                    });
+
+                    $("#placeList").append(div);
+                });
+
+                renderPagination(res.data.totalPages);
+
+            }catch(e){
+                console.error(e);
+            }
+        }
+
+        function renderPagination(totalPages){
+            const pg=$("#pagination").empty();
+
+            const maxVisible=5;
+            const half=Math.floor(maxVisible/2);
+
+            let start = Math.max(0, currentPage-half);
+            let end = Math.min(totalPages-1,start+maxVisible-1);
+
+            if(end-start < maxVisible-1)
+                start=Math.max(0,end-maxVisible+1);
+
+            const prev=$("<button>&laquo;</button>");
+            if(currentPage===0) prev.addClass("disabled");
+            else prev.click(()=>loadPlaces(lastType,$("#searchInput").val().trim(),currentPage-1));
+            pg.append(prev);
+
+            for(let i=start;i<=end;i++){
+                const btn=$(`<button>${i+1}</button>`);
+                if(i===currentPage) btn.addClass("active");
+                btn.click(()=>loadPlaces(lastType,$("#searchInput").val().trim(),i));
+                pg.append(btn);
+            }
+
+            const next=$("<button>&raquo;</button>");
+            if(currentPage>=totalPages-1) next.addClass("disabled");
+            else next.click(()=>loadPlaces(lastType,$("#searchInput").val().trim(),currentPage+1));
+            pg.append(next);
+        }
+
+        function addToCourse(id,title,code,mapx,mapy){
+            const d = days.find(day=>day.dayNo===activeDay);
+
+            const x=parseFloat(mapx);
+            const y=parseFloat(mapy);
+            if(isNaN(x)||isNaN(y)){
+                alert("위치 정보가 없어 등록할 수 없습니다.");
                 return;
             }
 
-            places.forEach(p => {
-                const div = $(`
-        <div class="place-item"
-             data-id="${p.id}"
-             data-mapx="${p.mapx}"
-             data-mapy="${p.mapy}"
-             data-type="${type === "tour" ? "tsp" : "acc"}">
-          <span>${p.title}</span>
-          <span>+</span>
-        </div>`);
-
-                div.click(() =>
-                    addToCourse(p.id, p.title, type === "tour" ? "tsp" : "acc", p.mapx, p.mapy)
-                );
-
-                $("#placeList").append(div);
-            });
-
-            renderPagination(res.data.totalPages);
-
-        } catch (e) {
-            console.error(e);
-            alert("목록을 불러오는 중 오류가 발생했습니다.");
-        }
-    }
-
-    /* ---------------- 페이지네이션 ---------------- */
-    function renderPagination(totalPages) {
-        const pg = $("#pagination").empty();
-        const maxVisible = 5;
-        const half = Math.floor(maxVisible / 2);
-
-        let start = Math.max(0, currentPage - half);
-        let end = Math.min(totalPages - 1, start + maxVisible - 1);
-
-        if (end - start < maxVisible - 1)
-            start = Math.max(0, end - maxVisible + 1);
-
-        const prev = $("<button>&laquo; 이전</button>");
-        if (currentPage === 0) prev.addClass("disabled");
-        else prev.click(() => loadPlaces(lastType, $("#searchInput").val().trim(), currentPage - 1));
-        pg.append(prev);
-
-        for (let i = start; i <= end; i++) {
-            const btn = $(`<button>${i + 1}</button>`);
-            if (i === currentPage) btn.addClass("active");
-            btn.click(() => loadPlaces(lastType, $("#searchInput").val().trim(), i));
-            pg.append(btn);
-        }
-
-        const next = $("<button>다음 &raquo;</button>");
-        if (currentPage >= totalPages - 1) next.addClass("disabled");
-        else next.click(() => loadPlaces(lastType, $("#searchInput").val().trim(), currentPage + 1));
-        pg.append(next);
-    }
-
-    /* ---------------- 코스에 추가 ---------------- */
-    function addToCourse(id, title, code, mapx, mapy) {
-        const currentDay = days.find(d => d.dayNo === activeDay);
-
-        const x = parseFloat(mapx);
-        const y = parseFloat(mapy);
-        if (isNaN(x) || isNaN(y)) {
-            alert("해당 장소는 위치 정보가 없어 등록할 수 없습니다.");
-            return;
-        }
-
-        const dup = currentDay.items.some(i => i.id === id && i.categoryCode === code);
-        if (dup) {
-            alert("이미 추가된 장소입니다.");
-            return;
-        }
-
-        currentDay.items.push({
-            id,
-            title,
-            categoryCode: code,
-            orderNo: currentDay.items.length + 1,
-            dayNo: activeDay,
-            mapx: x,
-            mapy: y
-        });
-
-        renderCourseList();
-        renderMap();
-    }
-
-    /* ---------------- 관광지 / 숙소 탭 ---------------- */
-    function setupTabs() {
-        $("#tab-tour").click(() => {
-            $(".tab-menu button").removeClass("active");
-            $("#tab-tour").addClass("active");
-            loadPlaces("tour", "", 0);
-        });
-
-        $("#tab-acc").click(() => {
-            $(".tab-menu button").removeClass("active");
-            $("#tab-acc").addClass("active");
-            loadPlaces("acc", "", 0);
-        });
-    }
-
-    /* ================================
-        DAY 추가 / 삭제 기능
-  ================================ */
-
-    /* Day 추가 */
-    $("#addDayBtn").click(() => {
-        const last = days.length;
-        const newDayNo = last + 1;
-
-        days.push({
-            dayNo: newDayNo,
-            items: []
-        });
-
-        renderDayTabs(days.length);
-        activeDay = newDayNo;
-        renderCourseList();
-        renderMap();
-    });
-
-    /* Day 삭제 */
-    $("#removeDayBtn").click(() => {
-        if (days.length <= 1) {
-            alert("1일차는 삭제할 수 없습니다.");
-            return;
-        }
-
-        if (!confirm(`${days.length}일차를 삭제하시겠습니까?\n삭제 시 해당 일차의 코스는 이전 날로 이동됩니다.`))
-            return;
-
-        const removed = days.pop();  // 마지막 day 제거
-
-        // 제거된 마지막 날의 아이템을 모두 "하루 전"으로 이동
-        removed.items.forEach(item => {
-            const prevDay = days[days.length - 1];
-            prevDay.items.push({
-                ...item,
-                dayNo: prevDay.dayNo,
-                orderNo: prevDay.items.length + 1
-            });
-        });
-
-        // 활성 Day 조정
-        activeDay = days.length;
-
-        renderDayTabs(days.length);
-        renderCourseList();
-        renderMap();
-    });
-
-
-    /* ---------------- 저장 요청 ---------------- */
-    $("#saveBtn").click(async function () {
-        if (!confirm("수정 내용을 저장하시겠습니까?")) return;
-
-        const req = {
-            planId: planId,
-            items: days.flatMap(day =>
-                day.items.map((item, idx) => ({
-                    placeId: item.id,
-                    categoryCode: item.categoryCode,
-                    orderNo: idx + 1,
-                    dayNo: day.dayNo
-                }))
-            )
-        };
-
-        try {
-            const response = await fetchWithRefresh(`/courses/${planId}`, {
-                method: "PUT",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify(req)
-            });
-
-            if (!response.ok) {
-                alert("코스 수정 중 오류가 발생했습니다.");
+            const dup=d.items.some(i=>i.id===id && i.categoryCode===code);
+            if(dup){
+                alert("이미 추가된 장소입니다.");
                 return;
             }
 
-            alert("코스 수정이 완료되었습니다!");
-            location.href = `/plans/view/${planId}`;
+            d.items.push({
+                id, title, categoryCode:code,
+                orderNo:d.items.length+1, dayNo:activeDay,
+                mapx:x, mapy:y
+            });
 
-        } catch (e) {
-            console.error(e);
-            alert("수정 요청 중 오류가 발생했습니다.");
+            renderCourseList();
+            renderMap();
         }
-    });
 
-    /* ================================
-          수정 취소
-    ================================= */
-    $("#cancelBtn").click(() => {
-        if (confirm("정말 수정 내용을 취소하시겠습니까?")) {
-            location.href = `/plans/view/${planId}`;
+        function setupTabs(){
+            $("#tab-tour").click(()=>{
+                $(".tab-menu button").removeClass("active");
+                $("#tab-tour").addClass("active");
+                loadPlaces("tour","",0);
+            });
+
+            $("#tab-acc").click(()=>{
+                $(".tab-menu button").removeClass("active");
+                $("#tab-acc").addClass("active");
+                loadPlaces("acc","",0);
+            });
         }
-    });
 
-</script>
+        $("#addDayBtn").click(()=>{
+            const last=days.length;
+            const newDay=last+1;
+
+            days.push({dayNo:newDay,items:[]});
+
+            renderDayTabs(days.length);
+            activeDay=newDay;
+            renderCourseList();
+            renderMap();
+        });
+
+        $("#removeDayBtn").click(()=>{
+            if(days.length<=1){
+                alert("1일차는 삭제할 수 없습니다.");
+                return;
+            }
+
+            if(!confirm(`${days.length}일차를 삭제하시겠습니까?`))
+                return;
+
+            const removed=days.pop();
+
+            removed.items.forEach(item=>{
+                const prev=days[days.length-1];
+                prev.items.push({
+                    ...item,
+                    dayNo:prev.dayNo,
+                    orderNo:prev.items.length+1
+                });
+            });
+
+            activeDay=days.length;
+            renderDayTabs(days.length);
+            renderCourseList();
+            renderMap();
+        });
+
+        $("#saveBtn").click(async()=>{
+            if(!confirm("수정 내용을 저장하시겠습니까?"))return;
+
+            const req={
+                planId:planId,
+                items: days.flatMap(day =>
+                    day.items.map((item,idx)=>({
+                        placeId:item.id,
+                        categoryCode:item.categoryCode,
+                        orderNo:idx+1,
+                        dayNo:day.dayNo
+                    }))
+                )
+            };
+
+            try{
+                const response = await fetchWithRefresh(`/courses/${planId}`,{
+                    method:"PUT",
+                    headers:{"Content-Type":"application/json"},
+                    body:JSON.stringify(req)
+                });
+
+                if(!response.ok){
+                    alert("수정 중 오류 발생");
+                    return;
+                }
+
+                alert("코스 수정 완료!");
+                location.href=`/plans/view/${planId}`;
+
+            }catch(e){
+                console.error(e);
+            }
+        });
+
+        $("#cancelBtn").click(()=>{
+            if(confirm("수정 취소하시겠습니까?")){
+                location.href=`/plans/view/${planId}`;
+            }
+        });
+
+    </script>
+
+</th:block>
 
 </body>
 </html>
