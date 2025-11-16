@@ -103,6 +103,19 @@
                        placeholder="연락 가능한 전화번호">
             </div>
 
+            <!-- ✅ 홈페이지 필드 추가 -->
+            <div class="form-group">
+                <label class="form-label">
+                    <span class="label-icon">🔗</span>
+                    홈페이지
+                </label>
+                <input type="url"
+                       id="homepage"
+                       class="form-input"
+                       th:value="${spot.homepage}"
+                       placeholder="예: https://www.royalpalace.go.kr">
+            </div>
+
             <div class="form-group">
                 <label class="form-label">
                     <span class="label-icon">📄</span>
@@ -307,20 +320,20 @@
 
         const id = document.getElementById("spotId").value;
 
-        // 🔥 LDongRegnCd로 수정 (대문자 L)
         const dto = {
             title: title,
             address: address,
             tel: document.getElementById("tel").value.trim(),
+            homepage: document.getElementById("homepage").value.trim(), // ✅ 추가
             description: document.getElementById("description").value.trim(),
             mapx: parseFloat(document.getElementById("mapx").value) || null,
             mapy: parseFloat(document.getElementById("mapy").value) || null,
             areacode: parseInt(document.getElementById("areacode").value) || null,
             sigungucode: parseInt(document.getElementById("sigungucode").value) || null,
-            LDongRegnCd: document.getElementById("lDongRegnCd").value.trim() || null  // 🔥 대문자 L + null 처리
+            lDongRegnCd: document.getElementById("lDongRegnCd").value.trim() || null
         };
 
-        // 🔥 디버깅 로그 추가
+        // 디버깅 로그
         console.log("=== 전송 데이터 확인 ===");
         console.log("전송할 DTO:", dto);
         console.log("DTO JSON:", JSON.stringify(dto, null, 2));
@@ -375,8 +388,6 @@
         }
     });
 
-
-
     async function handleLogout() {
         try {
             const response = await fetch('/auth/logout', {
@@ -384,7 +395,7 @@
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                credentials: 'include' // 쿠키 포함
+                credentials: 'include'
             });
 
             if (response.ok) {

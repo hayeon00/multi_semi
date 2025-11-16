@@ -23,6 +23,7 @@ public class TourSpotResDto {
     private String description;
     private String address;
     private String tel;
+    private String homepage;
     private Integer areacode;
     private Integer sigungucode;
     private String lDongRegnCd;
