@@ -48,7 +48,7 @@ public class AuthController {
         accessCookie.setHttpOnly(true);   // 자바스크립트 접근 차단
         accessCookie.setSecure(false);    // HTTPS 환경이라면 true로 변경
         accessCookie.setPath("/");
-        accessCookie.setMaxAge(60 * 30);  // 30분
+        accessCookie.setMaxAge(60 * 60*3);  // 30분
 
         // ✅ RefreshToken 쿠키
         Cookie refreshCookie = new Cookie("refresh_token", token.getRefreshToken());
@@ -83,7 +83,7 @@ public class AuthController {
         accessCookie.setHttpOnly(true);
         accessCookie.setSecure(false);
         accessCookie.setPath("/");
-        accessCookie.setMaxAge(60 * 30); // 30분
+        accessCookie.setMaxAge(60 * 60*3); // 30분
         response.addCookie(accessCookie);
 
         return ResponseEntity.ok(new ResponseDto(HttpStatus.OK, "AccessToken 재발급 성공", null));
