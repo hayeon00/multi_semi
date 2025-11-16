@@ -27,6 +27,8 @@ public class TourSpotReqDto {
     private String description;
     private String tel;
 
+    private String homepage;
+
     private Integer areacode;
     private Integer sigungucode;
     @JsonProperty("LDongRegnCd")  // 🔥 추가!
