@@ -58,7 +58,8 @@ public class AccService {
     @Value("${image.acc.image-url}")
     private String IMAGE_URL;
 
-    private static final String DEFAULT_IMAGE = "default_acc.jpg";
+    @Value("${image.default.image-url}+no-image.png")
+    private String DEFAULT_IMAGE;
 
     @PostConstruct
     public void checkImagePath() {
@@ -172,9 +173,6 @@ public class AccService {
                 // ⭐ DB엔 URL 형태로 저장
                 String imageUrl = IMAGE_URL + savedFileName;
                 newAcc.updateImage(imageUrl);
-            } else {
-                // 기본 이미지 저장
-                newAcc.updateImage(DEFAULT_IMAGE);
             }
         } catch (IOException e) {
             throw new RuntimeException("숙소 이미지 저장 실패", e);
@@ -192,29 +190,15 @@ public class AccService {
         MultipartFile imageFile = accDTO.getImageFile();
 
         try {
-
-            // ⭐ 새 이미지가 있을 경우에만 처리
             if (imageFile != null && !imageFile.isEmpty()) {
-
-                // 기존 이미지 URL
                 String oldImageUrl = acc.getFirstImage();
-
-                // ⭐ 파일명(확장자 제외) 생성
                 String baseName = acc.getId() + "_" + UUID.randomUUID().toString().replace("-", "");
-
-                // ⭐ saveFile()에서 확장자 자동 부여 + 저장
                 String savedFileName = FileUploadUtils.saveFile(IMAGE_DIR, baseName, imageFile);
-
-                // ⭐ 저장된 이미지 URL 생성
                 String imageUrl = IMAGE_URL + savedFileName;
-
-                // ⭐ 기존 이미지 삭제 (기본 이미지가 아닐 경우)
                 if (oldImageUrl != null && !oldImageUrl.isEmpty() && !oldImageUrl.equals(DEFAULT_IMAGE)) {
                     String oldFileName = oldImageUrl.replace(IMAGE_URL, ""); // URL → 파일명 변환
                     FileUploadUtils.deleteFile(IMAGE_DIR, oldFileName);
                 }
-
-                // 엔티티 반영
                 acc.updateImage(imageUrl);
             }
 
@@ -222,7 +206,6 @@ public class AccService {
             throw new RuntimeException("숙소 이미지 저장 실패", e);
         }
 
-        // ⭐ 나머지 필드 업데이트
         acc.updateInfo(accDTO);
         return AccEntityToDTO(acc);
     }

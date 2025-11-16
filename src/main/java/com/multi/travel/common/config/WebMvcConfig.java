@@ -32,6 +32,12 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Value("${image.tourspot.add-resource-locations}")
     private String tourspotLocation;
 
+    @Value("${image.default.add-resource-handler}")
+    private String defaultHandler;
+
+    @Value("${image.default.add-resource-locations}")
+    private String defaultLocation;
+
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler(reviewHandler)
@@ -45,5 +51,8 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
         registry.addResourceHandler(tourspotHandler)
                 .addResourceLocations(tourspotLocation);
+
+        registry.addResourceHandler(defaultHandler)
+                .addResourceLocations(defaultLocation);
     }
 }

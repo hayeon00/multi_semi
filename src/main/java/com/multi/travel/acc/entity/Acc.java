@@ -102,6 +102,7 @@ public class Acc {
         if (StringUtils.hasText(accDTO.getTitle())) this.title = accDTO.getTitle();
         if (StringUtils.hasText(accDTO.getDescription())) this.description = accDTO.getDescription();
         if (StringUtils.hasText(accDTO.getTel())) this.tel = accDTO.getTel();
+        if (StringUtils.hasText(accDTO.getHomepage())) this.homepage = accDTO.getHomepage();
         if (StringUtils.hasText(accDTO.getLDongRegnCd())) this.lDongRegnCd = accDTO.getLDongRegnCd();
         if (StringUtils.hasText(accDTO.getStatus())) this.status = accDTO.getStatus();
 

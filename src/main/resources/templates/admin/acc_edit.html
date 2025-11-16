@@ -57,6 +57,11 @@
                 </div>
 
                 <div class="form-group">
+                    <label class="form-label"><span class="label-icon">📞</span>홈페이지</label>
+                    <input type="text" id="homepage" class="form-input">
+                </div>
+
+                <div class="form-group">
                     <label class="form-label"><span class="label-icon">📄</span>설명</label>
                     <textarea id="description" class="form-textarea" placeholder="숙소 설명 입력"></textarea>
                 </div>
@@ -192,8 +197,8 @@
                 document.getElementById("title").value = acc.title || "";
                 document.getElementById("address").value = acc.address || "";
                 document.getElementById("tel").value = acc.tel || "";
+                document.getElementById("homepage").value = acc.homepage || "";
                 document.getElementById("description").value = acc.description || "";
-
                 document.getElementById("mapx").value = acc.mapx || "";
                 document.getElementById("mapy").value = acc.mapy || "";
                 document.getElementById("areacode").value = acc.areacode || "";
@@ -203,6 +208,8 @@
                 // 이미지
                 if (acc.firstImage) {
                     document.getElementById("previewImg").src = acc.firstImage;
+                } else {
+                    document.getElementById("previewImg").src = `/images/no-image.png`;
                 }
 
                 // 우측 정보 카드
@@ -255,17 +262,13 @@
         formData.append("title", document.getElementById("title").value.trim());
         formData.append("address", document.getElementById("address").value.trim());
         formData.append("tel", document.getElementById("tel").value.trim());
+        formData.append("homepage", document.getElementById("homepage").value.trim());
         formData.append("description", document.getElementById("description").value.trim());
-        formData.append("homepage", document.getElementById("homepage")?.value?.trim() || "");
-
         formData.append("mapx", document.getElementById("mapx").value);
         formData.append("mapy", document.getElementById("mapy").value);
-
         formData.append("areacode", document.getElementById("areacode").value);
         formData.append("sigungucode", document.getElementById("sigungucode").value);
         formData.append("lDongRegnCd", document.getElementById("lDongRegnCd").value);
-
-        console.log(formData.get("lDongRegnCd"));
         formData.append("catCode", "acc");  // 고정
         formData.append("contentId", "");   // 필요 없으면 빈칸
 

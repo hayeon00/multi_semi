@@ -101,6 +101,7 @@ public class SecurityConfigjwt {
                         // 4. API - GET 요청 (공개 조회)
                         // ========================================
                         .requestMatchers(HttpMethod.GET,
+                                "/",
                                 "/categories/**",
                                 "/spots/**",              // ✅ /spots/detail 포함
                                 "/api/**",
