@@ -386,40 +386,11 @@
     </style>
 </head>
 <body>
-
-<header class="header">
-    <div class="header-container">
-        <div class="header-left">
-            <img th:src="@{/images/logo.png}" alt="Logo" class="logo">
-            <div class="title">TRAVEL PLANNING</div>
-        </div>
-
-        <div class="header-right">
-            <div class="user-info">
-                <span class="welcome-text" id="welcome-text">
-                    <span class="username" id="display-username">회원</span>님 환영합니다.
-                </span>
-            </div>
-
-            <nav class="nav">
-                <a th:href="@{/spots/view/tourspotlist}" class="nav-link">
-                    <span class="nav-icon">🏠</span>
-                    <span>홈</span>
-                </a>
-                <a th:href="@{/member/view/mypage}" class="nav-link">
-                    <span class="nav-icon">👤</span>
-                    <span>마이페이지</span>
-                </a>
-                <a th:href="@{/reviews/view/search/my}" class="nav-link active">
-                    <span class="nav-icon">✍️</span>
-                    <span>내 리뷰</span>
-                </a>
-                <a href="javascript:void(0);" class="nav-link logout" onclick="handleLogout()">
-                    <span class="nav-icon">🚪</span>
-                    <span>로그아웃</span>
-                </a>
-            </nav>
-        </div>
+<script th:src="@{/js/common.js}"></script>
+<div class="page-header">
+    <div class="logo-area">
+        <img th:src="@{/images/logo.png}" alt="Logo" class="logo">
+        <span class="title">TRAVEL PLANNING</span>
     </div>
 </header>
 
@@ -652,7 +623,9 @@
                     }
 
                     alert("리뷰가 성공적으로 등록되었습니다!");
-                    location.href = `/reviews/view/search/my`;
+                    safeRedirect(`/reviews/view/search/my`);
+
+
                 } catch (err) {
                     console.error(err);
                     alert("리뷰 등록 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");

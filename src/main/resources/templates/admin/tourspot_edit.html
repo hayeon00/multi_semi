@@ -8,6 +8,8 @@
 </head>
 
 <body>
+<script th:src="@{/js/common.js}"></script>
+
 <header>
     <div class="header-left">
         <img th:src="@{/images/logo.png}" alt="Logo">
@@ -351,9 +353,10 @@
         saveBtn.innerHTML = '<span>저장 중...</span>';
         saveBtn.disabled = true;
 
-        fetch(`/admin/tourspot/${id}`, {
+        fetchWithRefresh(`/admin/tourspot/${id}`, {
             method: "PUT",
-            body: formData
+            body: formData,
+            headers: {}
         })
             .then(res => {
                 if (res.ok) {
