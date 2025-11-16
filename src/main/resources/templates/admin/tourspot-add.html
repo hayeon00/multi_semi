@@ -107,6 +107,19 @@
                            placeholder="예: 02-3700-3900">
                 </div>
 
+                <!-- ✅ 홈페이지 필드 추가 -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <span class="label-icon">🔗</span>
+                        홈페이지
+                    </label>
+                    <input type="url"
+                           id="homepage"
+                           name="homepage"
+                           class="form-input"
+                           placeholder="예: https://www.royalpalace.go.kr">
+                </div>
+
                 <div class="form-row">
                     <div class="form-group">
                         <label class="form-label">
@@ -336,11 +349,12 @@
         formData.append("description", document.getElementById("description").value.trim());
         formData.append("address", address);
         formData.append("tel", document.getElementById("tel").value.trim());
+        formData.append("homepage", document.getElementById("homepage").value.trim()); // ✅ 추가
         formData.append("areacode", document.getElementById("areacode").value.trim());
         formData.append("sigungucode", document.getElementById("sigungucode").value.trim());
         formData.append("mapy", document.getElementById("mapy").value.trim());
         formData.append("mapx", document.getElementById("mapx").value.trim());
-        formData.append("lDongRegnCd", document.getElementById("lDongRegnCd").value.trim()); // 🔥 추가!
+        formData.append("lDongRegnCd", document.getElementById("lDongRegnCd").value.trim());
         formData.append("status", document.getElementById("status").checked ? "Y" : "N");
         formData.append("firstImageFile", imageFile);
 
@@ -395,7 +409,6 @@
         switchText.textContent = this.checked ? '활성화' : '비활성화';
     });
 
-
     async function handleLogout() {
         try {
             const response = await fetch('/auth/logout', {
@@ -403,7 +416,7 @@
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                credentials: 'include' // 쿠키 포함
+                credentials: 'include'
             });
 
             if (response.ok) {
