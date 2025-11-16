@@ -17,13 +17,14 @@ import lombok.NoArgsConstructor;
  * 리뷰를 작성할 수 있는 대상 정보 DTO
  * (ex. 코스 / 관광지 / 숙소 등)
  */
+
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class ReviewTargetDto {
 
-    private String type;     // 예: COURSE, tsp, acc 등
+    private String type;     // 예: course, tsp
     private Long targetId;   // 코스 ID 또는 장소 ID
     private String title;    // 사용자에게 보여줄 제목 (장소명 또는 "코스")
 

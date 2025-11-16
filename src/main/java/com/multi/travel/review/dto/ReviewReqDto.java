@@ -6,7 +6,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 /**
- * Please explain the class!!!
+ * 단일 리뷰 요청 dto
+ * 코스/스팟에 댛한 단일 리뷰 등록 요청
  *
  * @author : hayeon
  * @filename : ReviewReqDt
