@@ -146,16 +146,19 @@ public class CourseController {
     }
 
     /** 추천순 코스 목록 조회 */
-    @GetMapping("/popular")
-    public ResponseEntity<ResponseDto> getPopularCourses(
+    @GetMapping("/filter/popular")
+    public ResponseEntity<ResponseDto> getPopularCoursesForPlan(
+            @RequestParam Long planId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "6") int size
     ) {
-        return ResponseEntity.ok(
-                new ResponseDto(HttpStatus.OK, "추천순 코스 목록 조회 성공",
-                        courseService.getPopularCourses(page, size))
-        );
+        return ResponseEntity.ok(new ResponseDto(
+                HttpStatus.OK,
+                "필터 + 추천순 코스 조회 성공",
+                courseService.getPopularCoursesForPlan(planId, page, size)
+        ));
     }
+
 
     /** 코스 전체 수정 (기존 아이템 삭제 후 재등록) */
     @PutMapping("/{planId}")

@@ -7,6 +7,24 @@
   <title>여행 계획 수정</title>
 
   <style>
+    .back-nav-wrapper {
+      margin-bottom: 15px;
+    }
+
+    .btn-back-nav {
+      background: #e5e5e5;
+      padding: 6px 12px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      transition: 0.2s;
+    }
+
+    .btn-back-nav:hover {
+      background: #d0d0d0;
+    }
+
     body {
       font-family: Pretendard, sans-serif;
       background: #eef1f4;
@@ -56,14 +74,12 @@
       box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.25);
     }
 
-    /* readonly 출발지 */
     #startLocation {
       background: #f5f5f5;
       color: #666;
       cursor: not-allowed;
     }
 
-    /* 버튼 영역 */
     .btn-area {
       margin-top: 35px;
       text-align: center;
@@ -104,6 +120,10 @@
 <body>
 
 <div class="wrapper">
+  <div class="back-nav-wrapper">
+    <button class="btn-back-nav" onclick="window.history.back()">← 이전 페이지</button>
+  </div>
+
   <h2>여행 계획 수정</h2>
 
   <div class="row">
@@ -145,7 +165,27 @@
     loadPlan();
   });
 
+  // ===============================
+  // 날짜 검증 함수
+  // ===============================
+  function validateDates() {
+    const start = $("#startDate").val();
+    const end = $("#endDate").val();
+
+    if (start && end && start > end) {
+      alert("도착일은 출발일보다 빠를 수 없습니다.");
+      $("#endDate").val(originPlan.endDate); // 원래 저장되어 있던 날짜로 초기화
+      return false;
+    }
+    return true;
+  }
+
+  $("#startDate").on("change", validateDates);
+  $("#endDate").on("change", validateDates);
+
+  // ===============================
   // 계획 데이터 불러오기
+  // ===============================
   async function loadPlan() {
     const res = await fetchWithRefresh(`/plans/${planId}`);
     const json = await res.json();
@@ -155,18 +195,24 @@
     $("#people").val(originPlan.numberOfPeople);
     $("#startDate").val(originPlan.startDate);
     $("#endDate").val(originPlan.endDate);
-    $("#startLocation").val(originPlan.startLocation);  // readonly
+    $("#startLocation").val(originPlan.startLocation);
   }
 
+  // ===============================
   // 수정 저장
+  // ===============================
   async function savePlan() {
+
+    // 저장 전 마지막 검증
+    if (!validateDates()) return;
+
     const dto = {
       title: $("#title").val(),
       numberOfPeople: $("#people").val(),
       startDate: $("#startDate").val(),
       endDate: $("#endDate").val(),
-      tourSpotId: originPlan.tourSpotId,   // 변경 불가
-      course: originPlan.course            // 수정 없음
+      tourSpotId: originPlan.tourSpotId,
+      course: originPlan.course
     };
 
     const response = await fetchWithRefresh(`/plans/${planId}`, {

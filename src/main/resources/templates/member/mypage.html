@@ -173,23 +173,27 @@
                         ) + 1;
 
                         return `
-        <div class="plan-card">
-            <div class="plan-info">
-                <h3 class="plan-title">${plan.title}</h3>
-                <p class="plan-destination">📍 ${plan.startLocation || '미정'}</p>
-                <p class="plan-date">📅 ${new Date(plan.startDate).toLocaleDateString('ko-KR')} ~ ${new Date(plan.endDate).toLocaleDateString('ko-KR')} (${days}일)</p>
-                <p class="plan-people">👥 ${plan.numberOfPeople}명</p>
-                ${plan.isAiPlan ? '<span class="ai-badge">🤖 AI 추천</span>' : ''}
-            </div>
-            <div class="plan-actions">
+    <div class="plan-card"
+         onclick="location.href='/plans/view/${plan.id}'"
+         style="cursor: pointer;">
 
-                <button class="btn-plan-review" onclick="location.href='/reviews/view/write?planId=${plan.id}'">
-                    <span>✍️</span>
-                    <span>리뷰 작성</span>
-                </button>
-            </div>
+        <div class="plan-info">
+            <h3 class="plan-title">${plan.title}</h3>
+            <p class="plan-destination">📍 ${plan.startLocation || '미정'}</p>
+            <p class="plan-date">📅 ${new Date(plan.startDate).toLocaleDateString('ko-KR')} ~ ${new Date(plan.endDate).toLocaleDateString('ko-KR')} (${days}일)</p>
+            <p class="plan-people">👥 ${plan.numberOfPeople}명</p>
+            ${plan.isAiPlan ? '<span class="ai-badge">🤖 AI 추천</span>' : ''}
         </div>
-    `;
+
+        <div class="plan-actions">
+            <button class="btn-plan-review"
+                    onclick="event.stopPropagation(); location.href='/reviews/view/write?planId=${plan.id}'">
+                <span>✍️</span>
+                <span>리뷰 작성</span>
+            </button>
+        </div>
+    </div>
+`;
                     }).join("");
                 }
             } else {

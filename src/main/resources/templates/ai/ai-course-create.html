@@ -13,6 +13,24 @@
     <script th:src="@{|https://dapi.kakao.com/v2/maps/sdk.js?appkey=${kakaoKey}&autoload=false|}"></script>
 
     <style>
+        .back-nav-wrapper {
+            margin-bottom: 15px;
+        }
+
+        .btn-back-nav {
+            background: #e5e5e5;
+            padding: 6px 12px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+
+        .btn-back-nav:hover {
+            background: #d0d0d0;
+        }
+
         body { font-family: 'Noto Sans KR', sans-serif; margin: 0; background-color: #f9f9f9; }
         header { display: flex; justify-content: space-between; align-items: center; background-color: #d9d9d9; padding: 15px 30px; }
         .logo { font-weight: bold; }
@@ -68,6 +86,10 @@
 </header>
 
 <main>
+    <div class="back-nav-wrapper">
+        <button class="btn-back-nav" onclick="window.history.back()">← 이전 페이지</button>
+    </div>
+
     <!-- 상단 설명 -->
     <p style="margin-bottom: 15px; font-size: 14px;">
         선택한 여행 계획(planId: <span th:text="${planId}"></span>)을 기준으로

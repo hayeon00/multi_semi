@@ -61,6 +61,7 @@ public class SecurityConfigjwt {
                         // 1. 정적 리소스
                         // ========================================
                         .requestMatchers(
+                                "/",
                                 "/css/**",
                                 "/js/**",
                                 "/images/**",
