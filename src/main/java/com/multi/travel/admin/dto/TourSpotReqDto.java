@@ -1,5 +1,6 @@
 package com.multi.travel.admin.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -28,7 +29,8 @@ public class TourSpotReqDto {
 
     private Integer areacode;
     private Integer sigungucode;
-    private String lDongRegnCd;    // 행정동 코드
+    @JsonProperty("LDongRegnCd")  // 🔥 추가!
+    private String lDongRegnCd;   // 행정동 코드
 
     private Integer recCount;
 

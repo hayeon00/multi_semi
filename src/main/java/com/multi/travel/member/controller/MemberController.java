@@ -17,6 +17,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -125,15 +126,19 @@ public class MemberController {
         );
     }
 
-    @PutMapping("/update")
+    @PutMapping(value = "/update", consumes = {"multipart/form-data"})
+    @PreAuthorize("isAuthenticated()")
+    @ResponseBody
     public ResponseEntity<ResponseDto> updateMember(
-            @ModelAttribute MemberReqDto dto,
+            @RequestPart("dto") MemberReqDto dto,                           // ✅ JSON 데이터
+            @RequestPart(value = "file", required = false) MultipartFile file,  // ✅ 파일 분리
             @AuthenticationPrincipal CustomUser user
     ) {
         String loginId = user.getUserId(); // 로그인한 아이디
         log.info("[MemberController] 회원정보 수정 요청: loginId={}, dto={}", loginId, dto);
 
-        memberService.updateMember(loginId, dto);
+        // ✅ Service에 dto와 file을 분리해서 전달
+        memberService.updateMember(loginId, dto, file);
 
         return ResponseEntity.ok(
                 new ResponseDto(HttpStatus.OK, "회원정보가 수정되었습니다.", null)

@@ -28,15 +28,14 @@ public class AuthController {
     private final TokenService tokenService;
     private final TokenProvider tokenProvider;
 
-    /** ✅ 회원가입 */
+    /**  회원가입 */
     @PostMapping("/signup")
     public ResponseEntity<ResponseDto> signup(@RequestBody MemberReqDto memberReqDto) {
         ResponseDto response = new ResponseDto(HttpStatus.CREATED, "회원가입 성공", authService.signup(memberReqDto));
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    /** ✅ 로그인 */
-    /** ✅ 로그인 */
+    /**  로그인 */
     @PostMapping("/login")
     public ResponseEntity<ResponseDto> login(@RequestBody MemberReqDto memberReqDto,
                                              HttpServletResponse response) {
@@ -93,8 +92,10 @@ public class AuthController {
     /** ✅ 로그아웃 */
     @PostMapping("/logout")
     public ResponseEntity<ResponseDto> logout(HttpServletResponse response, HttpServletRequest request) {
-        // ✅ DB에 저장된 RefreshToken 삭제
+
+
         String accessToken = tokenService.resolveTokenFromCookies(request);
+
         if (accessToken != null) {
             tokenService.deleteRefreshToken(accessToken);
         }

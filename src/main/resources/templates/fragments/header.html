@@ -42,11 +42,11 @@
                 <a th:href="@{/}" class="nav-link">
                     <span class="icon">🏠</span> Home
                 </a>
-                <form th:action="@{/auth/logout}" method="post" sec:authorize="isAuthenticated()">
-                    <button type="submit" class="logout-btn">
-                        <span class="icon">🚪</span> 로그아웃
-                    </button>
-                </form>
+
+                <!-- 로그아웃 버튼 (API 호출 방식으로 변경) -->
+                <button type="button" class="logout-btn nav-link" onclick="handleLogout()" sec:authorize="isAuthenticated()">
+                    <span class="icon">🚪</span> 로그아웃
+                </button>
             </nav>
 
             <nav class="login-nav">
@@ -74,4 +74,30 @@
             </nav>
         </div>
     </div>
+
+    <!-- 로그아웃 처리 스크립트 -->
+    <script th:inline="javascript">
+        async function handleLogout() {
+            try {
+                const response = await fetch('/auth/logout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include' // 쿠키 포함
+                });
+
+                if (response.ok) {
+                    alert('로그아웃 되었습니다.');
+                    window.location.href = '/login';
+                } else {
+                    const result = await response.json();
+                    alert(result.message || '로그아웃에 실패했습니다.');
+                }
+            } catch (error) {
+                console.error('로그아웃 오류:', error);
+                alert('로그아웃 처리 중 오류가 발생했습니다.');
+            }
+        }
+    </script>
 </header>

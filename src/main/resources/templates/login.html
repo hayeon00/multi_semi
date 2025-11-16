@@ -2,6 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="ko">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>로그인 | Travel Planing</title>
     <link th:href="@{/css/login.css}" rel="stylesheet">
 </head>
@@ -12,12 +13,13 @@
         <div class="header-content">
             <div class="logo-section">
                 <div class="logo-box">
-                    <img th:src="@{/images/logo.png}" alt="Logo">
+                    <img th:src="@{/images/logo.png}" alt="Logo" src="/api/placeholder/50/50">
                 </div>
                 <span class="site-title">TRAVEL PLANING</span>
             </div>
             <nav class="header-nav">
-                <a th:href="@{/}" class="nav-link">Home</a>
+                <a th:href="@{/spots/view/tourspotlist}" class="nav-link">Home</a>
+                <a th:href="@{/signup}" class="nav-link">회원가입</a>
             </nav>
         </div>
     </header>
@@ -27,7 +29,8 @@
         <div class="login-layout">
             <!-- 왼쪽: 제목 -->
             <div class="login-title-section">
-                <h1 class="login-title">로그인 폼</h1>
+                <h1 class="login-title">로그인</h1>
+                <p class="login-subtitle">여행 계획을 시작하세요!</p>
             </div>
 
             <!-- 오른쪽: 폼 -->
@@ -38,9 +41,11 @@
                         <input type="text"
                                id="loginId"
                                class="field-input"
-                               placeholder="Enter your username"
-                               autocomplete="username">
-                        <div class="field-hint">당신을 구분하는 고유한 아이디입니다.</div>
+                               placeholder="아이디를 입력하세요"
+                               autocomplete="username"
+                               required>
+                        <div class="field-hint">당신을 구분하는 고유한 아이디입니다</div>
+                        <span class="error-message" id="loginId-error">아이디를 입력해주세요</span>
                     </div>
 
                     <div class="form-field">
@@ -48,22 +53,34 @@
                         <input type="password"
                                id="password"
                                class="field-input"
-                               placeholder="Enter your password"
-                               autocomplete="current-password">
+                               placeholder="비밀번호를 입력하세요"
+                               autocomplete="current-password"
+                               required>
                         <div class="field-hint">보안에 유의하세요</div>
+                        <span class="error-message" id="password-error">비밀번호를 입력해주세요</span>
                     </div>
 
                     <div class="button-group">
                         <button type="button" class="btn btn-signup" onclick="location.href='/signup'">
-                            회원 가입
+                            <span>회원가입</span>
                         </button>
                         <button type="submit" class="btn btn-login">
-                            로그인
+                            <span>로그인</span>
                         </button>
                     </div>
                 </form>
 
                 <div class="message" id="msg"></div>
+
+                <div class="security-badge">
+                    안전한 연결로 보호됩니다
+                </div>
+
+                <div class="extra-links">
+                    <div class="link-item">
+                        계정이 없으신가요? <a href="/signup">회원가입하기</a>
+                    </div>
+                </div>
             </div>
         </div>
     </main>
@@ -75,16 +92,59 @@
 </footer>
 
 <script>
+    // ✅ 입력 검증
+    function validateForm() {
+        let isValid = true;
+
+        const loginId = document.getElementById("loginId");
+        const password = document.getElementById("password");
+
+        // 아이디 검증
+        if (!loginId.value.trim()) {
+            loginId.classList.add('error');
+            document.getElementById('loginId-error').classList.add('show');
+            isValid = false;
+        } else {
+            loginId.classList.remove('error');
+            loginId.classList.add('success');
+            document.getElementById('loginId-error').classList.remove('show');
+        }
+
+        // 비밀번호 검증
+        if (!password.value.trim()) {
+            password.classList.add('error');
+            document.getElementById('password-error').classList.add('show');
+            isValid = false;
+        } else {
+            password.classList.remove('error');
+            password.classList.add('success');
+            document.getElementById('password-error').classList.remove('show');
+        }
+
+        return isValid;
+    }
+
+    // ✅ 로그인 처리
     async function login() {
-        const loginId = document.getElementById("loginId").value.trim();
-        const password = document.getElementById("password").value.trim();
-        const msgBox = document.getElementById("msg");
+        console.log("=== 로그인 시작 ===");
 
         // 입력 검증
-        if (!loginId || !password) {
+        if (!validateForm()) {
             showMessage("아이디와 비밀번호를 입력해주세요.", "error");
             return;
         }
+
+        const loginId = document.getElementById("loginId").value.trim();
+        const password = document.getElementById("password").value.trim();
+
+        console.log("입력된 값:", { loginId });
+
+        // 버튼 비활성화 및 로딩 상태
+        const loginBtn = document.querySelector('.btn-login');
+        const originalContent = loginBtn.innerHTML;
+        loginBtn.innerHTML = '<span>로그인 중...</span>';
+        loginBtn.disabled = true;
+        loginBtn.classList.add('loading');
 
         try {
             const response = await fetch("/auth/login", {
@@ -103,13 +163,20 @@
                 setTimeout(() => window.location.href = "/spots/view/tourspotlist", 500);
             } else {
                 showMessage(result.message || "로그인 실패. 아이디/비밀번호를 확인해주세요.", "error");
+                loginBtn.innerHTML = originalContent;
+                loginBtn.disabled = false;
+                loginBtn.classList.remove('loading');
             }
         } catch (e) {
             console.error("로그인 에러:", e);
             showMessage("서버 오류가 발생했습니다.", "error");
+            loginBtn.innerHTML = originalContent;
+            loginBtn.disabled = false;
+            loginBtn.classList.remove('loading');
         }
     }
 
+    // ✅ 메시지 표시
     function showMessage(text, type) {
         const msgBox = document.getElementById("msg");
         msgBox.textContent = text;
@@ -117,8 +184,36 @@
         msgBox.style.display = "block";
     }
 
-    // 엔터키로 로그인
+    // ✅ 실시간 입력 검증
+    document.addEventListener('DOMContentLoaded', () => {
+        const inputs = document.querySelectorAll('.field-input');
+
+        inputs.forEach(input => {
+            // 포커스 해제 시 검증
+            input.addEventListener('blur', () => {
+                validateForm();
+            });
+
+            // 입력 시 에러 상태 제거
+            input.addEventListener('input', () => {
+                input.classList.remove('error', 'success');
+                const errorMsg = document.getElementById(`${input.id}-error`);
+                if (errorMsg) {
+                    errorMsg.classList.remove('show');
+                }
+            });
+        });
+    });
+
+    // ✅ 엔터키로 로그인
     document.getElementById("password").addEventListener("keypress", function(e) {
+        if (e.key === "Enter") {
+            login();
+        }
+    });
+
+    // ✅ 아이디 입력란에서도 엔터키 지원
+    document.getElementById("loginId").addEventListener("keypress", function(e) {
         if (e.key === "Enter") {
             login();
         }

@@ -3,51 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <title>마이페이지 | Travel Planning</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
     <link rel="stylesheet" th:href="@{/css/mypage.css}">
 </head>
 <body>
-<header class="header">
-    <div class="logo-area">
+<header>
+    <div class="header-left">
         <img th:src="@{/images/logo.png}" alt="Logo" class="logo">
-        <span class="title">TRAVEL PLANNING</span>
+        <div class="title">TRAVEL PLANNING</div>
     </div>
-
-    <div class="user-menu">
-        <span class="welcome-text" id="welcome-text">로그인 정보를 불러오는 중...</span>
-        <nav>
-            <a th:href="@{/}">Home</a>
-            <a th:href="@{/member/view/mypage}">마이페이지</a>
-            <a th:href="@{/logout}">로그아웃</a>
+    <div class="header-right">
+        <div class="welcome-text" id="welcome-text">
+            <span class="user-badge">회원</span>님 환영합니다.
+        </div>
+        <nav class="nav">
+            <a th:href="@{/spots/view/tourspotlist}" class="nav-link">
+                <span class="nav-icon">🏠</span>
+                <span>홈</span>
+            </a>
+            <a th:href="@{/member/view/mypage}" class="nav-link active">
+                <span class="nav-icon">👤</span>
+                <span>마이페이지</span>
+            </a>
+            <a th:href="@{/reviews/view/search/my}" class="nav-link">
+                <span class="nav-icon">✍️</span>
+                <span>내 리뷰</span>
+            </a>
+            <a href="javascript:void(0);" class="nav-link logout" onclick="handleLogout()">
+                <span class="nav-icon">🚪</span>
+                <span>로그아웃</span>
+            </a>
         </nav>
     </div>
 </header>
 
-<main class="mypage-container">
-    <!-- 왼쪽 프로필 영역 -->
-    <section class="profile">
-        <img id="profile-img" src="/images/profile-sample.jpg" alt="프로필 이미지" class="profile-img">
-        <h2 id="username">회원 이름</h2>
-        <p class="user-id" id="loginId">@아이디</p>
-        <p class="user-email" id="email">email@example.com</p>
+<main>
+    <div class="admin-container">
+        <!-- 왼쪽 프로필 영역 -->
+        <aside class="admin-sidebar">
+            <div class="sidebar-header">
+                <h2 class="admin-title">프로필</h2>
+                <p class="admin-sub">내 정보를 확인하고 관리합니다</p>
+            </div>
 
-        <button class="btn-edit" onclick="location.href='/member/view/edit'">프로필 수정</button>
-        <button class="btn-review" onclick="location.href='/reviews/view/search/my'">내가 쓴 리뷰보기</button>
-    </section>
+            <div class="profile-card">
+                <img id="profile-img" src="/images/profile-sample.jpg" alt="프로필 이미지" class="profile-img">
+                <h3 id="username" class="profile-name">회원 이름</h3>
+                <p class="profile-id" id="loginId">@아이디</p>
+                <p class="profile-email" id="email">email@example.com</p>
 
-    <!-- 오른쪽 최근 계획 -->
-    <section class="plan-section">
-        <div class="plan-header">
-            <h3>최근 내 계획</h3>
-        </div>
+                <button class="btn-primary" onclick="location.href='/member/view/edit'">
+                    <span>✏️</span>
+                    <span>프로필 수정</span>
+                </button>
+                <button class="btn-secondary" onclick="location.href='/reviews/view/search/my'">
+                    <span>📝</span>
+                    <span>내가 쓴 리뷰</span>
+                </button>
+            </div>
+        </aside>
 
-        <div class="plan-list" id="plan-list">
-            <p class="no-plan">여행 계획을 불러오는 중...</p>
-        </div>
-    </section>
+        <!-- 오른쪽 최근 계획 -->
+        <section class="admin-content">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span class="section-icon">📅</span>
+                    최근 내 계획
+                </h2>
+            </div>
+
+            <div class="plan-list" id="plan-list">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <div>여행 계획을 불러오는 중...</div>
+                </div>
+            </div>
+        </section>
+    </div>
 </main>
 
 <footer>
-    &copy; 2025 Travel Planning. All rights reserved.
+    <p>&copy; 2025 Travel Planning. All rights reserved.</p>
 </footer>
 
 <script th:src="@{/js/common.js}"></script>
@@ -72,13 +108,37 @@
             const member = memberResult.data;
 
             // ✅ 2. 화면에 회원 정보 표시
-            document.getElementById("welcome-text").textContent = `${member.username} 님 환영합니다.`;
+            document.getElementById("welcome-text").innerHTML =
+                `<span class="user-badge">회원</span>${member.username}님 환영합니다.`;
             document.getElementById("username").textContent = member.username;
             document.getElementById("loginId").textContent = `@${member.loginId}`;
             document.getElementById("email").textContent = member.email;
 
             const imgTag = document.getElementById("profile-img");
-            imgTag.src = member.imageUrl ? member.imageUrl : "/images/profile-sample.jpg";
+
+// 프로필 이미지 표시 (회원정보 수정 페이지와 동일한 방식)
+            if (member.image && member.image !== 'default.img') {
+                // URL이 포함되어 있으면 그대로, 아니면 URL 추가
+                const imageUrl = member.image.startsWith('http')
+                    ? member.image
+                    : `http://localhost:8090/profile/${member.image}`;
+                imgTag.src = imageUrl;
+                console.log("프로필 이미지:", imageUrl);
+            } else {
+                imgTag.src = "/images/no-image.png";
+                console.log("기본 이미지 사용");
+            }
+
+// 이미지 로드 실패 시 기본 이미지로 변경
+            imgTag.onerror = function() {
+                console.error("❌ 이미지 로드 실패:", this.src);
+                this.src = "/images/no-image.png";
+                this.onerror = null; // 무한루프 방지!
+            };
+
+            imgTag.onload = function() {
+                console.log("✅ 이미지 로드 성공:", this.src);
+            };
 
             // ✅ 3. 최근 여행 계획 목록 불러오기
             const planRes = await fetchWithRefresh("/plans", {
@@ -93,7 +153,12 @@
             if (planRes.ok && planResult.status === 200) {
                 const plans = planResult.data;
                 if (plans.length === 0) {
-                    list.innerHTML = `<p class="no-plan">아직 작성한 여행 계획이 없습니다.</p>`;
+                    list.innerHTML = `
+                        <div class="empty-state">
+                            <span class="empty-icon">📅</span>
+                            <p>아직 작성한 여행 계획이 없습니다.</p>
+                        </div>
+                    `;
                 } else {
                     list.innerHTML = plans.map(plan => `
           <div class="plan-item">
@@ -101,17 +166,74 @@
             <button class="btn-review-small" onclick="location.href='/reviews/view/write?planId=${plan.id}'">리뷰쓰기</button>
           </div>
         `).join("");
+                    list.innerHTML = plans.map(plan => {
+                        // ✅ days 변수 계산
+                        const days = Math.ceil(
+                            (new Date(plan.endDate) - new Date(plan.startDate)) / (1000 * 60 * 60 * 24)
+                        ) + 1;
+
+                        return `
+        <div class="plan-card">
+            <div class="plan-info">
+                <h3 class="plan-title">${plan.title}</h3>
+                <p class="plan-destination">📍 ${plan.startLocation || '미정'}</p>
+                <p class="plan-date">📅 ${new Date(plan.startDate).toLocaleDateString('ko-KR')} ~ ${new Date(plan.endDate).toLocaleDateString('ko-KR')} (${days}일)</p>
+                <p class="plan-people">👥 ${plan.numberOfPeople}명</p>
+                ${plan.isAiPlan ? '<span class="ai-badge">🤖 AI 추천</span>' : ''}
+            </div>
+            <div class="plan-actions">
+
+                <button class="btn-plan-review" onclick="location.href='/reviews/view/write?planId=${plan.id}'">
+                    <span>✍️</span>
+                    <span>리뷰 작성</span>
+                </button>
+            </div>
+        </div>
+    `;
+                    }).join("");
                 }
             } else {
-                list.innerHTML = `<p class="no-plan">여행 계획을 불러올 수 없습니다.</p>`;
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <span class="empty-icon">⚠️</span>
+                        <p>여행 계획을 불러올 수 없습니다.</p>
+                    </div>
+                `;
             }
 
         } catch (err) {
             console.error("서버 통신 오류:", err);
-            document.getElementById("plan-list").innerHTML =
-                `<p class="no-plan">서버 오류로 데이터를 불러올 수 없습니다.</p>`;
+            document.getElementById("plan-list").innerHTML = `
+                <div class="empty-state">
+                    <span class="empty-icon">⚠️</span>
+                    <p>서버 오류로 데이터를 불러올 수 없습니다.</p>
+                </div>
+            `;
         }
     });
+
+    async function handleLogout() {
+        try {
+            const response = await fetch('/auth/logout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include' // 쿠키 포함
+            });
+
+            if (response.ok) {
+                alert('로그아웃 되었습니다.');
+                window.location.href = '/login';
+            } else {
+                const result = await response.json();
+                alert(result.message || '로그아웃에 실패했습니다.');
+            }
+        } catch (error) {
+            console.error('로그아웃 오류:', error);
+            alert('로그아웃 처리 중 오류가 발생했습니다.');
+        }
+    }
 </script>
 </body>
 </html>
