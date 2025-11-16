@@ -61,6 +61,7 @@ public class SecurityConfigjwt {
                         // 1. 정적 리소스
                         // ========================================
                         .requestMatchers(
+                                "/",
                                 "/css/**",
                                 "/js/**",
                                 "/images/**",
@@ -101,6 +102,7 @@ public class SecurityConfigjwt {
                         // 4. API - GET 요청 (공개 조회)
                         // ========================================
                         .requestMatchers(HttpMethod.GET,
+                                "/",
                                 "/categories/**",
                                 "/spots/**",              // ✅ /spots/detail 포함
                                 "/api/**",

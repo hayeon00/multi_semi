@@ -7,6 +7,24 @@
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
   <style>
+    .back-nav-wrapper {
+      margin-bottom: 15px;
+    }
+
+    .btn-back-nav {
+      background: #e5e5e5;
+      padding: 6px 12px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      transition: 0.2s;
+    }
+
+    .btn-back-nav:hover {
+      background: #d0d0d0;
+    }
+
     body {
       font-family: 'Noto Sans KR', sans-serif;
       background-color: #f9f9f9;
@@ -79,9 +97,14 @@
       <a href="/member/view/mypage">마이페이지</a>
       <a href="/logout">로그아웃</a>
     </nav>
+  </div>
 </header>
 
 <main>
+  <div class="back-nav-wrapper">
+    <button class="btn-back-nav" onclick="window.history.back()">← 이전 페이지</button>
+  </div>
+
   <div class="filter-bar">
     <button id="defaultSort" class="active">기본순</button>
     <button id="popularSort">추천순</button>
@@ -104,14 +127,14 @@
       sortType = 'default';
       $(this).addClass("active");
       $("#popularSort").removeClass("active");
-      loadCourses();
+      loadCourses(0);
     });
 
     $("#popularSort").click(function() {
       sortType = 'popular';
       $(this).addClass("active");
       $("#defaultSort").removeClass("active");
-      loadCourses();
+      loadCourses(0);
     });
   });
 
@@ -122,20 +145,36 @@
     currentPage = page;
 
     let url;
-    if (planId) {
+
+    if (planId && sortType === "popular") {
+      url = `/courses/filter/popular?planId=${planId}&page=${page}&size=${pageSize}`;
+    }
+    else if (planId) {
       url = `/courses/filter?planId=${planId}&page=${page}&size=${pageSize}`;
-    } else {
-      url = sortType === 'popular'
-              ? `/courses/popular?page=${page}&size=${pageSize}`
-              : `/courses?page=${page}&size=${pageSize}`;
+    }
+    else if (sortType === "popular") {
+      url = `/courses/popular?page=${page}&size=${pageSize}`;
+    }
+    else {
+      url = `/courses?page=${page}&size=${pageSize}`;
     }
 
     try {
       const response = await fetchWithRefresh(url);
       const res = await response.json();
 
-      const data = res.data.content || res.data;
-      const totalPages = res.data.totalPages ?? 1;
+      let data;
+      let totalPages = 1;
+
+      // 인기순: List
+      if (Array.isArray(res.data)) {
+        data = res.data;
+
+        // 기본순/필터: Page
+      } else {
+        data = res.data.content;
+        totalPages = res.data.totalPages;
+      }
 
       renderCourses(data);
       renderPagination(totalPages, page);

@@ -217,13 +217,21 @@ public class CourseService {
 
     /** 추천순 조회 */
     @Transactional(readOnly = true)
-    public List<CourseResDto> getPopularCourses(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("recCount").descending());
-        Page<Course> courses = courseRepository.findByStatus("Y", pageable);
+    public Page<CourseResDto> getPopularCoursesForPlan(Long planId, int page, int size) {
 
-        return courses.stream()
-                .map(this::mapToCourseResDto)
-                .toList();
+        TripPlan plan = tripPlanRepository.findById(planId)
+                .orElseThrow(() -> new EntityNotFoundException("계획을 찾을 수 없습니다."));
+
+        TourSpot startSpot = tspRepository
+                .findByMapxAndMapy(plan.getStartMapX(), plan.getStartMapY())
+                .orElseThrow(() -> new EntityNotFoundException("출발 관광지를 찾을 수 없습니다."));
+
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Course> courses =
+                courseRepository.findCoursesByStartSpotOrderByPopular(startSpot.getId(), pageable);
+
+        return courses.map(this::mapToCourseResDto);
     }
 
 
