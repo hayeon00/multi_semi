@@ -28,15 +28,14 @@ public class AuthController {
     private final TokenService tokenService;
     private final TokenProvider tokenProvider;
 
-    /** ✅ 회원가입 */
+    /**  회원가입 */
     @PostMapping("/signup")
     public ResponseEntity<ResponseDto> signup(@RequestBody MemberReqDto memberReqDto) {
         ResponseDto response = new ResponseDto(HttpStatus.CREATED, "회원가입 성공", authService.signup(memberReqDto));
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    /** ✅ 로그인 */
-    /** ✅ 로그인 */
+    /**  로그인 */
     @PostMapping("/login")
     public ResponseEntity<ResponseDto> login(@RequestBody MemberReqDto memberReqDto,
                                              HttpServletResponse response) {

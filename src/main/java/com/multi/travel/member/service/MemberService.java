@@ -76,7 +76,7 @@ public class MemberService {
         return plans.stream().map(plan -> {
             PlanReqDto dto = new PlanReqDto();
             dto.setMemberId(loginId);
-            dto.setTourSpotId(null);
+            dto.setTourSpotId(plan.getTourSpotId());
             dto.setTitle(plan.getTitle());
             dto.setNumberOfPeople(plan.getNumberOfPeople());
             dto.setStartDate(plan.getStartDate());

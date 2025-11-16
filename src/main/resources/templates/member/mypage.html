@@ -160,18 +160,31 @@
                         </div>
                     `;
                 } else {
-                    list.innerHTML = plans.map(plan => `
-                        <div class="plan-card">
-                            <div class="plan-info">
-                                <h3 class="plan-title">${plan.title}</h3>
-                                <p class="plan-date">생성일: ${new Date(plan.createdDate).toLocaleDateString()}</p>
-                            </div>
-                            <button class="btn-plan-review" onclick="location.href='/reviews/view/write?planId=${plan.id}'">
-                                <span>✍️</span>
-                                <span>리뷰 작성</span>
-                            </button>
-                        </div>
-                    `).join("");
+                    list.innerHTML = plans.map(plan => {
+                        // ✅ days 변수 계산
+                        const days = Math.ceil(
+                            (new Date(plan.endDate) - new Date(plan.startDate)) / (1000 * 60 * 60 * 24)
+                        ) + 1;
+
+                        return `
+        <div class="plan-card">
+            <div class="plan-info">
+                <h3 class="plan-title">${plan.title}</h3>
+                <p class="plan-destination">📍 ${plan.startLocation || '미정'}</p>
+                <p class="plan-date">📅 ${new Date(plan.startDate).toLocaleDateString('ko-KR')} ~ ${new Date(plan.endDate).toLocaleDateString('ko-KR')} (${days}일)</p>
+                <p class="plan-people">👥 ${plan.numberOfPeople}명</p>
+                ${plan.isAiPlan ? '<span class="ai-badge">🤖 AI 추천</span>' : ''}
+            </div>
+            <div class="plan-actions">
+
+                <button class="btn-plan-review" onclick="location.href='/reviews/view/write?planId=${plan.id}'">
+                    <span>✍️</span>
+                    <span>리뷰 작성</span>
+                </button>
+            </div>
+        </div>
+    `;
+                    }).join("");
                 }
             } else {
                 list.innerHTML = `
