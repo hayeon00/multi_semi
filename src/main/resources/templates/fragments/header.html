@@ -79,7 +79,7 @@
     <script th:inline="javascript">
         async function handleLogout() {
             try {
-                const response = await fetch('/auth/logout', {
+                const response = await fetchWithRefresh('/auth/logout', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'

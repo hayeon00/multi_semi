@@ -10,6 +10,11 @@
 
     <!-- detail 공통 CSS -->
     <link rel="stylesheet" th:href="@{/css/detail.css}">
+    <style>
+        #btnBack {
+            left: 20px !important;
+        }
+    </style>
 </head>
 
 <body>
@@ -19,7 +24,7 @@
     <div class="detail-container">
 
         <!-- 뒤로가기 버튼 -->
-        <button class="btn-back" id="btnBack">← 뒤로가기</button>
+        <button class="btn-nav" id="btnBack">← 뒤로가기</button>
 
         <h1 class="detail-title">숙소 상세정보</h1>
 
@@ -44,7 +49,7 @@
         <!-- 버튼 그룹 -->
         <div id="actions" class="btn-group" style="display:none;">
             <button class="btn btn-accommodation" id="btnAcc">🏨 관광지 목록 보기</button>
-            <button class="btn btn-plan" id="btnPlan">🗓️ 관광지 상세 정보로 돌아가기</button>
+            <button class="btn btn-plan" id="btnTspDetail">🗓️ 관광지 상세 정보로 돌아가기</button>
             <button class="btn btn-like" id="btnLike">♡ 추천</button>
         </div>
 
@@ -186,10 +191,11 @@
         });
 
         document.getElementById("btnAcc").addEventListener("click", () => {
-            window.location.href = `/spots/view/tourspotlist`;
+            // window.location.href = `/spots/view/tourspotlist`;
+            safeRedirect(`/spots/view/tourspotlist`);
         });
 
-        document.getElementById("btnPlan").addEventListener("click", () => {
+        document.getElementById("btnTspDetail").addEventListener("click", () => {
             window.location.href = `/spots/view/tourspotdetail?id=${tspId}`;
         });
 

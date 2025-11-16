@@ -180,10 +180,11 @@
             window.history.back();
 
         document.getElementById("btnAcc").onclick = () =>
-            window.location.href = `/accommodations/view/acclist?tspId=${id}`;
+            // window.location.href = `/accommodations/view/acclist?tspId=${id}`;
+            safeRedirect(`/accommodations/view/acclist?tspId=${id}`);
 
         document.getElementById("btnPlan").onclick = () => {
-            window.location.href = `/plans/view/create?tspId=${id}`;
+            safeRedirect(`/plans/view/create?tspId=${id}`)
         };
 
         document.getElementById("btnLike").onclick = () => {

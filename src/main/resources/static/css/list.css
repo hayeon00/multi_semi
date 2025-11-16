@@ -147,3 +147,20 @@ body {
     cursor: not-allowed;
     background: none;
 }
+
+.btn-nav {
+    margin-top: 50px;
+    margin-left: 20px;
+    padding: 8px 14px;
+    border: none;
+    border-radius: 6px;
+    background-color: #ddd;
+    cursor: pointer;
+    font-weight: 600;
+    color: #333;
+    transition: 0.2s;
+}
+
+.btn-nav:hover {
+    background-color: #ccc;
+}

@@ -291,10 +291,11 @@
             console.log("🚀 서버에 등록 요청 전송 /admin/accommodations/regist");
 
             try {
-                const res = await fetch("/admin/accommodations/regist", {
+                const res = await fetchWithRefresh("/admin/accommodations/regist", {
                     method: "POST",
                     body: formData,
-                    credentials: "include"
+                    credentials: "include",
+                    headers: {}
                 });
 
                 console.log("📥 서버 응답 코드:", res.status);

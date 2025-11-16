@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <link rel="stylesheet" th:href="@{/css/mypage.css}">
+    <script th:src="@{/js/common.js}"></script>
     <title>내가 쓴 리뷰</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pretendard&display=swap">
     <style>
@@ -334,7 +335,7 @@
     }
 
     function editPlan(planId) {
-        location.href = `/reviews/view/edit?planId=${planId}`;
+        safeRedirect(`/reviews/view/edit?planId=${planId}`)
     }
 
     async function deletePlan(planId) {
@@ -343,7 +344,8 @@
             const res = await fetch(`/plans/${planId}`, { method: "DELETE", credentials: "include" });
             if (!res.ok) throw new Error("삭제 실패");
             alert("삭제되었습니다.");
-            loadPlansAndReviews();
+            // loadPlansAndReviews();
+            safeRedirect('/reviews/view/search/my')
         } catch (e) {
             alert("삭제 중 오류 발생");
             console.error(e);

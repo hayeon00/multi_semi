@@ -218,7 +218,7 @@
 </head>
 
 <body>
-
+<script th:src="@{/js/common.js}"></script>
 <div class="page-header">
     <div class="logo-area">
         <img th:src="@{/images/logo.png}" alt="Logo" class="logo">
@@ -454,7 +454,9 @@
                     }
 
                     alert("리뷰가 성공적으로 등록되었습니다!");
-                    location.href = `/reviews/view/search/my`;
+                    safeRedirect(`/reviews/view/search/my`);
+
+
                 } catch (err) {
                     console.error(err);
                     alert("리뷰 등록 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");

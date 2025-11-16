@@ -153,7 +153,7 @@ public class AdminService {
                 savedFileName = FileUploadUtils.saveFile(IMAGE_DIR, uniqueFileName, file);
 
                 // ✅ 기존 이미지 삭제 (URL → 파일명 변환)
-                if (oldImage != null && !oldImage.isEmpty()) {
+                if (!oldImage.startsWith("http://tong") && oldImage != null && !oldImage.isEmpty()) {
                     String oldFileName = oldImage.replace(IMAGE_URL, "");
                     FileUploadUtils.deleteFile(IMAGE_DIR, oldFileName);
                     log.info("[updateSpot] 기존 이미지 삭제: {}", oldFileName);
