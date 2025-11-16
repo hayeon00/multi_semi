@@ -5,13 +5,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-/**
- * Please explain the class!!!
- *
- * @author : hayeon
- * @filename : WebMvcConfig
- * @since : 2025. 11. 8. 토요일
- */
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
 
@@ -41,8 +34,8 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("/reviewImages/**")
-                .addResourceLocations("file:/Users/rlagkdus/uploads/reviewImages/");
+        registry.addResourceHandler(reviewHandler)
+                .addResourceLocations(reviewLocation);
 
         registry.addResourceHandler(memberHandler)
                 .addResourceLocations(memberLocation);
@@ -53,7 +46,4 @@ public class WebMvcConfig implements WebMvcConfigurer {
         registry.addResourceHandler(tourspotHandler)
                 .addResourceLocations(tourspotLocation);
     }
-
-
 }
-

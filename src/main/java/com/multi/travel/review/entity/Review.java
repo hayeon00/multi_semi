@@ -1,15 +1,9 @@
 package com.multi.travel.review.entity;
 
-/**
- * Please explain the class!!!
- *
- * @author : rlagkdus
- * @filename : Review
- * @since : 2025. 11. 8. 토요일
- */
-
 import com.multi.travel.member.entity.Member;
 import com.multi.travel.plan.entity.TripPlan;
+import com.multi.travel.review.dto.MainReviewDto;
+import com.multi.travel.review.dto.SpotReviewDto;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -52,9 +46,8 @@ public class Review {
     private LocalDateTime createdAt;
 
 
-
     @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default // 추가 이유: Builder로 생성할 때도 초기값이 반영되도록
+    @Builder.Default
     private List<ReviewImage> images = new ArrayList<>();
 
     @PrePersist
@@ -67,4 +60,18 @@ public class Review {
         this.images.add(image);
     }
 
+
+    public void update(MainReviewDto mainReview) {
+            this.title = mainReview.getTitle();
+            this.content = mainReview.getContent();
+            this.rating = mainReview.getRating();
+
+    }
+
+    public void update(SpotReviewDto spotReview) {
+
+            this.content = spotReview.getContent();
+            this.rating = spotReview.getRating();
+
+    }
 }

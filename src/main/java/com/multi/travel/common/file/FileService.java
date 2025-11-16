@@ -19,6 +19,7 @@ public class FileService {
     @Value("${file.upload-dir:/tmp}") // 기본값 지정 (예: /tmp)
     private String uploadDir;
 
+
     /**
      * 파일 저장 후 저장된 파일명 반환
      */
@@ -58,4 +59,6 @@ public class FileService {
             log.error("파일 삭제 실패: {}", storedFileName, e);
         }
     }
+
+
 }

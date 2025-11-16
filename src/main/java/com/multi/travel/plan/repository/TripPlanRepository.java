@@ -18,5 +18,5 @@ public interface TripPlanRepository extends JpaRepository<TripPlan, Long> {
     /** ✅ 로그인한 회원이 작성한 여행계획 전체조회 (최신순 - id 기준) */
     List<TripPlan> findAllByMember_LoginId(String loginId);
 
-
+    TripPlan findByCourse_CourseId(Long targetId);
 }

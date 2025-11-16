@@ -2,11 +2,13 @@ package com.multi.travel.plan.entity;
 
 import com.multi.travel.course.entity.Course;
 import com.multi.travel.member.entity.Member;
+import com.multi.travel.review.entity.Review;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 /**
  * 여행 기본 계획 엔티티
@@ -61,6 +63,9 @@ public class TripPlan {
 
     @Column(name = "tour_spot_id")
     private Long tourSpotId;
+
+    @OneToMany(mappedBy = "tripPlan", cascade = CascadeType.ALL, orphanRemoval = true) // ⭐ 이 부분이 핵심!
+    private List<Review> reviews;
 
 
     public void update(String title, int numberOfPeople, LocalDate startDate, LocalDate endDate,

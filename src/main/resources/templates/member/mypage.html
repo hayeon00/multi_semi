@@ -98,7 +98,7 @@
                     list.innerHTML = plans.map(plan => `
           <div class="plan-item">
             <div class="plan-title">${plan.title}</div>
-            <button class="btn-review-small" onclick="location.href='/reviews/view/write?planId=${plan.id}'">리뷰</button>
+            <button class="btn-review-small" onclick="location.href='/reviews/view/write?planId=${plan.id}'">리뷰쓰기</button>
           </div>
         `).join("");
                 }

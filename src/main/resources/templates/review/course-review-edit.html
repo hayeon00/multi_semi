@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <title>리뷰 수정</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pretendard&display.swap">
+    <link rel="stylesheet" th:href="@{/css/mypage.css}">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pretendard&display=swap">
     <style>
+        /* 기본 스타일 */
         body {
             font-family: 'Pretendard', sans-serif;
             background: #F5F6F8;
@@ -33,221 +35,638 @@
             font-weight: 500;
         }
         .content-wrapper {
-            max-width: 800px;
+            max-width: 1000px; !important;
+            width: 1000px;
             margin: 40px auto;
+            padding: 30px;
             background: #fff;
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         }
-        h2 {
-            margin-bottom: 10px;
-            font-size: 26px;
-            color: #2C3E50;
-            font-weight: 700;
-        }
-        .target-title {
-            text-align: center;
-            color: #555;
-            font-size: 18px;
-            font-weight: 500;
-            margin-bottom: 30px;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 20px;
-        }
+
+        /* 폼 스타일 */
         .form-group {
             margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #EAEAEA;
+            border-radius: 6px;
+            background: #FDFDFF;
         }
+
         .form-group label {
             display: block;
+            font-weight: 600;
             margin-bottom: 8px;
-            font-weight: 600;
-            color: #555;
-            font-size: 15px;
+            color: #4A4A4A;
         }
-        input[type="text"],
-        textarea,
-        input[type="file"] {
-            width: 100%;
-            padding: 14px;
-            border-radius: 8px;
-            border: 1px solid #DCDDE1;
-            background: #FAFAFA;
-            font-size: 15px;
+
+        input[type="text"], textarea {
+            width: calc(100% - 20px);
+            padding: 10px;
+            border: 1px solid #DDD;
+            border-radius: 4px;
             box-sizing: border-box;
+            font-size: 14px;
+            font-family: inherit;
         }
-        input[type="text"]:focus,
-        textarea:focus {
-            border-color: #3498DB;
-            background: #fff;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
-        }
+
         textarea {
-            height: 140px;
-            resize: none;
+            resize: vertical;
+            min-height: 100px;
         }
-        /* ======== 1. 버튼 스타일 수정 ======== */
-        /* 버튼을 감싸는 컨테이너 */
-        .button-group {
-            display: flex;
-            gap: 10px; /* 버튼 사이 간격 */
-            margin-top: 20px;
-        }
-        /* 모든 버튼 공통 스타일 */
-        .button-group button {
-            width: 100%;
-            padding: 16px;
-            border: none;
-            border-radius: 8px;
-            color: #fff;
-            font-size: 17px;
-            font-weight: 600;
+
+        /* 별점 스타일 */
+        .star-rating {
+            display: inline-block;
+            font-size: 28px;
             cursor: pointer;
-            transition: background 0.2s;
+            color: #CCC; /* 기본 별 색상 */
         }
-        /* '리뷰 수정' 버튼 (녹색 계열) */
+
+        .star-rating span {
+            margin-right: 2px;
+            transition: color 0.2s;
+        }
+
+        .star-rating span.selected {
+            color: #FFC107; /* 선택된 별 색상 */
+        }
+
+        /* 버튼 스타일 */
         .btn-submit {
-            background: #2ECC71;
-            flex-grow: 2; /* 수정 버튼을 더 길게 */
-        }
-        .btn-submit:hover {
-            background: #27AE60;
-        }
-        /* '뒤로가기' 버튼 (회색 계열) */
-        .btn-back {
-            background: #95A5A6;
-            flex-grow: 1; /* 뒤로가기 버튼 */
-        }
-        .btn-back:hover {
-            background: #7F8C8D;
-        }
-        /* ================================== */
-        .rating-stars {
-            display: inline-block;
-            direction: rtl;
-        }
-        .rating-stars input[type="radio"] {
-            display: none;
-        }
-        .rating-stars label {
-            font-size: 32px;
-            color: #E0E0E0;
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin-top: 30px;
+            background-color: #7E57C2; /* 메인 색상 */
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 700;
             cursor: pointer;
-            padding: 0 2px;
-            display: inline-block;
+            transition: background-color 0.3s;
         }
-        .rating-stars label:hover,
-        .rating-stars label:hover ~ label,
-        .rating-stars input[type="radio"]:checked ~ label {
-            color: #F39C12;
+
+        .btn-submit:hover {
+            background-color: #6A4CA5; /* 호버 색상 */
+        }
+
+        .btn-submit:disabled {
+            background-color: #BDBDBD;
+            cursor: not-allowed;
+        }
+
+        /* 이미지 업로드/미리보기 */
+        .image-upload-area {
+            border: 1px dashed #BDBDBD;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .image-preview-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .image-wrapper {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            border: 1px solid #E0E0E0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .image-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .image-wrapper .delete-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            line-height: 18px;
+            text-align: center;
+            font-size: 14px;
+            cursor: pointer;
+            padding: 0;
+        }
+
+        .image-wrapper.deleted {
+            opacity: 0.5;
+            border: 1px dashed #E74C3C;
+        }
+        .image-wrapper.deleted .delete-btn {
+            background: #E74C3C;
+        }
+
+        /* 스팟 리뷰 섹션 */
+        .spot-review-section {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #EEE;
+        }
+
+        .spot-review-section h3 {
+            color: #7E57C2;
+            margin-bottom: 20px;
+        }
+
+        .spot-review-section .form-group {
+            border: 1px solid #D1C4E9; /* 연한 보라색 테두리 */
+            background: #F5F7FF; /* 연한 배경색 */
+            margin-bottom: 15px;
+        }
+
+        .spot-review-section label {
+            color: #6A4CA5;
+        }
+
+        .spot-review-section textarea {
+            min-height: 50px;
         }
     </style>
 </head>
 <body>
 <div class="page-header">
-    <h1>TRAVEL PLANNING</h1>
+    <img th:src="@{/images/logo.png}" alt="Logo" class="logo">
+    <span class="title">TRAVEL PLANNING</span>
     <nav>
-        <span>사용자님 환영합니다.</span>
-        <a href="/">Home</a>
-        <a href="/mypage">마이페이지</a>
-        <a href="/logout">로그아웃</a>
+        <a th:href="@{/}">Home</a>
+        <a th:href="@{/reviews/view/search/my}">내가 쓴 리뷰</a>
     </nav>
 </div>
+
 <div class="content-wrapper">
-    <h2>리뷰 수정</h2>
-    <div id="form-container">
-        <p style="text-align: center; color: #7F8C8D;">기존 리뷰 정보를 불러오는 중입니다...</p>
+    <div id="review-form-container">
+        <p style="text-align: center; color: #7E57C2; font-weight: 600;">데이터를 불러오는 중입니다...</p>
     </div>
+
+    <div class="form-group" id="image-upload-area" style="display: none;">
+        <label>새로운 이미지 추가</label>
+        <input type="file" id="newImages" name="newImages" multiple accept="image/*" onchange="previewNewImages(event)">
+        <div class="image-preview-container" id="new-image-preview">
+        </div>
+        <p style="font-size: 12px; color: #888; margin-top: 5px;">* 최대 5장의 이미지를 추가할 수 있습니다. (기존 이미지 포함)</p>
+    </div>
+
+    <button type="button" class="btn-submit" onclick="submitReview(event)">리뷰 수정 완료</button>
 </div>
-<script>
-    const urlParams = new URLSearchParams(window.location.search);
-    const reviewId = urlParams.get("reviewId");
-    const container = document.getElementById("form-container");
-    if (!reviewId) {
-        container.innerHTML = `<p style="text-align:center;color:#e74c3c;">잘못된 접근입니다. reviewId가 없습니다.</p>`;
-    } else {
-        loadReviewData();
-    }
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+
+    // Thymeleaf 변수 (planId는 ReviewFrontController에서 모델에 추가됨)
+    const planId = /*[[${planId}]]*/ null;
+
+    // 메인 리뷰 ID를 저장할 변수
+    let mainReviewId = null;
+
+    let initialReviewsData = null; // 초기 로드된 모든 리뷰 데이터 (수정용)
+    let deletedImageUrls = []; // 삭제할 이미지 URL 목록 (기존 이미지)
+    let newImageFiles = []; // 새로 추가된 이미지 파일 객체 목록
+
+
+    // --------------------------------------------------------------------------------
+    // ⭐ 초기 데이터 로딩 및 폼 생성
+    // --------------------------------------------------------------------------------
+
+    /**
+     * 서버에서 Plan ID에 해당하는 기존 복합 리뷰 데이터를 불러와 폼을 채웁니다.
+     */
     async function loadReviewData() {
+        const container = document.getElementById('review-form-container');
+        // 로딩 메시지 설정 (성공 시 renderReviewForm에서 교체됨)
+        container.innerHTML = `<p style="text-align: center; color: #7E57C2; font-weight: 600;" id="loading-status">데이터를 불러오는 중입니다...</p>`;
+
         try {
-            const response = await fetch(`/reviews/detail/${reviewId}`, {
+            // ⭐ API 경로: /reviews/plan/{planId}/complex-edit
+            const response = await fetch(`/reviews/plan/${planId}/complex-edit`, {
                 method: "GET",
                 credentials: "include"
             });
-            if (!response.ok) throw new Error("데이터 로딩 실패");
+
             const data = await response.json();
-            container.innerHTML = `
-                <h3 class="target-title">${data.title} (수정)</h3>
-                <form id="reviewForm" enctype="multipart/form-data">
-                    <input type="hidden" name="targetId" value="${data.targetId}">
-                    <input type="hidden" name="targetType" value="${data.targetType}">
-                    <div class="form-group">
-                        <label for="review-title">리뷰 제목</label>
-                        <input type="text" id="review-title" name="title" required>
+
+            if (!response.ok) {
+                // 서버에서 403, 500 등이 발생했을 경우
+                const errorText = data.message || await response.text();
+                console.error("서버 응답 오류 상세:", response.status, response.statusText, errorText);
+                container.innerHTML = `
+                    <p style="text-align:center;color:#e74c3c; font-weight: 600; margin-top: 20px;">
+                        🚨 리뷰 데이터 로딩 실패! (HTTP ${response.status} ${response.statusText})
+                    </p>
+                    <div style="text-align: center; margin-top: 20px;">
+                        <button class="btn-submit" style="width: 200px;" onclick="window.history.back()">뒤로 가기</button>
                     </div>
-                    <div class="form-group">
-                        <label for="review-content">리뷰 내용</label>
-                        <textarea id="review-content" name="content" required></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label>별점</label>
-                        <div class="rating-stars">
-                            <input type="radio" id="star5" name="rating" value="5" required><label for="star5">★</label>
-                            <input type="radio" id="star4" name="rating" value="4"><label for="star4">★</label>
-                            <input type="radio" id="star3" name="rating" value="3"><label for="star3">★</label>
-                            <input type="radio" id="star2" name="rating" value="2"><label for="star2">★</label>
-                            <input type="radio" id="star1" name="rating" value="1"><label for="star1">★</label>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="review-images">새 이미지 업로드 (기존 이미지는 삭제됩니다)</label>
-                        <input type="file" id="review-images" name="images" multiple>
-                    </div>
-                    <div class="button-group">
-                        <button type="button" class="btn-back" onclick="history.back()">뒤로가기</button>
-                        <button type="submit" class="btn-submit">리뷰 수정</button>
-                    </div>
-                    </form>
-            `;
-            document.getElementById("review-title").value = data.title;
-            document.getElementById("review-content").value = data.content;
-            const starRadio = document.querySelector(`input[name="rating"][value="${data.rating}"]`);
-            if (starRadio) {
-                starRadio.checked = true;
+                `;
+                return;
             }
+
+            initialReviewsData = data; // 전역 변수에 저장
+
+            // 데이터 구조 확인 및 렌더링
+            if (data.mainReview && data.mainReview.reviewId) {
+                mainReviewId = data.mainReview.reviewId;
+                renderReviewForm(data); // 폼 렌더링 시작
+                // 이미지 업로드 영역 표시
+                document.getElementById('image-upload-area').style.display = 'block';
+            } else {
+                container.innerHTML = `<p style="text-align:center;color:#e74c3c;">수정할 코스 리뷰를 찾을 수 없습니다. (데이터 구조 오류)</p>`;
+            }
+
         } catch (error) {
-            console.error(error);
-            container.innerHTML = `<p style="text-align:center;color:#e74c3c;">데이터를 불러오는 중 오류가 발생했습니다.</p>`;
+            console.error("데이터 로딩 오류:", error);
+            // 네트워크/JSON 파싱 오류 처리
+            container.innerHTML = `
+                <p style="text-align:center;color:#e74c3c; font-weight: 600; margin-top: 20px;">
+                    ❌ 네트워크 오류 또는 JSON 파싱 오류가 발생했습니다.
+                </p>
+            `;
         }
     }
-    document.addEventListener("submit", async (event) => {
-        if (event.target.id !== "reviewForm") return;
+
+
+    /**
+     * 불러온 데이터를 기반으로 리뷰 수정 폼을 HTML로 렌더링합니다. (핵심 함수)
+     * @param {Object} data - 서버에서 받은 복합 리뷰 데이터
+     */
+    function renderReviewForm(data) {
+        const container = document.getElementById('review-form-container');
+        const mainReview = data.mainReview;
+        const spotReviews = data.spotReviews || [];
+        const courseTitle = data.courseTitle || "전체 코스 리뷰";
+
+        // 1. 메인 리뷰(코스 리뷰) 폼 생성
+        let mainReviewHtml = `
+            <h2>${courseTitle} 수정</h2>
+            <form id="reviewForm" enctype="multipart/form-data">
+
+                <input type="hidden" name="mainReview.reviewId" value="${mainReview.reviewId}">
+                <input type="hidden" name="mainReview.planId" value="${planId}">
+                <input type="hidden" name="mainReview.targetType" value="${mainReview.targetType}">
+                <input type="hidden" name="mainReview.targetId" value="${mainReview.targetId}">
+
+                <div class="form-group">
+                    <label for="mainTitle">리뷰 제목</label>
+                    <input type="text" id="mainTitle" name="mainReview.title" value="${mainReview.title}" required>
+                </div>
+
+                <div class="form-group">
+                    <label>별점</label>
+                    <div class="star-rating" id="mainRating" data-target="mainReview.rating" data-rating="${mainReview.rating}">
+                        ${getStarSpans(mainReview.rating)}
+                    </div>
+                    <input type="hidden" id="mainReviewRatingValue" name="mainReview.rating" value="${mainReview.rating}">
+                </div>
+
+                <div class="form-group">
+                    <label for="mainContent">내용</label>
+                    <textarea id="mainContent" name="mainReview.content">${mainReview.content || ''}</textarea>
+                </div>
+            </form>
+        `;
+
+        // 2. 기존 이미지 미리보기 렌더링 (메인 리뷰만 이미지를 가집니다.)
+        if (mainReview.imageUrls && mainReview.imageUrls.length > 0) {
+            mainReviewHtml += `
+                <div class="form-group" id="existing-image-group">
+                    <label>기존 이미지</label>
+                    <div class="image-preview-container" id="existing-image-preview">
+                        ${mainReview.imageUrls.map(url => renderExistingImage(url)).join('')}
+                    </div>
+                </div>
+            `;
+        } else {
+            mainReviewHtml += `
+                <div class="form-group" id="existing-image-group">
+                    <label>기존 이미지</label>
+                    <div class="image-preview-container" id="existing-image-preview">
+                        <p style="color:#888;">등록된 이미지가 없습니다.</p>
+                    </div>
+                </div>
+            `;
+        }
+
+
+        // 3. 스팟 리뷰 섹션 생성
+        let spotReviewHtml = `
+            <div class="spot-review-section">
+                <h3>여행지별 상세 리뷰 (선택 사항)</h3>
+                <div id="spot-review-list">
+                    ${spotReviews.map(renderSpotReview).join('')}
+                </div>
+            </div>
+        `;
+
+        // 로딩 메시지를 새로운 폼으로 교체합니다.
+        container.innerHTML = mainReviewHtml + spotReviewHtml;
+
+        // 4. 이벤트 리스너 등록
+        document.querySelectorAll('.star-rating').forEach(starContainer => {
+            starContainer.addEventListener('click', handleStarRatingClick);
+        });
+
+        // ⭐ 오류 수정: container.innerHTML로 기존 로딩 요소가 사라졌으므로,
+        // document.getElementById('loading-status').style.display = 'none'; 코드를 삭제합니다.
+    }
+
+    /**
+     * 기존 이미지 미리보기를 HTML로 렌더링합니다.
+     */
+    function renderExistingImage(url) {
+        // 파일 이름은 URL의 마지막 부분으로 가정
+        const fileName = url.substring(url.lastIndexOf('/') + 1);
+        return `
+            <div class="image-wrapper" data-url="${url}">
+                <img src="${url}" alt="${fileName}">
+                <button type="button" class="delete-btn" onclick="deleteExistingImage('${url}')">×</button>
+            </div>
+        `;
+    }
+
+    /**
+     * 개별 스팟 리뷰 폼 요소를 HTML로 렌더링합니다.
+     */
+    function renderSpotReview(spotDto, index) {
+        // SpotReviewDto의 placeTitle 필드를 사용
+        const placeTitle = spotDto.placeTitle || `${spotDto.targetType} 장소`;
+        const ratingId = `spotRating_${index}`;
+
+        // 폼 필드 이름에 배열 인덱스를 사용하여 List<SpotReviewDto>로 바인딩
+        const prefix = `spotReviews[${index}]`;
+
+        return `
+            <div class="form-group spot-review-item" data-review-id="${spotDto.reviewId || 'new'}">
+                <label>📍 **${placeTitle}**</label>
+
+                <input type="hidden" form="reviewForm" name="${prefix}.reviewId" value="${spotDto.reviewId || ''}">
+                <input type="hidden" form="reviewForm" name="${prefix}.targetType" value="${spotDto.targetType}">
+                <input type="hidden" form="reviewForm" name="${prefix}.targetId" value="${spotDto.targetId}">
+                <input type="hidden" form="reviewForm" name="${prefix}.placeTitle" value="${placeTitle}">
+
+                <div class="form-group" style="border: none; padding: 0;">
+                    <label style="font-weight: normal;">별점</label>
+                    <div class="star-rating" id="${ratingId}" data-target="${prefix}.rating" data-rating="${spotDto.rating}">
+                        ${getStarSpans(spotDto.rating)}
+                    </div>
+                    <input type="hidden" form="reviewForm" name="${prefix}.rating" value="${spotDto.rating}">
+                </div>
+
+                <div class="form-group" style="border: none; padding: 0;">
+                    <label style="font-weight: normal;">한 줄 평 (내용)</label>
+                    <textarea form="reviewForm" name="${prefix}.content">${spotDto.content || ''}</textarea>
+                </div>
+            </div>
+        `;
+    }
+
+    /**
+     * 별점 렌더링용 HTML 생성
+     */
+    function getStarSpans(rating) {
+        let html = '';
+        for (let i = 1; i <= 5; i++) {
+            const isSelected = i <= rating ? 'selected' : '';
+            html += `<span data-value="${i}" class="${isSelected}">★</span>`;
+        }
+        return html;
+    }
+
+
+    /**
+     * 별점 클릭 이벤트 핸들러
+     */
+    function handleStarRatingClick(event) {
+        const span = event.target.closest('span');
+        if (!span) return;
+
+        const starContainer = event.currentTarget;
+        const clickedValue = parseInt(span.dataset.value);
+        const inputName = starContainer.dataset.target;
+
+        // 별점 업데이트 (시각적)
+        starContainer.querySelectorAll('span').forEach(s => {
+            const starValue = parseInt(s.dataset.value);
+            s.classList.toggle('selected', starValue <= clickedValue);
+        });
+
+        // Hidden Input 값 업데이트 (데이터 전송용)
+        document.querySelector(`input[form="reviewForm"][name="${inputName}"]`).value = clickedValue;
+    }
+
+    /**
+     * 기존 이미지 삭제 처리 (DeletedImageUrls 목록에 추가)
+     */
+    function deleteExistingImage(url) {
+        const wrapper = document.querySelector(`.image-wrapper[data-url="${url}"]`);
+        if (!wrapper) return;
+
+        if (wrapper.classList.contains('deleted')) {
+            // 이미 삭제 예정이면 취소
+            wrapper.classList.remove('deleted');
+            deletedImageUrls = deletedImageUrls.filter(u => u !== url);
+            console.log("✅ 삭제 취소 이미지:", url);
+        } else {
+            // 삭제 예정으로 표시
+            if (!confirm('이 이미지를 삭제하시겠습니까? 수정 완료 시 서버에서 완전히 삭제됩니다.')) {
+                return;
+            }
+            wrapper.classList.add('deleted');
+
+            // 삭제 목록에 추가 (중복 방지)
+            if (!deletedImageUrls.includes(url)) {
+                deletedImageUrls.push(url);
+                console.log("🗑️ 삭제 예정 이미지 추가:", deletedImageUrls);
+            }
+        }
+    }
+
+
+    // --------------------------------------------------------------------------------
+    // ⭐ 이미지 미리보기 및 파일 관리
+    // --------------------------------------------------------------------------------
+
+    /**
+     * 새로운 이미지 파일 미리보기
+     */
+    function previewNewImages(event) {
+        const files = Array.from(event.target.files);
+        const previewContainer = document.getElementById('new-image-preview');
+        previewContainer.innerHTML = '';
+        newImageFiles = []; // 초기화
+
+        const existingImageCount = document.querySelectorAll('#existing-image-preview .image-wrapper:not(.deleted)').length;
+        const totalMax = 5;
+        const remainingSlots = totalMax - existingImageCount;
+        let fileCount = 0;
+
+        files.forEach((file, index) => {
+            if (fileCount < remainingSlots) {
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const wrapper = document.createElement('div');
+                        wrapper.className = 'image-wrapper new-image';
+                        wrapper.dataset.index = index; // 인덱스 저장 (삭제 시 사용)
+                        wrapper.innerHTML = `
+                            <img src="${e.target.result}" alt="새 이미지 미리보기">
+                            <button type="button" class="delete-btn" onclick="deleteNewImage(${index}, this)">×</button>
+                        `;
+                        previewContainer.appendChild(wrapper);
+                        newImageFiles.push(file); // 실제 파일 목록에 추가
+                    };
+                    reader.readAsDataURL(file);
+                    fileCount++;
+                } else {
+                    console.warn("이미지 파일이 아닙니다:", file.name);
+                }
+            } else if (fileCount === remainingSlots) {
+                alert(`최대 이미지 개수(${totalMax}장)를 초과하여 추가할 수 없습니다. (기존 이미지 ${existingImageCount}장 포함)`);
+                fileCount++; // 초과 알림은 한 번만 띄우기 위해 카운트 증가
+            }
+        });
+
+        // 파일 input의 file list를 실제 선택된 파일 목록으로 대체 (업로드 시 사용)
+        // newImageFiles 배열을 기반으로 FileList를 생성할 수 없으므로, submit 시 formData에 직접 추가해야 합니다.
+        // 여기서는 input 요소를 비워두고 newImageFiles를 사용합니다.
+        event.target.files = new DataTransfer().files;
+    }
+
+    /**
+     * 새로운 이미지 미리보기 삭제
+     */
+    function deleteNewImage(index, button) {
+        // newImageFiles 배열에서 파일 제거
+        newImageFiles.splice(index, 1);
+
+        // DOM에서 미리보기 제거
+        const wrapper = button.closest('.image-wrapper');
+        wrapper.remove();
+
+        // 인덱스가 바뀌었으므로, 남은 이미지들의 인덱스 재설정 (필요 시)
+        // 여기서는 newImageFiles 배열을 기준으로 FormData를 생성할 것이므로, DOM 인덱스 재설정은 생략합니다.
+        console.log("🗑️ 새 이미지 삭제됨. 남은 파일 수:", newImageFiles.length);
+    }
+
+
+    // --------------------------------------------------------------------------------
+    // ⭐ 폼 제출 (리뷰 수정)
+    // --------------------------------------------------------------------------------
+
+    /**
+     * 리뷰 수정 폼 데이터를 서버로 제출합니다.
+     */
+    async function submitReview(event) {
         event.preventDefault();
-        const form = document.getElementById("reviewForm");
-        const rating = form.querySelector('input[name="rating"]:checked');
-        if (!rating) {
-            alert("별점을 선택해주세요.");
+
+        if (mainReviewId === null) {
+            alert('리뷰 데이터를 불러오지 못했습니다. 새로고침 해주세요.');
             return;
         }
-        const formData = new FormData(form);
+
+        const submitBtn = event.target;
+        submitBtn.disabled = true;
+        submitBtn.textContent = '수정 중...';
+
+        const form = document.getElementById('reviewForm');
+        const formData = new FormData();
+
+        // 1. DTO 객체 생성 (MainReviewDto + List<SpotReviewDto> + deletedImageUrls)
+        const mainReview = {
+            reviewId: form.elements['mainReview.reviewId'].value,
+            planId: form.elements['mainReview.planId'].value,
+            targetType: form.elements['mainReview.targetType'].value,
+            targetId: form.elements['mainReview.targetId'].value,
+            title: form.elements['mainReview.title'].value,
+            content: form.elements['mainReview.content'].value,
+            rating: parseInt(form.elements['mainReview.rating'].value)
+        };
+
+        const spotReviews = Array.from(document.querySelectorAll('.spot-review-item')).map((item, index) => {
+            const prefix = `spotReviews[${index}]`;
+            return {
+                reviewId: item.querySelector(`input[name="${prefix}.reviewId"]`).value || null,
+                placeTitle: item.querySelector(`input[name="${prefix}.placeTitle"]`).value,
+                targetType: item.querySelector(`input[name="${prefix}.targetType"]`).value,
+                targetId: item.querySelector(`input[name="${prefix}.targetId"]`).value,
+                rating: parseInt(item.querySelector(`input[name="${prefix}.rating"]`).value),
+                content: item.querySelector(`textarea[name="${prefix}.content"]`).value
+            };
+        });
+
+        const complexReqDto = {
+            mainReview: mainReview,
+            spotReviews: spotReviews,
+            deletedImageUrls: deletedImageUrls
+        };
+
+        // 2. DTO를 JSON으로 변환하여 FormData에 'dto' 파트로 추가
+        const dtoBlob = new Blob([JSON.stringify(complexReqDto)], { type: 'application/json' });
+        formData.append('dto', dtoBlob);
+        console.log("--- DTO Object Ready ---");
+        console.log("JSON DTO:", complexReqDto);
+
+
+        // 3. 새로운 이미지 파일들을 'newImages' 파트로 추가
+        if (newImageFiles.length > 0) {
+            newImageFiles.forEach((file) => {
+                formData.append('newImages', file, file.name);
+            });
+        }
+
+        console.log("--- Final FormData Contents (For Debug) ---");
+        for (const [key, value] of formData.entries()) {
+            console.log(`${key}: ${value instanceof File ? value.name || '(Empty File)' : value}`);
+        }
+        console.log("--- Sending Request ---");
+
         try {
-            const response = await fetch(`/reviews/${reviewId}`, {
+            // PUT 요청 경로: '/reviews/{reviewId}' (메인 리뷰 ID 사용)
+            const response = await fetch(`/reviews/${mainReviewId}`, {
                 method: "PUT",
                 body: formData,
                 credentials: "include"
             });
+
             if (!response.ok) {
-                alert("리뷰 수정에 실패했습니다.");
+                const errorText = await response.text();
+                console.error("서버 응답 오류 상세:", errorText);
+                alert(`리뷰 수정에 실패했습니다. (${response.status} ${response.statusText})\n자세한 내용은 콘솔을 확인해주세요.`);
                 return;
             }
+
             alert("리뷰가 성공적으로 수정되었습니다!");
-            location.href = `/reviews/view/detail?reviewId=${reviewId}`;
+            // 성공 후 상세 페이지로 리디렉션 (planId 기준)
+            location.href = `/reviews/view/detail?planId=${planId}`;
+
         } catch (err) {
-            console.error(err);
-            alert("서버 오류가 발생했습니다.");
+            console.error("Fetch 요청 자체에서 오류 발생:", err);
+            alert("요청 중 네트워크 오류가 발생했습니다.");
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = '리뷰 수정 완료';
         }
-    });
+    }
+
+
+    // 페이지 로드 시 리뷰 데이터 로딩 시작
+    document.addEventListener('DOMContentLoaded', loadReviewData);
+
+    /*]]>*/
 </script>
 </body>
 </html>
