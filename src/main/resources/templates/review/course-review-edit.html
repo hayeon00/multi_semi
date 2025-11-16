@@ -7,34 +7,138 @@
     <link rel="stylesheet" th:href="@{/css/mypage.css}">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pretendard&display=swap">
     <style>
-        /* 기본 스타일 */
+        /* ========================================= */
+        /* 기본 변수 및 리셋 */
+        /* ========================================= */
+        :root {
+            --main-color: #7E57C2;      /* 보라색 */
+            --hover-color: #6A4CA5;     /* 짙은 보라색 */
+            --gray-bg: #F5F6F8;         /* 배경 */
+            --deep-text: #2C3E50;       /* 진한 텍스트 */
+            --light-border: #E0E0E0;    /* 연한 경계선 */
+            --star-color: #FFC107;      /* 별 색상 */
+        }
+
         body {
             font-family: 'Pretendard', sans-serif;
-            background: #F5F6F8;
+            background: var(--gray-bg); /* 배경색 통일 */
             margin: 0;
             padding: 0;
         }
-        .page-header {
+
+        /* ========================================= */
+        /* HEADER 스타일 (등록/조회 화면과 동일하게 적용) */
+        /* ========================================= */
+        .header {
+            background: linear-gradient(135deg, var(--main-color) 0%, #B39DDB 100%);
+            width: 100%;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            padding: 15px 0;
+        }
+
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: #fff;
-            padding: 15px 40px;
-            border-bottom: 1px solid #E0E0E0;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
-        .page-header h1 {
-            font-size: 20px;
-            margin: 0;
-            color: #2C3E50;
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-left .logo {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            background: white;
+            padding: 5px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+            object-fit: cover;
+        }
+
+        .header-left .title {
+            font-size: 24px;
             font-weight: 700;
+            color: white;
+            letter-spacing: 0.5px;
         }
-        .page-header nav a {
-            margin-left: 15px;
-            color: #555;
+
+        .header-right {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 10px;
+        }
+
+        .user-info {
+            padding: 5px 0;
+        }
+
+        .welcome-text {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .username {
+            font-weight: 700;
+            font-size: 16px;
+            color: white;
+            margin-right: 5px;
+        }
+
+        .nav {
+            display: flex;
+            gap: 8px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 8px 15px;
+            border-radius: 8px;
             text-decoration: none;
-            font-weight: 500;
+            font-size: 14px;
+            font-weight: 600;
+            color: white;
+            background-color: rgba(255, 255, 255, 0.15);
+            transition: background-color 0.2s ease, transform 0.2s ease;
         }
+
+        .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-1px);
+        }
+
+        /* 현재 페이지는 '내 리뷰'와 연관되므로 active 처리 */
+        .nav-link.active {
+            background-color: rgba(255, 255, 255, 0.4);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+        }
+
+        .nav-link.logout {
+            background-color: rgba(231, 76, 60, 0.6);
+        }
+
+        .nav-link.logout:hover {
+            background-color: rgba(231, 76, 60, 0.8);
+        }
+
+        .nav-icon {
+            font-size: 16px;
+        }
+
+        /* ========================================= */
+        /* 콘텐츠 영역 및 폼 스타일 (기존 유지) */
+        /* ========================================= */
         .content-wrapper {
             max-width: 1000px; !important;
             width: 1000px;
@@ -90,7 +194,7 @@
         }
 
         .star-rating span.selected {
-            color: #FFC107; /* 선택된 별 색상 */
+            color: var(--star-color); /* 선택된 별 색상 */
         }
 
         /* 버튼 스타일 */
@@ -99,7 +203,7 @@
             width: 100%;
             padding: 12px;
             margin-top: 30px;
-            background-color: #7E57C2; /* 메인 색상 */
+            background-color: var(--main-color); /* 메인 색상 */
             color: white;
             border: none;
             border-radius: 6px;
@@ -110,7 +214,7 @@
         }
 
         .btn-submit:hover {
-            background-color: #6A4CA5; /* 호버 색상 */
+            background-color: var(--hover-color); /* 호버 색상 */
         }
 
         .btn-submit:disabled {
@@ -182,7 +286,7 @@
         }
 
         .spot-review-section h3 {
-            color: #7E57C2;
+            color: var(--main-color);
             margin-bottom: 20px;
         }
 
@@ -202,15 +306,42 @@
     </style>
 </head>
 <body>
-<div class="page-header">
-    <img th:src="@{/images/logo.png}" alt="Logo" class="logo">
-    <span class="title">TRAVEL PLANNING</span>
-    <nav>
-        <a th:href="@{/}">Home</a>
-        <a th:href="@{/reviews/view/search/my}">내가 쓴 리뷰</a>
-    </nav>
-</div>
 
+<header class="header">
+    <div class="header-container">
+        <div class="header-left">
+            <img th:src="@{/images/logo.png}" alt="Logo" class="logo">
+            <div class="title">TRAVEL PLANNING</div>
+        </div>
+
+        <div class="header-right">
+            <div class="user-info">
+                <span class="welcome-text" id="welcome-text">
+                    <span class="username" id="display-username">회원</span>님 환영합니다.
+                </span>
+            </div>
+
+            <nav class="nav">
+                <a th:href="@{/spots/view/tourspotlist}" class="nav-link">
+                    <span class="nav-icon">🏠</span>
+                    <span>홈</span>
+                </a>
+                <a th:href="@{/member/view/mypage}" class="nav-link">
+                    <span class="nav-icon">👤</span>
+                    <span>마이페이지</span>
+                </a>
+                <a th:href="@{/reviews/view/search/my}" class="nav-link active">
+                    <span class="nav-icon">✍️</span>
+                    <span>내 리뷰</span>
+                </a>
+                <a href="javascript:void(0);" class="nav-link logout" onclick="handleLogout()">
+                    <span class="nav-icon">🚪</span>
+                    <span>로그아웃</span>
+                </a>
+            </nav>
+        </div>
+    </div>
+</header>
 <div class="content-wrapper">
     <div id="review-form-container">
         <p style="text-align: center; color: #7E57C2; font-weight: 600;">데이터를 불러오는 중입니다...</p>
@@ -229,6 +360,37 @@
 
 <script th:inline="javascript">
     /*<![CDATA[*/
+
+    // ✅ [추가] 헤더 사용자 이름 설정 (로그인 정보가 없으므로 임의 지정)
+    const tempUsername = "여행자";
+    const usernameElement = document.getElementById("display-username");
+    if (usernameElement) {
+        usernameElement.textContent = tempUsername;
+    }
+
+    // ✅ [추가] 로그아웃 함수 (헤더의 로그아웃 버튼 처리를 위함)
+    async function handleLogout() {
+        try {
+            const response = await fetch('/auth/logout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include' // 쿠키 포함
+            });
+
+            if (response.ok) {
+                alert('로그아웃 되었습니다.');
+                window.location.href = '/login';
+            } else {
+                const result = await response.json();
+                alert(result.message || '로그아웃에 실패했습니다.');
+            }
+        } catch (error) {
+            console.error('로그아웃 오류:', error);
+            alert('로그아웃 처리 중 오류가 발생했습니다.');
+        }
+    }
 
     // Thymeleaf 변수 (planId는 ReviewFrontController에서 모델에 추가됨)
     const planId = /*[[${planId}]]*/ null;
@@ -313,7 +475,8 @@
 
         // 1. 메인 리뷰(코스 리뷰) 폼 생성
         let mainReviewHtml = `
-            <h2>${courseTitle} 수정</h2>
+            <h2 style="margin-bottom: 20px;">코스 리뷰 수정</h2>
+            <p style="color: #6A4CA5; font-weight: 600; margin-bottom: 20px;">[대상 코스: ${courseTitle}]</p>
             <form id="reviewForm" enctype="multipart/form-data">
 
                 <input type="hidden" name="mainReview.reviewId" value="${mainReview.reviewId}">
@@ -323,7 +486,7 @@
 
                 <div class="form-group">
                     <label for="mainTitle">리뷰 제목</label>
-                    <input type="text" id="mainTitle" name="mainReview.title" value="${mainReview.title}" required>
+                    <input type="text" id="mainTitle" name="mainReview.title" value="${mainReview.title}" placeholder="전체 코스에 대한 리뷰 제목을 입력하세요." required>
                 </div>
 
                 <div class="form-group">
@@ -336,7 +499,7 @@
 
                 <div class="form-group">
                     <label for="mainContent">내용</label>
-                    <textarea id="mainContent" name="mainReview.content">${mainReview.content || ''}</textarea>
+                    <textarea id="mainContent" name="mainReview.content" placeholder="전체 코스에 대한 상세 리뷰 내용을 입력하세요.">${mainReview.content || ''}</textarea>
                 </div>
             </form>
         `;
@@ -366,7 +529,7 @@
         // 3. 스팟 리뷰 섹션 생성
         let spotReviewHtml = `
             <div class="spot-review-section">
-                <h3>여행지별 상세 리뷰 (선택 사항)</h3>
+                <h3>코스에 담긴 관광지 리뷰 조회</h3>
                 <div id="spot-review-list">
                     ${spotReviews.map(renderSpotReview).join('')}
                 </div>
@@ -380,9 +543,6 @@
         document.querySelectorAll('.star-rating').forEach(starContainer => {
             starContainer.addEventListener('click', handleStarRatingClick);
         });
-
-        // ⭐ 오류 수정: container.innerHTML로 기존 로딩 요소가 사라졌으므로,
-        // document.getElementById('loading-status').style.display = 'none'; 코드를 삭제합니다.
     }
 
     /**
@@ -403,21 +563,28 @@
      * 개별 스팟 리뷰 폼 요소를 HTML로 렌더링합니다.
      */
     function renderSpotReview(spotDto, index) {
-        // SpotReviewDto의 placeTitle 필드를 사용
-        const placeTitle = spotDto.placeTitle || `${spotDto.targetType} 장소`;
-        const ratingId = `spotRating_${index}`;
+        // spotDto.placeTitle: 서버에서 받아온 '리뷰 제목'으로 사용합니다. (editable title의 초기값)
+        // 이 값을 사용자에게 '장소 이름'으로 보여주고, editable title 필드에 넣어줍니다.
+        const placeNameForDisplay = spotDto.placeTitle || `${spotDto.targetType} 장소`;
+        const initialReviewTitle = spotDto.placeTitle || '';
 
-        // 폼 필드 이름에 배열 인덱스를 사용하여 List<SpotReviewDto>로 바인딩
+        const ratingId = `spotRating_${index}`;
         const prefix = `spotReviews[${index}]`;
 
         return `
             <div class="form-group spot-review-item" data-review-id="${spotDto.reviewId || 'new'}">
-                <label>📍 **${placeTitle}**</label>
+                <label style="font-size: 16px; color: var(--deep-text); margin-bottom: 15px;">
+                    📍 **${placeNameForDisplay}**
+                </label>
 
                 <input type="hidden" form="reviewForm" name="${prefix}.reviewId" value="${spotDto.reviewId || ''}">
                 <input type="hidden" form="reviewForm" name="${prefix}.targetType" value="${spotDto.targetType}">
                 <input type="hidden" form="reviewForm" name="${prefix}.targetId" value="${spotDto.targetId}">
-                <input type="hidden" form="reviewForm" name="${prefix}.placeTitle" value="${placeTitle}">
+                <div class="form-group" style="border: none; padding: 0; margin-top: 15px;">
+                    <label style="font-weight: normal;">리뷰 제목</label>
+                    <input type="text" form="reviewForm" name="${prefix}.placeTitle" value="${initialReviewTitle}"
+                        placeholder="${placeNameForDisplay}에 대한 리뷰 제목을 입력하세요." required>
+                </div>
 
                 <div class="form-group" style="border: none; padding: 0;">
                     <label style="font-weight: normal;">별점</label>
@@ -428,8 +595,8 @@
                 </div>
 
                 <div class="form-group" style="border: none; padding: 0;">
-                    <label style="font-weight: normal;">한 줄 평 (내용)</label>
-                    <textarea form="reviewForm" name="${prefix}.content">${spotDto.content || ''}</textarea>
+                    <label style="font-weight: normal;">리뷰 내용</label>
+                    <textarea form="reviewForm" name="${prefix}.content" placeholder="${placeNameForDisplay}에 대한 상세 리뷰 내용을 입력하세요.">${spotDto.content || ''}</textarea>
                 </div>
             </div>
         `;
@@ -599,9 +766,10 @@
 
         const spotReviews = Array.from(document.querySelectorAll('.spot-review-item')).map((item, index) => {
             const prefix = `spotReviews[${index}]`;
+            // placeTitle 필드에 '리뷰 제목' 입력 값이 바인딩됩니다.
             return {
                 reviewId: item.querySelector(`input[name="${prefix}.reviewId"]`).value || null,
-                placeTitle: item.querySelector(`input[name="${prefix}.placeTitle"]`).value,
+                placeTitle: item.querySelector(`input[name="${prefix}.placeTitle"]`).value, // <-- 수정된 리뷰 제목 값
                 targetType: item.querySelector(`input[name="${prefix}.targetType"]`).value,
                 targetId: item.querySelector(`input[name="${prefix}.targetId"]`).value,
                 rating: parseInt(item.querySelector(`input[name="${prefix}.rating"]`).value),
@@ -652,7 +820,7 @@
 
             alert("리뷰가 성공적으로 수정되었습니다!");
             // 성공 후 상세 페이지로 리디렉션 (planId 기준)
-            location.href = `/reviews/view/detail?planId=${planId}`;
+            location.href = `/reviews/view/search/my`;
 
         } catch (err) {
             console.error("Fetch 요청 자체에서 오류 발생:", err);

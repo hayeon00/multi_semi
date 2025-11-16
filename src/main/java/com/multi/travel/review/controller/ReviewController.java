@@ -135,7 +135,6 @@ public class ReviewController {
 
         log.debug("🔑 리뷰 수정 데이터 로딩 요청 planId: {}", planId);
 
-        // 🚨 중요: userId로 인증된 사용자의 리뷰만 가져와야 합니다.
         List<ReviewDetailDto> allReviews = reviewService.getAllReviewsByPlanForEdit(planId, user.getUserId());
 
         ReviewDetailDto mainReview = null;

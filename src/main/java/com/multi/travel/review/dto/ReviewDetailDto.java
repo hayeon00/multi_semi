@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * Please explain the class!!!
+ * 단일 리뷰 조회, 복합 리뷰 편집 시 메인/스팟 리뷰의 상세 정보 전달
  *
  * @author : hayeon
  * @filename : ReviewDetailDto
