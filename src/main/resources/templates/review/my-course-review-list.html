@@ -6,215 +6,276 @@
     <title>내가 쓴 리뷰</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pretendard&display=swap">
     <style>
+        /* ========================================= */
+        /* 기본 변수 및 리셋 */
+        /* ========================================= */
+        :root {
+            --main-color: #7E57C2;      /* 보라색 */
+            --hover-color: #6A4CA5;     /* 짙은 보라색 */
+            --gray-bg: #F5F6F8;         /* 배경 */
+            --deep-text: #2C3E50;       /* 진한 텍스트 */
+            --light-border: #E0E0E0;    /* 연한 경계선 */
+            --star-color: #FFC107;      /* 별 색상 */
+        }
+
         body {
             font-family: 'Pretendard', sans-serif;
-            background: #F4F6FA;
+            background: var(--gray-bg); /* 배경색 통일 */
             margin: 0;
             padding: 0;
         }
 
-        .page-header {
+        /* ========================================= */
+        /* HEADER 스타일 (리뷰 등록 페이지와 동일하게 적용) */
+        /* ========================================= */
+        .header {
+            background: linear-gradient(135deg, var(--main-color) 0%, #B39DDB 100%);
+            width: 100%;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            padding: 15px 0;
+        }
+
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: #fff;
-            padding: 15px 40px;
-            border-bottom: 1px solid #E0E0E0;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
 
-        .page-header h1 {
-            font-size: 20px;
-            margin: 0;
-            color: #2C3E50;
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-left .logo {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            background: white;
+            padding: 5px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+            object-fit: cover;
+        }
+
+        .header-left .title {
+            font-size: 24px;
             font-weight: 700;
+            color: white;
+            letter-spacing: 0.5px;
         }
 
-        .page-header nav a {
-            margin-left: 15px;
-            color: #555;
-            text-decoration: none;
-            font-weight: 500;
+        .header-right {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 10px;
         }
+
+        .user-info {
+            padding: 5px 0;
+        }
+
+        .welcome-text {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .username {
+            font-weight: 700;
+            font-size: 16px;
+            color: white;
+            margin-right: 5px;
+        }
+
+        .nav {
+            display: flex;
+            gap: 8px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 8px 15px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            color: white;
+            background-color: rgba(255, 255, 255, 0.15);
+            transition: background-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-1px);
+        }
+
+        /* 현재 페이지를 '내 리뷰'로 표시하기 위해 active 클래스 사용 */
+        .nav-link.active {
+            background-color: rgba(255, 255, 255, 0.4);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+        }
+
+        .nav-link.logout {
+            background-color: rgba(231, 76, 60, 0.6);
+        }
+
+        .nav-link.logout:hover {
+            background-color: rgba(231, 76, 60, 0.8);
+        }
+
+        .nav-icon {
+            font-size: 16px;
+        }
+
+        /* ========================================= */
+        /* 콘텐츠 영역 및 기존 스타일 오버라이드 */
+        /* ========================================= */
+
+        /* 기존 .page-header 스타일 삭제/대체 */
+        /* .page-header { display: none; } */
 
         .content-wrapper {
-            max-width: 1000px; !important;
-            width: 1000px; !important;
+            max-width: 1200px;
             margin: 40px auto;
-            background: #fff;
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            padding: 20px;
+            background: white; /* 리뷰 목록을 담을 컨테이너 배경색 */
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         }
 
         h2 {
-            margin-bottom: 30px;
-            font-size: 26px;
-            color: #2C3E50;
-            font-weight: 700;
-        }
-
-        .no-content {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--deep-text);
             text-align: center;
-            color: #999;
-            padding: 40px 0;
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+            border-bottom: 3px solid var(--main-color);
+            display: block; /* 전체 폭 사용 */
         }
 
-        .plan-card {
-            display: flex; /* 리뷰 내용과 액션 버튼을 가로로 배치 */
-            justify-content: space-between; /* 양쪽 끝으로 분리 */
-            align-items: flex-start; /* 상단 정렬 */
-            padding: 20px;
-            border: 1px solid #E0E0E0;
-            border-radius: 12px;
-            margin-bottom: 15px;
-            background: #fff;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05); /* 은은한 그림자 추가 */
-        }
-
-        .plan-group {
-            background: #F9F9F9;
-            border: 1px solid #eee;
-            border-radius: 14px;
-            margin-bottom: 25px;
-            overflow: hidden;
-        }
-
-        .plan-header {
-            background: #F1F3F5;
-            padding: 20px 25px;
-        }
-
-        .plan-header-top {
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            gap: 600px;
-        }
-
-        .plan-header h3 {
-            margin: 0;
-            font-size: 20px;
-            color: #2C3E50;
-        }
-
-        .plan-header p {
-            margin: 5px 0 0 0;
-            color: #555;
-            font-size: 15px;
-        }
-
-        /* ==================================== */
-        /* ✅ 버튼 크기/위치(간격) 수정 부분 */
-        /* ==================================== */
-        .plan-btn-group {
-            display: flex;
-            gap: 8px; /* 간격 살짝 줄임 */
-            align-items: center;
-        }
-
-        .plan-btn-group button {
-            padding: 6px 12px; /* 버튼 크기/높이 조정 (8px 14px -> 6px 12px) */
-            min-width: 70px; /* 최소 너비 지정 */
-            border: none;
-            border-radius: 6px; /* 모서리 조정 (8px -> 6px) */
-            color: white;
-            font-size: 13px; /* 폰트 크기 조정 (14px -> 13px) */
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s ease;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* 그림자 추가 */
-        }
-        /* ==================================== */
-        /* ✅ 버튼 크기/위치(간격) 수정 끝 */
-        /* ==================================== */
-
-        .btn-edit {
-            background: #5D87FF;
-        }
-        .btn-delete {
-            background: #FF6B6B;
-        }
-
-        .btn-edit:hover {
-            background: #4A89DC; /* 색상 미세 조정 */
-        }
-
-        .btn-delete:hover {
-            background: #E9573F; /* 색상 미세 조정 */
-        }
-
-        .review-list-container {
-            padding: 25px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
+        /* 리뷰 목록 그리드 스타일 */
+        #review-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* 반응형 그리드 */
+            gap: 25px;
+            padding-top: 10px;
         }
 
         .review-card {
-            background: #fff;
-            border: 1px solid #E0E0E0;
-            border-radius: 10px;
-            padding: 20px;
-            display: flex;
-            gap: 20px;
-            cursor: default;
-            transition: none;
+            background: #FAFAFA;
+            border: 1px solid var(--light-border);
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
 
         .review-card:hover {
-            box-shadow:none;
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(126, 87, 194, 0.15);
         }
 
-        .review-card img.review-image {
-            width: 150px;
-            height: 120px;
+        .review-image {
+            width: 100%;
+            height: 180px;
             object-fit: cover;
-            border-radius: 8px;
-            flex-shrink: 0;
+            display: block;
         }
 
-        .review-card .review-content {
-            flex-grow: 1;
+        .review-content {
+            padding: 15px;
         }
 
-        .review-card h4 {
-            margin: 0 0 8px 0;
+        .review-content h4 {
             font-size: 18px;
-            color: #333;
-        }
-
-        .review-card p {
-            margin: 5px 0;
-            color: #555;
-            font-size: 15px;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
+            font-weight: 700;
+            color: var(--main-color);
+            margin-top: 0;
+            margin-bottom: 8px;
             overflow: hidden;
             text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
-        .review-card .rating {
-            color: #F39C12;
-            font-weight: 600;
-            font-size: 16px;
+        .review-content p {
+            font-size: 14px;
+            color: #555;
+            margin: 5px 0;
+            line-height: 1.4;
         }
+
+        .review-content .rating {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--star-color);
+            margin-bottom: 10px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px;
+            font-size: 18px;
+            color: #777;
+        }
+
+        .empty-icon {
+            display: block;
+            font-size: 50px;
+            margin-bottom: 15px;
+            color: #DDD;
+        }
+
+
     </style>
 </head>
 
 <body>
 
-<div class="page-header">
-    <img th:src="@{/images/logo.png}" alt="Logo" class="logo">
-    <h1>TRAVEL PLANNING</h1>
-    <nav>
-        <a th:href="@{/}">Home</a>
-        <a th:href="@{/member/view/mypage}">마이페이지</a>
-        <a th:href="@{/logout}">로그아웃</a>
-    </nav>
-</div>
+<header class="header">
+    <div class="header-container">
+        <div class="header-left">
+            <img th:src="@{/images/logo.png}" alt="Logo" class="logo">
+            <div class="title">TRAVEL PLANNING</div>
+        </div>
 
+        <div class="header-right">
+            <div class="user-info">
+                <span class="welcome-text" id="welcome-text">
+                    <span class="username" id="display-username">회원</span>님 환영합니다.
+                </span>
+            </div>
+
+            <nav class="nav">
+                <a th:href="@{/spots/view/tourspotlist}" class="nav-link">
+                    <span class="nav-icon">🏠</span>
+                    <span>홈</span>
+                </a>
+                <a th:href="@{/member/view/mypage}" class="nav-link">
+                    <span class="nav-icon">👤</span>
+                    <span>마이페이지</span>
+                </a>
+                <a th:href="@{/reviews/view/search/my}" class="nav-link active">
+                    <span class="nav-icon">✍️</span>
+                    <span>내 리뷰</span>
+                </a>
+                <a href="javascript:void(0);" class="nav-link logout" onclick="handleLogout()">
+                    <span class="nav-icon">🚪</span>
+                    <span>로그아웃</span>
+                </a>
+            </nav>
+        </div>
+    </div>
+</header>
 <div class="content-wrapper">
     <h2>내가 쓴 리뷰</h2>
     <div id="planReviewList">
@@ -223,6 +284,39 @@
 </div>
 
 <script>
+    // ✅ [추가] 헤더 사용자 이름 설정 (로그인 정보가 없으므로 임의 지정)
+    // 실제 구현에서는 서버에서 사용자 이름을 모델에 담아 전달해야 합니다.
+    const tempUsername = "여행자";
+    const usernameElement = document.getElementById("display-username");
+    if (usernameElement) {
+        usernameElement.textContent = tempUsername;
+    }
+
+    // ✅ [추가] 로그아웃 함수 (헤더의 로그아웃 버튼 처리를 위함)
+    async function handleLogout() {
+        try {
+            const response = await fetch('/auth/logout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include' // 쿠키 포함
+            });
+
+            if (response.ok) {
+                alert('로그아웃 되었습니다.');
+                window.location.href = '/login';
+            } else {
+                const result = await response.json();
+                alert(result.message || '로그아웃에 실패했습니다.');
+            }
+        } catch (error) {
+            console.error('로그아웃 오류:', error);
+            alert('로그아웃 처리 중 오류가 발생했습니다.');
+        }
+    }
+
+
     document.addEventListener("DOMContentLoaded", () => {
         loadPlansAndReviews();
     });
@@ -338,7 +432,7 @@
     }
 
     async function deletePlan(planId) {
-        if (!confirm("이 여행 계획과 관련된 모든 리뷰가 함께 삭제됩니다. 정말 삭제하시겠습니까?\"")) return;
+        if (!confirm("이 여행 계획과 관련된 모든 리뷰가 함께 삭제됩니다. 정말 삭제하시겠습니까?")) return;
         try {
             const res = await fetch(`/plans/${planId}`, { method: "DELETE", credentials: "include" });
             if (!res.ok) throw new Error("삭제 실패");
