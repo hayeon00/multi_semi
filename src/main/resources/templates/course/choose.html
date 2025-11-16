@@ -6,6 +6,26 @@
   <meta charset="UTF-8">
   <title>코스 구성 선택 | Travel Planning</title>
   <style>
+    .back-nav-wrapper {
+      margin-bottom: 15px;
+    }
+
+    .btn-back-nav {
+      display: flex;
+      margin-left: 50px;
+      background: #e5e5e5;
+      padding: 6px 12px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      transition: 0.2s;
+    }
+
+    .btn-back-nav:hover {
+      background: #d0d0d0;
+    }
+
     body {
       font-family: 'Noto Sans KR', sans-serif;
       margin: 0;
@@ -72,6 +92,10 @@
 </header>
 
 <main>
+  <div class="back-nav-wrapper">
+    <button class="btn-back-nav" onclick="window.history.back()">← 이전 페이지</button>
+  </div>
+
   <h2>여행 계획을 어떻게 구성하시겠어요?</h2>
   <div class="card-container">
     <div class="card" id="ai">🤖 AI로 코스 구성하기</div>

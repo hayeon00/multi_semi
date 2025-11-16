@@ -6,6 +6,27 @@
   <meta charset="UTF-8">
   <title>Travel Planning</title>
   <style>
+    .back-nav-wrapper {
+      margin-bottom: 15px;
+      text-align: left;
+    }
+
+    .btn-back-nav {
+      float: none !important;
+      background: #e5e5e5;
+      padding: 6px 12px;
+      border-radius: 8px;
+      margin: 0px;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      transition: 0.2s;
+    }
+
+    .btn-back-nav:hover {
+      background: #d0d0d0;
+    }
+
     /* ===== CSS ===== */
     body {
       font-family: 'Noto Sans KR', sans-serif;
@@ -97,6 +118,11 @@
 
 <main>
   <form id="planForm">
+
+    <div class="back-nav-wrapper">
+      <button class="btn-back-nav" onclick="window.history.back()">← 이전 페이지</button>
+    </div>
+
     <label>1. 여행 제목을 입력해주세요</label>
     <input type="text" id="title" placeholder="예: 자유 여행" required>
 

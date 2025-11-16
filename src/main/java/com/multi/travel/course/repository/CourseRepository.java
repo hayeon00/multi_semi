@@ -20,7 +20,14 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
     Page<Course> findByStatus(String status, Pageable pageable);
 
     // 추천순 정렬 조회
-    Page<Course> findByStatusOrderByRecCountDesc(String status, Pageable pageable);
+    @Query("""
+    SELECT DISTINCT c FROM Course c
+    JOIN c.items i
+    WHERE i.placeId = :spotId
+      AND c.status = 'Y'
+    ORDER BY c.recCount DESC, c.createdAt DESC
+""")
+    Page<Course> findCoursesByStartSpotOrderByPopular(@Param("spotId") Long spotId, Pageable pageable);
 
     @Query("SELECT DISTINCT c FROM Course c " +
             "LEFT JOIN FETCH c.items i " +

@@ -6,14 +6,27 @@
   <meta charset="UTF-8" />
   <title>코스 상세 | Travel Planning</title>
 
-  <!-- jQuery (DOM 조작용만 사용) -->
+  <!-- jQuery -->
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
   <!-- Kakao Map -->
   <script th:src="@{|https://dapi.kakao.com/v2/maps/sdk.js?appkey=${kakaoKey}&autoload=false|}"></script>
 
   <style>
-    body { font-family: Noto Sans KR, sans-serif; margin: 0; background: #f9f9f9; }
+    /* 뒤로가기 */
+    .back-nav-wrapper { margin-bottom: 15px; }
+    .btn-back-nav {
+      background: #e5e5e5;
+      padding: 6px 12px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      transition: 0.2s;
+    }
+    .btn-back-nav:hover { background: #d0d0d0; }
+
+    body { font-family: Pretendard, sans-serif; margin: 0; background: #f9f9f9; }
     header {
       background: #d9d9d9;
       padding: 15px 30px;
@@ -29,40 +42,51 @@
       border-radius: 20px; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
 
+    /* 지도 + 오른쪽 패널 */
     .map-container { display: flex; background: #f3f3f3; border-radius: 20px; overflow: hidden; }
     #map { width: 70%; height: 500px; }
-
     .side-panel { width: 30%; background: #fff; padding: 10px; display: flex; flex-direction: column; }
 
     /* DAY 탭 */
     .day-tabs-wrapper { display: flex; align-items: center; gap: 5px; margin-bottom: 10px; }
     .tab-arrow {
-      border: none; background: #e0e0e0; padding: 5px 10px;
-      border-radius: 6px; cursor: pointer; font-size: 13px;
+      border: none; background: #e0e0e0;
+      padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 13px;
     }
     .tabs { display: flex; overflow-x: auto; gap: 5px; flex: 1; white-space: nowrap; }
     .tabs::-webkit-scrollbar { display: none; }
-    .tabs button {
-      padding: 6px 10px; border-radius: 8px; border: none; background: #ccc; cursor: pointer;
-    }
+    .tabs button { padding: 6px 10px; border-radius: 8px; border: none; background: #ccc; cursor: pointer; }
     .tabs button.active { background: #000; color: #fff; }
 
+    /* 장소 리스트 */
     .place-list { flex: 1; overflow-y: auto; }
     .place-item {
-      background: #fff; margin: 4px 0; border-radius: 8px; padding: 8px; font-size: 14px;
+      background: #fff; margin: 4px 0; border-radius: 8px;
+      padding: 8px; font-size: 14px;
     }
 
-    .btns { text-align: center; margin-top: 20px; }
+    /* 버튼 */
+    .btns { text-align: center; margin-top: 20px; display: flex; justify-content: center; gap: 8px; }
     .btns button {
       padding: 10px 20px; border: none; border-radius: 8px;
-      cursor: pointer; margin: 0 8px;
+      cursor: pointer;
     }
-
     .btn-back { background: #ccc; }
     .btn-edit { background: #4A90E2; color: #fff; }
     .btn-delete { background: #ff6b6b; color: #fff; }
     .btn-add { background: #000; color: #fff; }
 
+    /* ❤️ 좋아요 버튼 (관광지 페이지 스타일 동일) */
+    .btn-like {
+      background: #e74c3c;
+      color: white;
+      font-weight: 600;
+    }
+    .btn-like.active {
+      background: #ff6b81;
+    }
+
+    /* 리뷰 */
     .reviews-section {
       margin-top: 40px;
       padding-top: 20px;
@@ -76,8 +100,28 @@
       box-shadow: 0 1px 2px rgba(0,0,0,0.05);
     }
     .review-card h4 { margin: 0; font-size: 16px; color: #333; }
-    .review-card p { margin: 5px 0; color: #555; }
     .review-meta { font-size: 13px; color: #888; }
+
+    /* 토스트 메시지 */
+    .toast-message {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(40, 40, 40, 0.9);
+      color: #fff;
+      padding: 12px 18px;
+      border-radius: 6px;
+      font-size: 14px;
+      animation: fadeInOut 2s ease;
+      z-index: 1000;
+    }
+
+    @keyframes fadeInOut {
+      0% { opacity: 0; transform: translate(-50%, 10px); }
+      20%,80% { opacity: 1; transform: translate(-50%, 0); }
+      100% { opacity: 0; transform: translate(-50%, 10px); }
+    }
   </style>
 </head>
 
@@ -92,13 +136,16 @@
 </header>
 
 <main>
+  <div class="back-nav-wrapper">
+    <button class="btn-back-nav" onclick="window.history.back()">← 이전 페이지</button>
+  </div>
+
   <h2 id="courseTitle"></h2>
 
   <div class="map-container">
     <div id="map"></div>
 
     <div class="side-panel">
-
       <div class="day-tabs-wrapper">
         <button class="tab-arrow" id="tabLeft">◀</button>
         <div class="tabs" id="dayTabs"></div>
@@ -128,6 +175,15 @@
   let maxDay = 1;
   let activeDay = 1;
   let isOwner = false;
+
+  /* 토스트 메시지 */
+  function showToast(message) {
+    const toast = document.createElement("div");
+    toast.textContent = message;
+    toast.className = "toast-message";
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 2000);
+  }
 
   /* ===============================
       1) 초기 로드 → 코스 조회
@@ -159,6 +215,7 @@
       renderList();
       renderMap();
       loadCourseReviews();
+      loadLikeStatus();
     } catch (e) {
       console.error(e);
       alert("코스를 불러오는 중 문제가 발생했습니다.");
@@ -206,43 +263,85 @@
   =============================== */
   function renderButtons() {
     const box = $("#buttonArea").empty();
+
     box.append(`<button class="btn-back" onclick="history.back()">뒤로가기</button>`);
 
     if (isOwner) {
       box.append(`<button class="btn-edit" onclick="location.href='/courses/view/edit?courseId=${courseId}'">수정하기</button>`);
       box.append(`<button class="btn-delete" onclick="deleteCourse()">삭제하기</button>`);
     } else if (planId) {
-      box.append(`
-        <button class="btn-add" onclick="goAddToPlan(${courseId}, ${planId})">
-          이 코스를 계획에 추가하기
-        </button>
-      `);
+      box.append(`<button class="btn-add" onclick="goAddToPlan(${courseId}, ${planId})">이 코스를 계획에 추가하기</button>`);
+    }
+
+    /* 좋아요 버튼 추가 */
+    box.append(`
+        <button class="btn-like" id="btnLike">♡ 추천</button>
+    `);
+
+    document.getElementById("btnLike").onclick = toggleLike;
+  }
+
+  /* ===============================
+      좋아요 상태 초기 로딩
+  =============================== */
+  async function loadLikeStatus() {
+    try {
+      const response = await fetchWithRefresh(`/recommend/status?targetId=${courseId}&catCode=course`);
+      const res = await response.json();
+
+      const btn = document.getElementById("btnLike");
+
+      if (res.data?.status === "Y") {
+        btn.classList.add("active");
+        btn.innerHTML = "❤️ 추천 취소";
+      } else {
+        btn.classList.remove("active");
+        btn.innerHTML = "♡ 추천";
+      }
+    } catch (e) {
+      console.warn("추천 상태 불러오기 실패:", e);
     }
   }
 
   /* ===============================
-      DELETE 코스
+      좋아요 토글
+  =============================== */
+  async function toggleLike() {
+    try {
+      const response = await fetchWithRefresh(`/recommend/toggle?targetId=${courseId}&catCode=crs`);
+      const result = await response.json();
+
+      const btn = document.getElementById("btnLike");
+
+      if (result.data?.status === "Y") {
+        btn.classList.add("active");
+        btn.innerHTML = "❤️ 추천 취소";
+        showToast("추천했습니다!");
+      } else {
+        btn.classList.remove("active");
+        btn.innerHTML = "♡ 추천";
+        showToast("추천 취소되었습니다.");
+      }
+
+    } catch (e) {
+      console.error("추천 오류:", e);
+    }
+  }
+
+  /* ===============================
+      삭제
   =============================== */
   async function deleteCourse() {
     if (!confirm("삭제하시겠습니까?")) return;
 
-    try {
-      const response = await fetchWithRefresh(`/courses/${courseId}`, {
-        method: "DELETE"
-      });
-
-      if (!response.ok) {
-        alert("삭제 중 오류가 발생했습니다.");
-        return;
-      }
-
-      alert("삭제되었습니다.");
-      location.href = "/courses/view/list";
-
-    } catch (e) {
-      console.error(e);
-      alert("삭제 요청 중 오류가 발생했습니다.");
+    const response = await fetchWithRefresh(`/courses/${courseId}`, { method: "DELETE" });
+    if (!response.ok) {
+      alert("삭제 중 문제가 발생했습니다.");
+      return;
     }
+
+    alert("삭제되었습니다.");
+    location.href = "/courses/view/list";
   }
 
   /* ===============================
@@ -265,15 +364,15 @@
 
       tabs.append(btn);
     }
-
-    $("#tabLeft").click(() => {
-      document.getElementById("dayTabs").scrollBy({ left: -150, behavior: "smooth" });
-    });
-
-    $("#tabRight").click(() => {
-      document.getElementById("dayTabs").scrollBy({ left: 150, behavior: "smooth" });
-    });
   }
+
+  $("#tabLeft").click(() => {
+    document.getElementById("dayTabs").scrollBy({ left: -150, behavior: "smooth" });
+  });
+
+  $("#tabRight").click(() => {
+    document.getElementById("dayTabs").scrollBy({ left: 150, behavior: "smooth" });
+  });
 
   /* ===============================
       6) 오른쪽 리스트
@@ -296,9 +395,6 @@
     });
   }
 
-  /* ===============================
-      8) 지도 렌더링 (마커 + 폴리라인)
-  =============================== */
   function renderMap() {
     clearMap();
 
@@ -346,6 +442,9 @@
     polylines = [];
   }
 
+  /* ===============================
+      리뷰
+  =============================== */
   function loadCourseReviews() {
     fetch(`/reviews/target?type=COURSE&id=${courseId}&size=3`)
             .then(res => res.json())
@@ -374,6 +473,9 @@
             });
   }
 
+  /* ===============================
+      코스 → 계획에 추가
+  =============================== */
   async function goAddToPlan(courseId, planId) {
     await fetchWithRefresh(`/plans/${planId}/course?courseId=${courseId}`, {
       method: "POST"
@@ -382,7 +484,6 @@
     alert("코스가 계획에 추가되었습니다!");
     location.href = `/plans/view/${planId}`;
   }
-
 
 </script>
 

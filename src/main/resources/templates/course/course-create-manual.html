@@ -15,6 +15,24 @@
   <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
 
   <style>
+    .back-nav-wrapper {
+      margin-bottom: 15px;
+    }
+
+    .btn-back-nav {
+      background: #e5e5e5;
+      padding: 6px 12px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      transition: 0.2s;
+    }
+
+    .btn-back-nav:hover {
+      background: #d0d0d0;
+    }
+
     body { font-family: Pretendard, sans-serif; background: #f5f6f8; margin: 0; padding: 0; }
 
     .page-header {
@@ -93,6 +111,10 @@
 </div>
 
 <div class="content-wrapper">
+  <div class="back-nav-wrapper">
+    <button class="btn-back-nav" onclick="window.history.back()">← 이전 페이지</button>
+  </div>
+
 
   <div class="plan-header">
     <input type="text" id="title" placeholder="여행 제목" readonly>
