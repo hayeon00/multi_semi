@@ -2,7 +2,7 @@ package com.multi.travel.review.dto;
 
 /**
  * 관광지에 대한 개별 리뷰 정보를 담는 DTO
- * "코스 리뷰"와 함께 등록되는 관광지 리뷰들을 처리할 때 사용
+ * "코스 리뷰"와 함께 등록되는 관광지 리뷰들을 처리할 때 사용(업데이트 요청/응답 모두 사용)
  *
  * @author : hayeon
  * @filename : SpotReviewDto
