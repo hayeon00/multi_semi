@@ -94,8 +94,9 @@
                     <tr>
                         <th width="60">번호</th>
                         <th width="100">대표 이미지</th>
-                        <th width="200">제목</th>
-                        <th width="250">주소</th>
+                        <th width="180">제목</th>
+                        <th width="200">주소</th>
+                        <th width="120">홈페이지</th>
                         <th width="80">추천 수</th>
                         <th width="80">상태</th>
                         <th width="120">관리</th>
@@ -114,6 +115,17 @@
                         </td>
                         <td class="tourspot-title" th:text="${spot.title}">제목</td>
                         <td class="tourspot-address" th:text="${spot.address}">주소</td>
+                        <td class="text-center tourspot-homepage">
+                            <a th:if="${spot.homepage != null and !#strings.isEmpty(spot.homepage)}"
+                               th:href="${spot.homepage}"
+                               target="_blank"
+                               onclick="event.stopPropagation();"
+                               class="homepage-link">
+                                🔗 바로가기
+                            </a>
+                            <span th:unless="${spot.homepage != null and !#strings.isEmpty(spot.homepage)}"
+                                  class="no-homepage">-</span>
+                        </td>
                         <td class="text-center">
                             <span class="rec-count" th:text="${spot.recCount}">0</span>
                         </td>
@@ -138,7 +150,7 @@
                     </tr>
 
                     <tr th:if="${#lists.isEmpty(tourspotList)}" class="empty-row">
-                        <td colspan="7">
+                        <td colspan="8">
                             <div class="empty-state">
                                 <span class="empty-icon">🗺️</span>
                                 <p>등록된 관광지가 없습니다</p>
@@ -225,7 +237,7 @@
             if (tourList.length === 0) {
                 tableBody.innerHTML = `
                     <tr class="empty-row">
-                        <td colspan="7">
+                        <td colspan="8">
                             <div class="empty-state">
                                 <span class="empty-icon">🔍</span>
                                 <p>검색 결과가 없습니다</p>
@@ -246,6 +258,11 @@
                     imageSrc = IMAGE_BASE_URL + spot.firstImage;
                 }
 
+                // ✅ 홈페이지 링크 생성
+                const homepageHtml = spot.homepage
+                    ? `<a href="${spot.homepage}" target="_blank" onclick="event.stopPropagation();" class="homepage-link">🔗 바로가기</a>`
+                    : `<span class="no-homepage">-</span>`;
+
                 const row = document.createElement("tr");
                 row.classList.add("clickable-row");
                 row.onclick = () => location.href = `/admin/edit/${spot.id}`;
@@ -260,6 +277,7 @@
                     </td>
                     <td class="tourspot-title">${spot.title}</td>
                     <td class="tourspot-address">${spot.address}</td>
+                    <td class="text-center tourspot-homepage">${homepageHtml}</td>
                     <td class="text-center">
                         <span class="rec-count">${spot.recCount || 0}</span>
                     </td>
@@ -332,7 +350,7 @@
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                credentials: 'include' // 쿠키 포함
+                credentials: 'include'
             });
 
             if (response.ok) {

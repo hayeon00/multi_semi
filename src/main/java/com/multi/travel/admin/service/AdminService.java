@@ -64,6 +64,7 @@ public class AdminService {
                     .description(dto.getDescription())
                     .address(dto.getAddress())
                     .tel(dto.getTel())
+                    .homepage(dto.getHomepage())
                     .mapx(dto.getMapx())
                     .mapy(dto.getMapy())
                     .areacode(dto.getAreacode())
@@ -128,6 +129,7 @@ public class AdminService {
             tourSpot.setDescription(dto.getDescription());
             tourSpot.setAddress(dto.getAddress());
             tourSpot.setTel(dto.getTel());
+            tourSpot.setHomepage(dto.getHomepage());
             tourSpot.setMapx(dto.getMapx());
             tourSpot.setMapy(dto.getMapy());
             tourSpot.setAreacode(dto.getAreacode());
@@ -272,6 +274,7 @@ public class AdminService {
                 .description(tourSpot.getDescription())
                 .address(tourSpot.getAddress())
                 .tel(tourSpot.getTel())
+                .homepage(tourSpot.getHomepage())
                 .mapx(tourSpot.getMapx())
                 .mapy(tourSpot.getMapy())
                 .areacode(tourSpot.getAreacode())
