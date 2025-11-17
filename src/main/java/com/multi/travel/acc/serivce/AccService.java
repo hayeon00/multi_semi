@@ -91,7 +91,14 @@ public class AccService {
     }
 
     public Map<String, Object> getAccSearch(int page, int size, String sort, String keyword, CustomUser customUser) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(sort).ascending());
+        Pageable pageable;
+
+        if (sort.equals("recCount")) {
+            pageable = PageRequest.of(page, size, Sort.by(sort).descending());
+        } else {
+            pageable = PageRequest.of(page, size, Sort.by(sort).ascending());
+        }
+
         Page<Acc> accPage;
         if (RoleUtils.hasRole(customUser, RoleUtils.ADMIN)) {
             accPage = accRepository.search(keyword, pageable);
