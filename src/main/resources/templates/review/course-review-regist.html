@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <title>리뷰 등록 | Travel Planning</title>
+    <link rel="stylesheet" th:href="@{/css/mypage.css}">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pretendard&display=swap" />
 
     <style>
@@ -27,108 +28,50 @@
         }
 
         /* ========================================= */
-        /* HEADER (mypage.html 구조 기반으로 변경) */
+        /* HEADER (기존 스타일 유지 및 통합) */
         /* ========================================= */
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 30px; /* 기존 .header-container의 max-width를 없애고 padding을 header에 직접 적용 */
+        .header {
             background: linear-gradient(135deg, var(--main-color) 0%, #B39DDB 100%);
-            color: white;
+            width: 100%;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
             position: sticky;
             top: 0;
             z-index: 100;
+            padding: 15px 0;
         }
 
-        .header-left {
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 30px;
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 12px;
         }
 
-        .header-left .logo {
-            width: 40px; /* mypage.html 구조 기반으로 크기 조정 */
-            height: 40px;
-            border-radius: 8px;
-            background: white;
-            padding: 5px;
-            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
-            object-fit: contain;
-        }
+        .header-left { display: flex; align-items: center; gap: 12px; }
+        .header-left .logo { width: 50px; height: 50px; border-radius: 10px; background: white; padding: 5px; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1); object-fit: cover; }
+        .header-left .title { font-size: 24px; font-weight: 700; color: white; letter-spacing: 0.5px; }
 
-        .header-left .title {
-            font-size: 24px;
-            font-weight: 700;
-            color: white;
-            letter-spacing: 0.5px;
-        }
-
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 20px; /* 가로 정렬로 변경 및 간격 조정 */
-        }
-
-        .welcome-text {
-            font-size: 14px;
-            color: rgba(255, 255, 255, 0.9);
-            padding: 5px 0;
-            font-weight: 500;
-        }
-
-        .user-badge { /* mypage.html에 있는 클래스 */
-            font-weight: 700;
-            font-size: 16px;
-            color: white;
-            margin-right: 5px;
-        }
-
-        .nav {
-            display: flex;
-            gap: 8px;
-        }
+        .header-right { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+        .welcome-text { font-size: 14px; color: rgba(255, 255, 255, 0.9); }
+        .username { font-weight: 700; font-size: 16px; color: white; margin-right: 5px; }
+        .nav { display: flex; gap: 8px; }
 
         .nav-link {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            padding: 8px 15px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: 600;
-            color: white;
-            background-color: rgba(255, 255, 255, 0.15);
-            transition: all 0.2s ease;
+            display: flex; align-items: center; gap: 5px; padding: 8px 15px; border-radius: 8px;
+            text-decoration: none; font-size: 14px; font-weight: 600; color: white;
+            background-color: rgba(255, 255, 255, 0.15); transition: all 0.2s ease;
         }
-
-        .nav-link:hover {
-            background-color: rgba(255, 255, 255, 0.3);
-            transform: translateY(-1px);
-        }
-
-        .nav-link.active {
-            background-color: rgba(255, 255, 255, 0.4);
-            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
-        }
-
-        .nav-link.logout {
-            background-color: rgba(231, 76, 60, 0.6);
-        }
-
-        .nav-link.logout:hover {
-            background-color: rgba(231, 76, 60, 0.8);
-        }
-
-        .nav-icon {
-            font-size: 16px;
-        }
+        .nav-link:hover { background-color: rgba(255, 255, 255, 0.3); transform: translateY(-1px); }
+        .nav-link.active { background-color: rgba(255, 255, 255, 0.4); box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15); }
+        .nav-link.logout { background-color: rgba(231, 76, 60, 0.6); }
+        .nav-link.logout:hover { background-color: rgba(231, 76, 60, 0.8); }
+        .nav-icon { font-size: 16px; }
 
 
         /* ========================================= */
-        /* 본문 콘텐츠 스타일 (기존 유지) */
+        /* 본문 콘텐츠 스타일 */
         /* ========================================= */
         .content-wrapper {
             max-width: 900px; /* 폭을 약간 줄여 중앙 집중 효과 */
@@ -244,6 +187,18 @@
             display: none;
         }
 
+        /* 체크된 별점 (선택된 별과 그 왼쪽 별 모두 강조) */
+        /* .rating-stars input:checked + label,
+        .rating-stars input:checked + label ~ label {
+            color: var(--star-color);
+        } */
+
+        /* 마우스 오버 시 (자신과 그 왼쪽 별 모두 강조) */
+        /* .rating-stars label:hover,
+        .rating-stars label:hover ~ label {
+            color: var(--star-color);
+        } */
+
         /* 별점 입력 필드 순서를 역순으로 변경하여 왼쪽 정렬 및 왼쪽 채움 효과 구현 */
         .rating-stars {
             display: flex;
@@ -329,7 +284,7 @@
         }
 
         .spot-rating-group {
-            /* 메인 리뷰의 .rating-stars와 동일하게 왼쪽 정렬이 적용됩니다. */
+            /* ✅ [수정] 메인 리뷰의 .rating-stars와 동일하게 왼쪽 정렬이 적용됩니다. */
             justify-content: flex-end; /* flex-direction: row-reverse와 함께 왼쪽 정렬 효과 */
             display: flex;
         }
@@ -460,6 +415,7 @@
         </nav>
     </div>
 </header>
+
 <div class="content-wrapper">
     <h2 class="target-title">📍 내 여행 코스 리뷰</h2>
     <div id="form-container">
@@ -492,11 +448,11 @@
     }
 
     document.addEventListener("DOMContentLoaded", async () => {
-        // ⭐ [수정] 헤더 사용자 이름 설정 (새로운 HTML 구조에 맞게 ID를 user-badge span에 적용)
+        // ⭐ [수정] 헤더 사용자 이름 설정 (로그인 정보가 없으므로 임의 지정)
+        // 실제로는 서버에서 사용자 이름을 모델에 담아 전달해야 합니다.
         const tempUsername = "여행자"; // 임시 사용자 이름
         const usernameElement = document.getElementById("display-username");
         if (usernameElement) {
-            // user-badge span의 텍스트를 이름으로 설정합니다.
             usernameElement.textContent = tempUsername;
         }
 
@@ -594,6 +550,9 @@
           </div>
         </form>`;
 
+            // ✅ [수정] 복잡한 별점 이벤트 리스너 제거. CSS의 :checked ~ label로 왼쪽 정렬 및 채움 처리
+            // 기존 applyRatingEvent 함수와 그 호출을 삭제했습니다.
+
             // 2. submit 이벤트 리스너: ComplexReviewReqDto 형식으로 데이터 구성 후 'dto' 파트로 전송
             document.getElementById("reviewForm").addEventListener("submit", async (e) => {
                 e.preventDefault();
@@ -628,11 +587,8 @@
 
                     // 내용이나 별점 중 하나라도 있으면 리뷰로 간주하고 DTO에 추가
                     if (content.length > 0 || rating > 0) {
-                        // placeTitle 필드가 서버 DTO에 있다면 추가
-                        const placeTitle = item.querySelector('h4') ? item.querySelector('h4').textContent.trim() : null;
-
                         spotReviews.push({
-                            // placeTitle: placeTitle, // 서버 DTO에 없는 필드는 제거
+                            // placeTitle은 서버 DTO에 없으므로 일단 제외하거나 필요에 따라 추가
                             targetType: item.dataset.type,
                             targetId: parseInt(item.dataset.id),
                             rating: rating,
@@ -689,7 +645,9 @@
                     }
 
                     alert("리뷰가 성공적으로 등록되었습니다!");
-                    location.href = `/reviews/view/search/my`;
+                    safeRedirect(`/reviews/view/search/my`);
+
+
                 } catch (err) {
                     console.error(err);
                     alert("리뷰 등록 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");

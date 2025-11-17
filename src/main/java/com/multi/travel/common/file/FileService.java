@@ -16,7 +16,8 @@ import java.util.UUID;
 @Slf4j
 public class FileService {
 
-    @Value("${file.upload-dir:/tmp}") // 기본값 지정 (예: /tmp)
+    //@Value("${file.upload-dir:/tmp}") // 기본값 지정 (예: /tmp)
+    @Value("${image.review.image-dir}") // 기본값 지정 (예: /tmp)
     private String uploadDir;
 
 

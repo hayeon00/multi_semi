@@ -8,6 +8,8 @@
 </head>
 
 <body>
+<script th:src="@{/js/common.js}"></script>
+
 <header>
     <div class="header-left">
         <img th:src="@{/images/logo.png}" alt="Logo">
@@ -22,7 +24,7 @@
                 <span class="nav-icon">🏠</span>
                 <span>홈</span>
             </a>
-            <a th:href="@{/admin/view/dashboard}" class="nav-link active">
+            <a th:href="@{/admin/view/adminpage}" class="nav-link active">
                 <span class="nav-icon">📊</span>
                 <span>대시보드</span>
             </a>
@@ -227,7 +229,7 @@
         }
 
         try {
-            const response = await fetch(`/admin/tourspot/search?title=${encodeURIComponent(keyword)}`);
+            const response = await fetchWithRefresh(`/admin/tourspot/search?title=${encodeURIComponent(keyword)}`);
             const data = await response.json();
 
             const tourList = data.data || [];
@@ -312,7 +314,7 @@
         if (!confirm("이 관광지를 비활성화하시겠습니까?")) return;
 
         try {
-            const res = await fetch(`/admin/tourspot/${id}/deactivate`, { method: "PUT" });
+            const res = await fetchWithRefresh(`/admin/tourspot/${id}/deactivate`, { method: "PUT" });
             if (res.ok) {
                 alert("✓ 비활성화 완료!");
                 location.reload();
@@ -330,7 +332,7 @@
         if (!confirm("이 관광지를 복구하시겠습니까?")) return;
 
         try {
-            const res = await fetch(`/admin/tourspot/${id}/activate`, { method: "PUT" });
+            const res = await fetchWithRefresh(`/admin/tourspot/${id}/activate`, { method: "PUT" });
             if (res.ok) {
                 alert("✓ 복구 완료!");
                 location.reload();

@@ -52,6 +52,10 @@ public class AuthService {
         Member member = memberRepository.findByLoginId(memberReqDto.getLoginId())
                 .orElseThrow(() -> new BadCredentialsException("회원 정보를 찾을 수 없습니다."));
 
+        if (member.getRole().equals("ROLE_USER") && member.getStatus().equals("N")) {
+            throw new BadCredentialsException("계정이 비활성 상태입니다. 관리자에게 문의하세요");
+        }
+
         // 2️⃣ 비밀번호 검증
         if (!passwordEncoder.matches(memberReqDto.getPassword(), member.getPassword())) {
             throw new BadCredentialsException("비밀번호가 일치하지 않습니다.");

@@ -25,19 +25,25 @@
         }
 
         /* ========================================= */
-        /* HEADER 스타일 (mypage.html 기반으로 통합) */
+        /* HEADER 스타일 (등록/조회 화면과 동일하게 적용) */
         /* ========================================= */
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 30px;
+        .header {
             background: linear-gradient(135deg, var(--main-color) 0%, #B39DDB 100%);
-            color: white;
+            width: 100%;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
             position: sticky;
             top: 0;
             z-index: 100;
+            padding: 15px 0;
+        }
+
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .header-left {
@@ -46,36 +52,40 @@
             gap: 12px;
         }
 
-        .logo {
-            width: 40px;
-            height: 40px;
-            border-radius: 8px;
+        .header-left .logo {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
             background: white;
             padding: 5px;
             box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
-            object-fit: contain;
+            object-fit: cover;
         }
 
-        .title {
+        .header-left .title {
             font-size: 24px;
             font-weight: 700;
+            color: white;
             letter-spacing: 0.5px;
         }
 
         .header-right {
             display: flex;
-            align-items: center;
-            gap: 20px;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 10px;
+        }
+
+        .user-info {
+            padding: 5px 0;
         }
 
         .welcome-text {
             font-size: 14px;
             color: rgba(255, 255, 255, 0.9);
-            padding: 5px 0;
-            font-weight: 500;
         }
 
-        .user-badge {
+        .username {
             font-weight: 700;
             font-size: 16px;
             color: white;
@@ -123,7 +133,6 @@
         .nav-icon {
             font-size: 16px;
         }
-
 
         /* ========================================= */
         /* 콘텐츠 영역 및 폼 스타일 (기존 유지) */
@@ -296,33 +305,39 @@
 </head>
 <body>
 
-<header>
-    <div class="header-left">
-        <img th:src="@{/images/logo.png}" alt="Logo" class="logo">
-        <div class="title">TRAVEL PLANNING</div>
-    </div>
-    <div class="header-right">
-        <div class="welcome-text" id="welcome-text">
-            <span class="user-badge" id="display-username">회원</span>님 환영합니다.
+<header class="header">
+    <div class="header-container">
+        <div class="header-left">
+            <img th:src="@{/images/logo.png}" alt="Logo" class="logo">
+            <div class="title">TRAVEL PLANNING</div>
         </div>
-        <nav class="nav">
-            <a th:href="@{/spots/view/tourspotlist}" class="nav-link">
-                <span class="nav-icon">🏠</span>
-                <span>홈</span>
-            </a>
-            <a th:href="@{/member/view/mypage}" class="nav-link">
-                <span class="nav-icon">👤</span>
-                <span>마이페이지</span>
-            </a>
-            <a th:href="@{/reviews/view/search/my}" class="nav-link active">
-                <span class="nav-icon">✍️</span>
-                <span>내 리뷰</span>
-            </a>
-            <a href="javascript:void(0);" class="nav-link logout" onclick="handleLogout()">
-                <span class="nav-icon">🚪</span>
-                <span>로그아웃</span>
-            </a>
-        </nav>
+
+        <div class="header-right">
+            <div class="user-info">
+                <span class="welcome-text" id="welcome-text">
+                    <span class="username" id="display-username">회원</span>님 환영합니다.
+                </span>
+            </div>
+
+            <nav class="nav">
+                <a th:href="@{/spots/view/tourspotlist}" class="nav-link">
+                    <span class="nav-icon">🏠</span>
+                    <span>홈</span>
+                </a>
+                <a th:href="@{/member/view/mypage}" class="nav-link">
+                    <span class="nav-icon">👤</span>
+                    <span>마이페이지</span>
+                </a>
+                <a th:href="@{/reviews/view/search/my}" class="nav-link active">
+                    <span class="nav-icon">✍️</span>
+                    <span>내 리뷰</span>
+                </a>
+                <a href="javascript:void(0);" class="nav-link logout" onclick="handleLogout()">
+                    <span class="nav-icon">🚪</span>
+                    <span>로그아웃</span>
+                </a>
+            </nav>
+        </div>
     </div>
 </header>
 <div class="content-wrapper">
@@ -344,10 +359,9 @@
 <script th:inline="javascript">
     /*<![CDATA[*/
 
-    // ✅ [수정] 헤더 사용자 이름 설정 (mypage.html 구조에 맞게 textContent 설정)
+    // ✅ [추가] 헤더 사용자 이름 설정 (로그인 정보가 없으므로 임의 지정)
     const tempUsername = "여행자";
     const usernameElement = document.getElementById("display-username");
-    // welcome-text 자체가 회원님 환영합니다를 포함하고 있으므로, usernameElement에는 이름만 넣습니다.
     if (usernameElement) {
         usernameElement.textContent = tempUsername;
     }
@@ -459,7 +473,8 @@
 
         // 1. 메인 리뷰(코스 리뷰) 폼 생성
         let mainReviewHtml = `
-            <p style="color: #6A4CA5; font-weight: 600; margin-bottom: 20px;">코스 리뷰 수정</p>
+            <h2 style="margin-bottom: 20px;">코스 리뷰 수정</h2>
+            <p style="color: #6A4CA5; font-weight: 600; margin-bottom: 20px;">[대상 코스: ${courseTitle}]</p>
             <form id="reviewForm" enctype="multipart/form-data">
 
                 <input type="hidden" name="mainReview.reviewId" value="${mainReview.reviewId}">
@@ -473,16 +488,16 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="mainContent">내용</label>
-                    <textarea id="mainContent" name="mainReview.content" placeholder="전체 코스에 대한 상세 리뷰 내용을 입력하세요.">${mainReview.content || ''}</textarea>
-                </div>
-
-                <div class="form-group">
                     <label>별점</label>
                     <div class="star-rating" id="mainRating" data-target="mainReview.rating" data-rating="${mainReview.rating}">
                         ${getStarSpans(mainReview.rating)}
                     </div>
                     <input type="hidden" id="mainReviewRatingValue" name="mainReview.rating" value="${mainReview.rating}">
+                </div>
+
+                <div class="form-group">
+                    <label for="mainContent">내용</label>
+                    <textarea id="mainContent" name="mainReview.content" placeholder="전체 코스에 대한 상세 리뷰 내용을 입력하세요.">${mainReview.content || ''}</textarea>
                 </div>
             </form>
         `;
@@ -512,7 +527,7 @@
         // 3. 스팟 리뷰 섹션 생성
         let spotReviewHtml = `
             <div class="spot-review-section">
-                <h3>관광지 리뷰 수정</h3>
+                <h3>코스에 담긴 관광지 리뷰 조회</h3>
                 <div id="spot-review-list">
                     ${spotReviews.map(renderSpotReview).join('')}
                 </div>
@@ -548,8 +563,8 @@
     function renderSpotReview(spotDto, index) {
         // spotDto.placeTitle: 서버에서 받아온 '리뷰 제목'으로 사용합니다. (editable title의 초기값)
         // 이 값을 사용자에게 '장소 이름'으로 보여주고, editable title 필드에 넣어줍니다.
-        const placeNameForDisplay = spotDto.title;
-        const initialReviewTitle = spotDto.title || '';
+        const placeNameForDisplay = spotDto.placeTitle || `${spotDto.targetType} 장소`;
+        const initialReviewTitle = spotDto.placeTitle || '';
 
         const ratingId = `spotRating_${index}`;
         const prefix = `spotReviews[${index}]`;

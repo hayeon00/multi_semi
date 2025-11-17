@@ -207,7 +207,7 @@
         function loadSpots() {
             const query = new URLSearchParams({page, sort, size, keyword});
 
-            fetchWithRefresh(`/spots/list?${query}`)
+            fetch(`/spots/list?${query}`)
                 .then(res => res.json())
                 .then(result => {
                     if (result.status !== 200) throw new Error(result.message);
@@ -245,7 +245,8 @@
                 `;
 
                 card.addEventListener("click", () => {
-                    window.location.href = `/spots/view/tourspotdetail?id=${spot.id}`;
+                    // window.location.href = `/spots/view/tourspotdetail?id=${spot.id}`;
+                    safeRedirect(`/spots/view/tourspotdetail?id=${spot.id}`);
                 });
 
                 container.appendChild(card);

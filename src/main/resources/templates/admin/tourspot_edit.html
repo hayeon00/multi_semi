@@ -8,6 +8,8 @@
 </head>
 
 <body>
+<script th:src="@{/js/common.js}"></script>
+
 <header>
     <div class="header-left">
         <img th:src="@{/images/logo.png}" alt="Logo">
@@ -22,7 +24,7 @@
                 <span class="nav-icon">🏠</span>
                 <span>홈</span>
             </a>
-            <a th:href="@{/admin/view/dashboard}" class="nav-link active">
+            <a th:href="@{/admin/view/adminpage}" class="nav-link active">
                 <span class="nav-icon">📊</span>
                 <span>대시보드</span>
             </a>
@@ -351,9 +353,10 @@
         saveBtn.innerHTML = '<span>저장 중...</span>';
         saveBtn.disabled = true;
 
-        fetch(`/admin/tourspot/${id}`, {
+        fetchWithRefresh(`/admin/tourspot/${id}`, {
             method: "PUT",
-            body: formData
+            body: formData,
+            headers: {}
         })
             .then(res => {
                 if (res.ok) {

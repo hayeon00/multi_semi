@@ -8,6 +8,8 @@
 </head>
 
 <body>
+<script th:src="@{/js/common.js}"></script>
+
 <header>
     <div class="header-left">
         <img th:src="@{/images/logo.png}" alt="Logo">
@@ -22,7 +24,7 @@
                 <span class="nav-icon">🏠</span>
                 <span>홈</span>
             </a>
-            <a th:href="@{/admin/view/dashboard}" class="nav-link active">
+            <a th:href="@{/admin/view/adminpage}" class="nav-link active">
                 <span class="nav-icon">📊</span>
                 <span>대시보드</span>
             </a>
@@ -365,10 +367,11 @@
         submitBtn.disabled = true;
 
         try {
-            const res = await fetch("/admin/tourspot", {
+            const res = await fetchWithRefresh("/admin/tourspot", {
                 method: "POST",
                 body: formData,
-                credentials: "include"
+                credentials: "include",
+                headers: {}
             });
 
             if (res.ok) {
