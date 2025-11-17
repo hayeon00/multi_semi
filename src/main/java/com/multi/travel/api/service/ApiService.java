@@ -30,6 +30,7 @@ import org.springframework.web.client.RestTemplate;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -210,7 +211,7 @@ public class ApiService {
                         .firstImage(item.getFirstimage())
                         .firstImage2(item.getFirstimage2())
                         .areacode(Integer.valueOf(item.getAreacode()))
-                        .recCount(0)
+                        .recCount(new Random().nextInt(100))
                         .sigungucode(Integer.valueOf(item.getSigungucode()))
                         .lDongRegnCd(item.getLDongRegnCd())
                         .contentId(Integer.valueOf(item.getContentid()))
@@ -232,7 +233,7 @@ public class ApiService {
                         .firstImage(item.getFirstimage())
                         .firstImage2(item.getFirstimage2())
                         .areacode(Integer.valueOf(item.getAreacode()))
-                        .recCount(0)
+                        .recCount(new Random().nextInt(100))
                         .sigungucode(Integer.valueOf(item.getSigungucode()))
                         .lDongRegnCd(item.getLDongRegnCd())
                         .contentId(Integer.valueOf(item.getContentid()))
