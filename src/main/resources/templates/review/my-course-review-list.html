@@ -1,495 +1,283 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{common/layout}"
+      lang="ko">
+
 <head>
-    <meta charset="UTF-8" />
-    <link rel="stylesheet" th:href="@{/css/mypage.css}">
-    <script th:src="@{/js/common.js}"></script>
-    <title>내가 쓴 리뷰</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pretendard&display=swap">
-    <style>
-        /* ========================================= */
-        /* 기본 변수 및 리셋 */
-        /* ========================================= */
-        :root {
-            --main-color: #7E57C2;      /* 보라색 */
-            --hover-color: #6A4CA5;     /* 짙은 보라색 */
-            --gray-bg: #F5F6F8;         /* 배경 */
-            --deep-text: #2C3E50;       /* 진한 텍스트 */
-            --light-border: #E0E0E0;    /* 연한 경계선 */
-            --star-color: #FFC107;      /* 별 색상 */
-        }
+    <meta charset="UTF-8">
+    <title>내 리뷰</title>
 
-        body {
-            font-family: 'Pretendard', sans-serif;
-            background: var(--gray-bg); /* 배경색 통일 */
-            margin: 0;
-            padding: 0;
-        }
+    <!-- 페이지 전용 CSS -->
+    <th:block layout:fragment="head">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pretendard&display=swap">
 
-        /* ========================================= */
-        /* HEADER 스타일 (리뷰 등록 페이지와 동일) */
-        /* ========================================= */
-        .header {
-            background: linear-gradient(135deg, var(--main-color) 0%, #B39DDB 100%);
-            width: 100%;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            padding: 15px 0;
-        }
+        <style>
+            :root {
+                --main-color: #7E57C2;
+                --hover-color: #6A4CA5;
+                --gray-bg: #F5F6F8;
+                --deep-text: #2C3E50;
+                --light-border: #E0E0E0;
+                --star-color: #FFC107;
+            }
 
-        .header-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+            body {
+                background: var(--gray-bg);
+            }
 
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
+            .content-wrapper {
+                max-width: 1200px;
+                margin: 40px auto;
+                padding: 30px;
+                background: white;
+                border-radius: 12px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            }
 
-        .header-left .logo {
-            width: 50px;
-            height: 50px;
-            border-radius: 10px;
-            background: white;
-            padding: 5px;
-            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
-            object-fit: cover;
-        }
+            h2 {
+                font-size: 28px;
+                font-weight: 800;
+                color: var(--deep-text);
+                text-align: center;
+                margin-bottom: 30px;
+                padding-bottom: 10px;
+                border-bottom: 3px solid var(--main-color);
+            }
 
-        .header-left .title {
-            font-size: 24px;
-            font-weight: 700;
-            color: white;
-            letter-spacing: 0.5px;
-        }
+            .plan-group {
+                margin-bottom: 30px;
+                padding: 20px;
+                background: white;
+                border-radius: 12px;
+                border: 1px solid var(--light-border);
+                box-shadow: 0 2px 8px rgba(0, 0, 0, .05);
+            }
 
-        .header-right {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 10px;
-        }
+            .plan-header-top {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                margin-bottom: 15px;
+                padding-bottom: 15px;
+                border-bottom: 1px dashed #EEE;
+            }
 
-        .user-info {
-            padding: 5px 0;
-        }
+            .plan-header-top h3 {
+                margin: 0;
+                font-size: 22px;
+                font-weight: 700;
+            }
 
-        .welcome-text {
-            font-size: 14px;
-            color: rgba(255, 255, 255, 0.9);
-        }
+            .plan-header-top p {
+                margin: 0;
+                font-size: 14px;
+                color: #777;
+            }
 
-        .username {
-            font-weight: 700;
-            font-size: 16px;
-            color: white;
-            margin-right: 5px;
-        }
+            .btn-edit {
+                padding: 8px 18px;
+                border-radius: 8px;
+                border: none;
+                cursor: pointer;
+                font-size: 14px;
+                font-weight: 600;
+                background: var(--main-color);
+                color: white;
+                transition: all .2s;
+                box-shadow: 0 2px 5px rgba(126, 87, 194, .2);
+            }
 
-        .nav {
-            display: flex;
-            gap: 8px;
-        }
+            .btn-edit:hover {
+                background: var(--hover-color);
+                transform: translateY(-1px);
+            }
 
-        .nav-link {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            padding: 8px 15px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: 600;
-            color: white;
-            background-color: rgba(255, 255, 255, 0.15);
-            transition: background-color 0.2s ease, transform 0.2s ease;
-        }
+            .review-list-container {
+                display: grid;
+                grid-template-columns:repeat(auto-fill, minmax(280px, 1fr));
+                gap: 25px;
+                margin-top: 10px;
+            }
 
-        .nav-link:hover {
-            background-color: rgba(255, 255, 255, 0.3);
-            transform: translateY(-1px);
-        }
+            .review-card {
+                background: #FAFAFA;
+                border-radius: 12px;
+                border: 1px solid var(--light-border);
+                overflow: hidden;
+                cursor: pointer;
+                transition: .3s;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, .05);
+            }
 
-        .nav-link.active {
-            background-color: rgba(255, 255, 255, 0.4);
-            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
-        }
+            .review-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 8px 20px rgba(126, 87, 194, .15);
+            }
 
-        .nav-link.logout {
-            background-color: rgba(231, 76, 60, 0.6);
-        }
+            .review-image {
+                width: 100%;
+                height: 180px;
+                object-fit: cover;
+            }
 
-        .nav-link.logout:hover {
-            background-color: rgba(231, 76, 60, 0.8);
-        }
+            .review-content {
+                padding: 15px;
+            }
 
-        .nav-icon {
-            font-size: 16px;
-        }
+            .review-content h4 {
+                font-size: 18px;
+                font-weight: 700;
+                color: var(--main-color);
+                margin: 0 0 8px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
 
-        /* ========================================= */
-        /* 콘텐츠 영역 스타일 */
-        /* ========================================= */
+            .review-content .rating {
+                color: var(--star-color);
+                font-size: 16px;
+                margin-bottom: 8px;
+            }
 
-        .content-wrapper {
-            max-width: 1200px;
-            margin: 40px auto;
-            padding: 20px;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        }
+            .empty-state {
+                text-align: center;
+                padding: 50px 20px;
+                font-size: 18px;
+                color: #777;
+            }
 
-        h2 {
-            font-size: 28px;
-            font-weight: 800;
-            color: var(--deep-text);
-            text-align: center;
-            padding-bottom: 10px;
-            margin-bottom: 30px;
-            border-bottom: 3px solid var(--main-color);
-            display: block;
-        }
-
-        /* 여행 계획 그룹 스타일 */
-        .plan-group {
-            margin-bottom: 30px;
-            padding: 20px;
-            background: #FFFFFF;
-            border: 1px solid var(--light-border);
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-
-        .plan-header {
-            margin-bottom: 15px;
-            padding-bottom: 15px;
-            border-bottom: 1px dashed #EEE;
-        }
-
-        .plan-header-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start; /* 버튼을 위쪽에 배치 */
-        }
-
-        .plan-header h3 {
-            font-size: 22px;
-            font-weight: 700;
-            color: var(--deep-text);
-            margin: 0 0 5px 0;
-        }
-
-        .plan-header p {
-            font-size: 14px;
-            color: #777;
-            margin: 0;
-        }
-
-        .plan-btn-group {
-            display: flex;
-            gap: 10px;
-        }
-
-        /* ✅ 수정 버튼 스타일 개선 및 변경 */
-        .btn-edit {
-            padding: 8px 18px;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-
-            /* 디자인 적용 */
-            background-color: var(--main-color);
-            color: white;
-            box-shadow: 0 2px 5px rgba(126, 87, 194, 0.2);
-        }
-
-        .btn-edit:hover {
-            background-color: var(--hover-color);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(126, 87, 194, 0.3);
-        }
-        /* -- 버튼 디자인 끝 -- */
-
-
-        /* 리뷰 목록 그리드 스타일 */
-        .review-list-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 25px;
-            padding-top: 10px;
-        }
-
-        .review-card {
-            background: #FAFAFA;
-            border: 1px solid var(--light-border);
-            border-radius: 12px;
-            overflow: hidden;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-
-        .review-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 20px rgba(126, 87, 194, 0.15);
-        }
-
-        .review-image {
-            width: 100%;
-            height: 180px;
-            object-fit: cover;
-            display: block;
-        }
-
-        .review-content {
-            padding: 15px;
-        }
-
-        .review-content h4 {
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--main-color);
-            margin-top: 0;
-            margin-bottom: 8px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .review-content .rating {
-            font-size: 16px;
-            font-weight: 600;
-            color: var(--star-color);
-            margin-bottom: 10px;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 50px 20px;
-            font-size: 18px;
-            color: #777;
-        }
-
-    </style>
+        </style>
+    </th:block>
 </head>
 
 <body>
 
-<header class="header">
-    <div class="header-container">
-        <div class="header-left">
-            <img th:src="@{/images/logo.png}" alt="Logo" class="logo">
-            <div class="title">TRAVEL PLANNING</div>
-        </div>
+<main layout:fragment="content">
 
-        <div class="header-right">
-            <div class="user-info">
-                <span class="welcome-text" id="welcome-text">
-                    <span class="username" id="display-username">회원</span>님 환영합니다.
-                </span>
-            </div>
-
-            <nav class="nav">
-                <a th:href="@{/spots/view/tourspotlist}" class="nav-link">
-                    <span class="nav-icon">🏠</span>
-                    <span>홈</span>
-                </a>
-                <a th:href="@{/member/view/mypage}" class="nav-link">
-                    <span class="nav-icon">👤</span>
-                    <span>마이페이지</span>
-                </a>
-                <a th:href="@{/reviews/view/search/my}" class="nav-link active">
-                    <span class="nav-icon">✍️</span>
-                    <span>내 리뷰</span>
-                </a>
-                <a href="javascript:void(0);" class="nav-link logout" onclick="handleLogout()">
-                    <span class="nav-icon">🚪</span>
-                    <span>로그아웃</span>
-                </a>
-            </nav>
+    <div class="content-wrapper">
+        <h2>내가 쓴 리뷰</h2>
+        <div id="planReviewList">
+            <p style="text-align:center;color:#777;">작성한 여행 계획을 불러오는 중입니다...</p>
         </div>
     </div>
-</header>
 
-<div class="content-wrapper">
-    <h2>내가 쓴 리뷰</h2>
-    <div id="planReviewList">
-        <p class="no-content">작성한 여행 계획을 불러오는 중입니다...</p>
-    </div>
-</div>
+</main>
 
-<script>
-    // 임시 사용자 이름 설정
-    const tempUsername = "여행자";
-    const usernameElement = document.getElementById("display-username");
-    if (usernameElement) {
-        usernameElement.textContent = tempUsername;
-    }
+<!-- SCRIPT -->
+<th:block layout:fragment="script">
+    <script>
+        /* ----------------------------
+         * 여행 계획 + 리뷰 로딩
+         * ---------------------------- */
 
-    // 로그아웃 함수
-    async function handleLogout() {
-        try {
-            const response = await fetch('/auth/logout', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                credentials: 'include'
-            });
+        document.addEventListener("DOMContentLoaded", () => {
+            loadPlansAndReviews();
+        });
 
-            if (response.ok) {
-                alert('로그아웃 되었습니다.');
-                window.location.href = '/login';
-            } else {
-                const result = await response.json();
-                alert(result.message || '로그아웃에 실패했습니다.');
+        async function loadPlansAndReviews() {
+            const listContainer = document.getElementById("planReviewList");
+
+            try {
+                const res = await fetch('/plans', {credentials: 'include'});
+                const planRes = await res.json();
+
+                if (!res.ok || !planRes.data?.length) {
+                    listContainer.innerHTML = `<div class="empty-state">작성한 여행 계획이 없습니다.</div>`;
+                    return;
+                }
+
+                listContainer.innerHTML = "";
+
+                for (const plan of planRes.data) {
+                    const wrap = document.createElement("div");
+                    wrap.className = "plan-group";
+
+                    wrap.innerHTML = `
+                <div class="plan-header-top">
+                    <div>
+                        <h3>${plan.title}</h3>
+                        <p>${plan.startDate} ~ ${plan.endDate}</p>
+                    </div>
+                    <button class="btn-edit" onclick="editPlan(${plan.id})">리뷰 수정</button>
+                </div>
+                <div id="reviews-for-${plan.id}" class="review-list-container">
+                    <p style="color:#777;">리뷰를 불러오는 중...</p>
+                </div>
+            `;
+
+                    listContainer.appendChild(wrap);
+
+                    loadReviewsForPlan(plan.id);
+                }
+
+            } catch (err) {
+                console.error(err);
+                listContainer.innerHTML = `<div class="empty-state">리뷰 목록을 불러오는 중 오류 발생</div>`;
             }
-        } catch (error) {
-            console.error('로그아웃 오류:', error);
-            alert('로그아웃 처리 중 오류가 발생했습니다.');
         }
-    }
 
-    document.addEventListener("DOMContentLoaded", () => {
-        loadPlansAndReviews();
-    });
+        async function loadReviewsForPlan(planId) {
+            const container = document.getElementById(`reviews-for-${planId}`);
 
-    async function loadPlansAndReviews() {
-        const listContainer = document.getElementById("planReviewList");
-        try {
-            const planResponse = await fetch('/plans', { credentials: 'include' });
-            if (!planResponse.ok) throw new Error("여행 계획 로딩 실패");
-            const planResDto = await planResponse.json();
-            const plans = planResDto.data;
+            try {
+                const targetRes = await fetch(`/reviews/course?planId=${planId}`, {credentials: 'include'});
+                if (!targetRes.ok) {
+                    container.innerHTML = `<p style="color:#888;">이 계획은 리뷰 대상이 아닙니다.</p>`;
+                    return;
+                }
 
-            if (!plans || plans.length === 0) {
-                listContainer.innerHTML = `<div class="no-content">작성한 여행 계획이 없습니다.</div>`;
-                return;
+                const targetDto = await targetRes.json();
+                const courseId = targetDto.targetId;
+                const courseType = targetDto.type;
+
+                const reviewRes = await fetch(`/reviews/target?type=${courseType}&id=${courseId}`, {
+                    credentials: 'include'
+                });
+
+                if (!reviewRes.ok) {
+                    container.innerHTML = `<p style="color:#888;">리뷰가 없습니다.</p>`;
+                    return;
+                }
+
+                const reviewPage = await reviewRes.json();
+
+                if (!reviewPage.content?.length) {
+                    container.innerHTML = `<p style="color:#888;">리뷰가 없습니다.</p>`;
+                    return;
+                }
+
+                container.innerHTML = "";
+
+                reviewPage.content.forEach(r => {
+                    container.innerHTML += `
+                <div class="review-card">
+                    <img class="review-image" src="${(r.imageUrls?.length ? r.imageUrls[0] : '/images/default-thumbnail.png')}" />
+                    <div class="review-content">
+                        <h4>${r.title}</h4>
+                        <p class="rating">★ ${r.rating}</p>
+                        <p>${r.content}</p>
+                    </div>
+                </div>
+            `;
+                });
+
+            } catch (err) {
+                console.error(err);
+                container.innerHTML = `<p style="color:red;">리뷰 로딩 실패</p>`;
             }
-
-            listContainer.innerHTML = "";
-
-            for (const plan of plans) {
-                const planGroup = document.createElement("div");
-                planGroup.className = "plan-group";
-
-                const planHeader = document.createElement("div");
-                planHeader.className = "plan-header";
-
-                // ✅ '계획삭제' 버튼 제거 및 '수정' 버튼만 유지
-                planHeader.innerHTML = `
-          <div class="plan-header-top">
-            <div>
-              <h3>${plan.title}</h3>
-              <p>${plan.startDate} ~ ${plan.endDate}</p>
-            </div>
-            <div class="plan-btn-group">
-              <button class="btn-edit" onclick="editPlan(${plan.id})">리뷰 수정</button>
-            </div>
-          </div>
-        `;
-
-                const reviewContainer = document.createElement("div");
-                reviewContainer.className = "review-list-container";
-                reviewContainer.id = `reviews-for-plan-${plan.id}`;
-                reviewContainer.innerHTML = `<p style="color: #888;">리뷰를 불러오는 중...</p>`;
-
-                planGroup.appendChild(planHeader);
-                planGroup.appendChild(reviewContainer);
-                listContainer.appendChild(planGroup);
-
-                loadReviewsForPlan(plan.id, reviewContainer.id);
-            }
-        } catch (e) {
-            console.error("로딩 실패:", e);
-            listContainer.innerHTML = `<div class="no-content">리뷰를 불러오는 중 오류가 발생했습니다.</div>`;
         }
-    }
 
-    async function loadReviewsForPlan(planId, containerId) {
-        const container = document.getElementById(containerId);
-
-        try {
-            const targetResponse = await fetch(`/reviews/course?planId=${planId}`, { credentials: 'include' });
-            if (!targetResponse.ok) {
-                container.innerHTML = `<p style="color: #888;">이 계획에는 코스가 없거나 리뷰 대상이 아닙니다.</p>`;
-                return;
-            }
-
-            const targetDto = await targetResponse.json();
-            const courseId = targetDto.targetId;
-            const courseType = targetDto.type;
-
-            const reviewResponse = await fetch(`/reviews/target?type=${courseType}&id=${courseId}`, {
-                credentials: 'include'
-            });
-
-            if (!reviewResponse.ok) throw new Error("리뷰 로딩 실패");
-            const reviewPage = await reviewResponse.json();
-            const reviews = reviewPage.content;
-
-            if (!reviews || reviews.length === 0) {
-                container.innerHTML = `<p style="color: #888;">이 코스에 대한 리뷰가 없습니다.</p>`;
-                return;
-            }
-
-            container.innerHTML = "";
-
-            reviews.forEach(r => {
-                const div = document.createElement("div");
-                div.className = "review-card";
-
-                const imageTag = (r.imageUrls && r.imageUrls.length > 0)
-                    ? `<img class="review-image" src="${r.imageUrls[0]}" alt="리뷰 이미지">`
-                    : `<img class="review-image" src="/images/default-thumbnail.png" alt="기본 이미지">`;
-
-                div.innerHTML = `
-          ${imageTag}
-          <div class="review-content">
-            <h4>${r.title}</h4>
-            <p class="rating">★ ${r.rating}</p>
-            <p>${r.content}</p>
-          </div>
-        `;
-                container.appendChild(div);
-            });
-
-        } catch (e) {
-            console.error(`Plan ${planId} 리뷰 로딩 실패:`, e);
-            container.innerHTML = `<p style="color: #E74C3C;">리뷰를 불러오는 중 오류가 발생했습니다.</p>`;
+        /* ----------------------------
+         * 리뷰 수정 이동
+         * ---------------------------- */
+        function editPlan(planId) {
+            safeRedirect(`/reviews/view/edit?planId=${planId}`);
         }
-    }
 
-    function editPlan(planId) {
-        safeRedirect(`/reviews/view/edit?planId=${planId}`)
-    }
+    </script>
+</th:block>
 
-    // deletePlan 함수는 더 이상 사용되지 않지만, 만약을 위해 주석 처리하지 않고 유지합니다.
-    async function deletePlan(planId) {
-        if (!confirm("이 여행 계획과 관련된 모든 리뷰가 함께 삭제됩니다. 정말 삭제하시겠습니까?")) return;
-        try {
-            const res = await fetch(`/plans/${planId}`, { method: "DELETE", credentials: "include" });
-            if (!res.ok) throw new Error("삭제 실패");
-            alert("삭제되었습니다.");
-            // loadPlansAndReviews();
-            safeRedirect('/reviews/view/search/my')
-        } catch (e) {
-            alert("삭제 중 오류 발생");
-            console.error(e);
-        }
-    }
-</script>
 </body>
 </html>
