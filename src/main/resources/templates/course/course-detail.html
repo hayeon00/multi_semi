@@ -1,491 +1,626 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{/common/layout}"
+      lang="ko">
+
 <head>
-  <script src="/js/common.js"></script>
+    <th:block layout:fragment="head">
+        <meta charset="UTF-8"/>
+        <title>코스 상세 | Travel Planning</title>
 
-  <meta charset="UTF-8" />
-  <title>코스 상세 | Travel Planning</title>
+        <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+        <script th:src="@{|https://dapi.kakao.com/v2/maps/sdk.js?appkey=${kakaoKey}&autoload=false|}"></script>
 
-  <!-- jQuery -->
-  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+        <style>
+            .back-nav-wrapper {
+                margin-bottom: 15px;
+            }
 
-  <!-- Kakao Map -->
-  <script th:src="@{|https://dapi.kakao.com/v2/maps/sdk.js?appkey=${kakaoKey}&autoload=false|}"></script>
+            .btn-back-nav {
+                background: #e5e5e5;
+                padding: 6px 12px;
+                border-radius: 8px;
+                border: none;
+                cursor: pointer;
+                font-size: 14px;
+                transition: 0.2s;
+            }
 
-  <style>
-    /* 뒤로가기 */
-    .back-nav-wrapper { margin-bottom: 15px; }
-    .btn-back-nav {
-      background: #e5e5e5;
-      padding: 6px 12px;
-      border-radius: 8px;
-      border: none;
-      cursor: pointer;
-      font-size: 14px;
-      transition: 0.2s;
-    }
-    .btn-back-nav:hover { background: #d0d0d0; }
+            .btn-back-nav:hover {
+                background: #d0d0d0;
+            }
 
-    body { font-family: Pretendard, sans-serif; margin: 0; background: #f9f9f9; }
-    header {
-      background: #d9d9d9;
-      padding: 15px 30px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .title { font-size: 1.5rem; font-weight: bold; }
-    nav a { margin-left: 10px; color: black; text-decoration: none; }
+            body {
+                font-family: Pretendard, sans-serif;
+                margin: 0;
+                background: #f9f9f9;
+            }
 
-    main {
-      width: 900px; margin: 40px auto; background: #fff;
-      border-radius: 20px; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
+            main {
+                width: 900px;
+                margin: 40px auto;
+                background: #fff;
+                border-radius: 20px;
+                padding: 20px;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            }
 
-    /* 지도 + 오른쪽 패널 */
-    .map-container { display: flex; background: #f3f3f3; border-radius: 20px; overflow: hidden; }
-    #map { width: 70%; height: 500px; }
-    .side-panel { width: 30%; background: #fff; padding: 10px; display: flex; flex-direction: column; }
+            .map-container {
+                display: flex;
+                background: #f3f3f3;
+                border-radius: 20px;
+                overflow: hidden;
+            }
 
-    /* DAY 탭 */
-    .day-tabs-wrapper { display: flex; align-items: center; gap: 5px; margin-bottom: 10px; }
-    .tab-arrow {
-      border: none; background: #e0e0e0;
-      padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 13px;
-    }
-    .tabs { display: flex; overflow-x: auto; gap: 5px; flex: 1; white-space: nowrap; }
-    .tabs::-webkit-scrollbar { display: none; }
-    .tabs button { padding: 6px 10px; border-radius: 8px; border: none; background: #ccc; cursor: pointer; }
-    .tabs button.active { background: #000; color: #fff; }
+            #map {
+                width: 70%;
+                height: 500px;
+            }
 
-    /* 장소 리스트 */
-    .place-list { flex: 1; overflow-y: auto; }
-    .place-item {
-      background: #fff; margin: 4px 0; border-radius: 8px;
-      padding: 8px; font-size: 14px;
-    }
+            .side-panel {
+                width: 30%;
+                background: #fff;
+                padding: 10px;
+                display: flex;
+                flex-direction: column;
+            }
 
-    /* 버튼 */
-    .btns { text-align: center; margin-top: 20px; display: flex; justify-content: center; gap: 8px; }
-    .btns button {
-      padding: 10px 20px; border: none; border-radius: 8px;
-      cursor: pointer;
-    }
-    .btn-back { background: #ccc; }
-    .btn-edit { background: #4A90E2; color: #fff; }
-    .btn-delete { background: #ff6b6b; color: #fff; }
-    .btn-add { background: #000; color: #fff; }
+            .day-tabs-wrapper {
+                display: flex;
+                align-items: center;
+                gap: 5px;
+                margin-bottom: 10px;
+            }
 
-    /* ❤️ 좋아요 버튼 (관광지 페이지 스타일 동일) */
-    .btn-like {
-      background: #e74c3c;
-      color: white;
-      font-weight: 600;
-    }
-    .btn-like.active {
-      background: #ff6b81;
-    }
+            .tab-arrow {
+                border: none;
+                background: #e0e0e0;
+                padding: 5px 10px;
+                border-radius: 6px;
+                cursor: pointer;
+                font-size: 13px;
+            }
 
-    /* 리뷰 */
-    .reviews-section {
-      margin-top: 40px;
-      padding-top: 20px;
-      border-top: 1px solid #ddd;
-    }
-    .review-card {
-      background: #f9f9f9;
-      border-radius: 8px;
-      padding: 15px;
-      margin-bottom: 15px;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-    }
-    .review-card h4 { margin: 0; font-size: 16px; color: #333; }
-    .review-meta { font-size: 13px; color: #888; }
+            .tabs {
+                display: flex;
+                overflow-x: auto;
+                gap: 5px;
+                flex: 1;
+                white-space: nowrap;
+            }
 
-    /* 토스트 메시지 */
-    .toast-message {
-      position: fixed;
-      bottom: 30px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(40, 40, 40, 0.9);
-      color: #fff;
-      padding: 12px 18px;
-      border-radius: 6px;
-      font-size: 14px;
-      animation: fadeInOut 2s ease;
-      z-index: 1000;
-    }
+            .tabs::-webkit-scrollbar {
+                display: none;
+            }
 
-    @keyframes fadeInOut {
-      0% { opacity: 0; transform: translate(-50%, 10px); }
-      20%,80% { opacity: 1; transform: translate(-50%, 0); }
-      100% { opacity: 0; transform: translate(-50%, 10px); }
-    }
-  </style>
+            .tabs button {
+                padding: 6px 10px;
+                border-radius: 8px;
+                border: none;
+                background: #ccc;
+                cursor: pointer;
+            }
+
+            .tabs button.active {
+                background: #000;
+                color: #fff;
+            }
+
+            .place-list {
+                flex: 1;
+                overflow-y: auto;
+            }
+
+            .place-item {
+                background: #fff;
+                margin: 4px 0;
+                border-radius: 8px;
+                padding: 8px;
+                font-size: 14px;
+            }
+
+            .btns {
+                text-align: center;
+                margin-top: 20px;
+                display: flex;
+                justify-content: center;
+                gap: 8px;
+            }
+
+            .btns button {
+                padding: 10px 20px;
+                border: none;
+                border-radius: 8px;
+                cursor: pointer;
+            }
+
+            .btn-back {
+                background: #ccc;
+            }
+
+            .btn-edit {
+                background: #4A90E2;
+                color: #fff;
+            }
+
+            .btn-delete {
+                background: #ff6b6b;
+                color: #fff;
+            }
+
+            .btn-add {
+                background: #000;
+                color: #fff;
+            }
+
+            .btn-like {
+                background: #e74c3c;
+                color: white;
+                font-weight: 600;
+            }
+
+            .btn-like.active {
+                background: #ff6b81;
+            }
+
+            .reviews-section {
+                margin-top: 40px;
+                padding-top: 20px;
+                border-top: 1px solid #ddd;
+            }
+
+            .review-card {
+                background: #f9f9f9;
+                border-radius: 8px;
+                padding: 15px;
+                margin-bottom: 15px;
+                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            }
+
+            .review-card h4 {
+                margin: 0;
+                font-size: 16px;
+                color: #333;
+            }
+
+            .review-meta {
+                font-size: 13px;
+                color: #888;
+            }
+
+            .toast-message {
+                position: fixed;
+                bottom: 30px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(40, 40, 40, 0.9);
+                color: #fff;
+                padding: 12px 18px;
+                border-radius: 6px;
+                font-size: 14px;
+                animation: fadeInOut 2s ease;
+                z-index: 1000;
+            }
+
+            @keyframes fadeInOut {
+                0% {
+                    opacity: 0;
+                    transform: translate(-50%, 10px);
+                }
+                20%, 80% {
+                    opacity: 1;
+                    transform: translate(-50%, 0);
+                }
+                100% {
+                    opacity: 0;
+                    transform: translate(-50%, 10px);
+                }
+            }
+
+            /* ================================
+         계획 상세 페이지 스타일 복사본
+         코스 상세 페이지에 그대로 적용
+      ================================ */
+
+            /* 코스 목록 외곽 패널 */
+            .side-panel {
+                background: #fafafa;
+                padding: 20px;
+                width: 360px;
+                border-radius: 15px;
+                box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+            }
+
+            /* 상단 Day Tabs */
+            .day-tabs-wrapper {
+                display: flex;
+                align-items: center;
+                gap: 5px;
+                margin-bottom: 15px;
+            }
+
+            .tabs {
+                display: flex;
+                gap: 8px;
+                overflow-x: auto;
+                white-space: nowrap;
+                flex: 1;
+            }
+
+            .tabs::-webkit-scrollbar {
+                display: none;
+            }
+
+            .tabs button {
+                padding: 6px 12px;
+                background: #ddd;
+                border: none;
+                border-radius: 8px;
+                cursor: pointer;
+                font-size: 14px;
+            }
+
+            .tabs button.active {
+                background: #000;
+                color: #fff;
+            }
+
+            /* 목록 전체 영역 */
+            .place-list {
+                flex: 1;
+                overflow-y: auto;
+            }
+
+            /* 개별 코스 아이템 (완전 동일 스타일) */
+            .place-item {
+                padding: 10px;
+                background: white;
+                border-radius: 10px;
+                margin-bottom: 10px;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+                font-size: 15px;
+            }
+
+            /* 순서 번호 스타일 (계획 상세 페이지 동일) */
+            .place-index {
+                background: #eee;
+                width: 26px;
+                height: 26px;
+                border-radius: 50%;
+                text-align: center;
+                line-height: 26px;
+                font-size: 13px;
+            }
+
+        </style>
+    </th:block>
 </head>
 
 <body>
-<header>
-  <div class="title">TRAVEL PLANNING</div>
-  <nav>
-    <a href="/">Home</a>
-    <a href="/member/view/mypage">마이페이지</a>
-    <a href="/logout">로그아웃</a>
-  </nav>
-</header>
 
-<main>
-  <div class="back-nav-wrapper">
-    <button class="btn-back-nav" onclick="window.history.back()">← 이전 페이지</button>
-  </div>
+<main layout:fragment="content">
 
-  <h2 id="courseTitle"></h2>
-
-  <div class="map-container">
-    <div id="map"></div>
-
-    <div class="side-panel">
-      <div class="day-tabs-wrapper">
-        <button class="tab-arrow" id="tabLeft">◀</button>
-        <div class="tabs" id="dayTabs"></div>
-        <button class="tab-arrow" id="tabRight">▶</button>
-      </div>
-
-      <div class="place-list" id="placeList"></div>
+    <div class="back-nav-wrapper">
+        <button class="btn-back-nav" onclick="window.history.back()">← 이전 페이지</button>
     </div>
-  </div>
 
-  <div class="btns" id="buttonArea"></div>
+    <h2 id="courseTitle"></h2>
 
-  <section class="reviews-section">
-    <h3>📝 최신 리뷰</h3>
-    <div id="courseReviewList"></div>
-  </section>
+    <div class="map-container">
+        <div id="map"></div>
+
+        <div class="side-panel">
+            <div class="day-tabs-wrapper">
+                <button class="tab-arrow" id="tabLeft">◀</button>
+                <div class="tabs" id="dayTabs"></div>
+                <button class="tab-arrow" id="tabRight">▶</button>
+            </div>
+
+            <div class="place-list" id="placeList"></div>
+        </div>
+    </div>
+
+    <div class="btns" id="buttonArea"></div>
+
+    <section class="reviews-section">
+        <h3>📝 최신 리뷰</h3>
+        <div id="courseReviewList"></div>
+    </section>
+
 </main>
 
-<script th:inline="javascript">
-  const courseId = [[${courseId}]];
-  const planId = [[${planId}]];
-  const loginUserId = [[${loginUserId}]];
+<th:block layout:fragment="script">
 
-  let map, markers = [], polylines = [];
-  let course = null;
-  let grouped = {};
-  let maxDay = 1;
-  let activeDay = 1;
-  let isOwner = false;
+    <script th:inline="javascript">
+        const courseId = [[${courseId}]];
+        const planId = [[${planId}]];
+        const loginUserId = [[${loginUserId}]];
 
-  /* 토스트 메시지 */
-  function showToast(message) {
-    const toast = document.createElement("div");
-    toast.textContent = message;
-    toast.className = "toast-message";
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 2000);
-  }
+        let map, markers = [], polylines = [];
+        let course = null;
+        let grouped = {};
+        let maxDay = 1;
+        let activeDay = 1;
+        let isOwner = false;
 
-  /* ===============================
-      1) 초기 로드 → 코스 조회
-  =============================== */
-  kakao.maps.load(() => loadCourse());
+        function showToast(message) {
+            const toast = document.createElement("div");
+            toast.textContent = message;
+            toast.className = "toast-message";
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2000);
+        }
 
-  async function loadCourse() {
-    try {
-      const response = await fetchWithRefresh(`/courses/${courseId}`);
-      const res = await response.json();
+        kakao.maps.load(() => loadCourse());
 
-      course = res.data;
-      if (!course) {
-        alert("코스를 불러올 수 없습니다.");
-        return;
-      }
+        async function loadCourse() {
+            try {
+                const response = await fetchWithRefresh(`/courses/${courseId}`);
+                const res = await response.json();
 
-      isOwner = (course.creatorUserId === loginUserId);
-      $("#courseTitle").text("코스 상세보기");
+                course = res.data;
+                if (!course) {
+                    alert("코스를 불러올 수 없습니다.");
+                    return;
+                }
 
-      maxDay = Math.max(...course.items.map(i => i.dayNo));
+                isOwner = (course.creatorUserId === loginUserId);
+                $("#courseTitle").text("코스 상세보기");
 
-      await enrichItems();
-      groupByDay();
+                maxDay = Math.max(...course.items.map(i => i.dayNo));
 
-      renderButtons();
-      renderDayTabs();
-      initMap();
-      renderList();
-      renderMap();
-      loadCourseReviews();
-      loadLikeStatus();
-    } catch (e) {
-      console.error(e);
-      alert("코스를 불러오는 중 문제가 발생했습니다.");
-    }
-  }
+                await enrichItems();
+                groupByDay();
 
-  /* ===============================
-      2) 상세 조회 (mapx, mapy, title 보강)
-  =============================== */
-  async function enrichItems() {
-    const tasks = course.items.map(async item => {
-      const url =
-              item.categoryCode === "acc"
-                      ? `/accommodations/detail?id=${item.placeId}`
-                      : `/spots/detail?id=${item.placeId}`;
+                renderButtons();
+                renderDayTabs();
+                initMap();
+                renderList();
+                renderMap();
+                loadCourseReviews();
+                loadLikeStatus();
 
-      const response = await fetchWithRefresh(url);
-      const res = await response.json();
+            } catch (e) {
+                console.error(e);
+                alert("코스를 불러오는 중 문제가 발생했습니다.");
+            }
+        }
 
-      if (res.data) {
-        item.title = res.data.title || res.data.name;
-        item.mapx = res.data.mapx;
-        item.mapy = res.data.mapy;
-      }
-    });
+        async function enrichItems() {
+            const tasks = course.items.map(async item => {
+                const url =
+                    item.categoryCode === "acc"
+                        ? `/accommodations/detail?id=${item.placeId}`
+                        : `/spots/detail?id=${item.placeId}`;
 
-    await Promise.all(tasks);
-  }
+                const response = await fetchWithRefresh(url);
+                const res = await response.json();
 
-  /* ===============================
-      3) 일차별 그룹화
-  =============================== */
-  function groupByDay() {
-    grouped = {};
-    for (let i = 1; i <= maxDay; i++) grouped[i] = [];
-
-    course.items.forEach(i => grouped[i.dayNo].push(i));
-
-    for (const d in grouped)
-      grouped[d].sort((a, b) => a.orderNo - b.orderNo);
-  }
-
-  /* ===============================
-      4) 버튼 렌더링
-  =============================== */
-  function renderButtons() {
-    const box = $("#buttonArea").empty();
-
-    box.append(`<button class="btn-back" onclick="history.back()">뒤로가기</button>`);
-
-    if (isOwner) {
-      box.append(`<button class="btn-edit" onclick="location.href='/courses/view/edit?courseId=${courseId}'">수정하기</button>`);
-      box.append(`<button class="btn-delete" onclick="deleteCourse()">삭제하기</button>`);
-    } else if (planId) {
-      box.append(`<button class="btn-add" onclick="goAddToPlan(${courseId}, ${planId})">이 코스를 계획에 추가하기</button>`);
-    }
-
-    /* 좋아요 버튼 추가 */
-    box.append(`
-        <button class="btn-like" id="btnLike">♡ 추천</button>
-    `);
-
-    document.getElementById("btnLike").onclick = toggleLike;
-  }
-
-  /* ===============================
-      좋아요 상태 초기 로딩
-  =============================== */
-  async function loadLikeStatus() {
-    try {
-      const response = await fetchWithRefresh(`/recommend/status?targetId=${courseId}&catCode=course`);
-      const res = await response.json();
-
-      const btn = document.getElementById("btnLike");
-
-      if (res.data?.status === "Y") {
-        btn.classList.add("active");
-        btn.innerHTML = "❤️ 추천 취소";
-      } else {
-        btn.classList.remove("active");
-        btn.innerHTML = "♡ 추천";
-      }
-    } catch (e) {
-      console.warn("추천 상태 불러오기 실패:", e);
-    }
-  }
-
-  /* ===============================
-      좋아요 토글
-  =============================== */
-  async function toggleLike() {
-    try {
-      const response = await fetchWithRefresh(`/recommend/toggle?targetId=${courseId}&catCode=crs`);
-      const result = await response.json();
-
-      const btn = document.getElementById("btnLike");
-
-      if (result.data?.status === "Y") {
-        btn.classList.add("active");
-        btn.innerHTML = "❤️ 추천 취소";
-        showToast("추천했습니다!");
-      } else {
-        btn.classList.remove("active");
-        btn.innerHTML = "♡ 추천";
-        showToast("추천 취소되었습니다.");
-      }
-
-    } catch (e) {
-      console.error("추천 오류:", e);
-    }
-  }
-
-  /* ===============================
-      삭제
-  =============================== */
-  async function deleteCourse() {
-    if (!confirm("삭제하시겠습니까?")) return;
-
-    const response = await fetchWithRefresh(`/courses/${courseId}`, { method: "DELETE" });
-    if (!response.ok) {
-      alert("삭제 중 문제가 발생했습니다.");
-      return;
-    }
-
-    alert("삭제되었습니다.");
-    location.href = "/courses/view/list";
-  }
-
-  /* ===============================
-      5) 일차 탭 렌더링
-  =============================== */
-  function renderDayTabs() {
-    const tabs = $("#dayTabs").empty();
-
-    for (let d = 1; d <= maxDay; d++) {
-      const btn = $(`<button>${d}일차</button>`);
-      if (d === activeDay) btn.addClass("active");
-
-      btn.click(() => {
-        activeDay = d;
-        $(".tabs button").removeClass("active");
-        btn.addClass("active");
-        renderList();
-        renderMap();
-      });
-
-      tabs.append(btn);
-    }
-  }
-
-  $("#tabLeft").click(() => {
-    document.getElementById("dayTabs").scrollBy({ left: -150, behavior: "smooth" });
-  });
-
-  $("#tabRight").click(() => {
-    document.getElementById("dayTabs").scrollBy({ left: 150, behavior: "smooth" });
-  });
-
-  /* ===============================
-      6) 오른쪽 리스트
-  =============================== */
-  function renderList() {
-    const box = $("#placeList").empty();
-
-    grouped[activeDay].forEach(i => {
-      box.append(`<div class="place-item">${i.title}</div>`);
-    });
-  }
-
-  /* ===============================
-      7) 지도 초기화
-  =============================== */
-  function initMap() {
-    map = new kakao.maps.Map(document.getElementById("map"), {
-      center: new kakao.maps.LatLng(37.4979, 127.0276),
-      level: 6
-    });
-  }
-
-  function renderMap() {
-    clearMap();
-
-    const items = grouped[activeDay];
-    const bounds = new kakao.maps.LatLngBounds();
-    const coords = [];
-
-    items.forEach(i => {
-      if (!i.mapx || !i.mapy) return;
-
-      const pos = new kakao.maps.LatLng(parseFloat(i.mapy), parseFloat(i.mapx));
-      coords.push(pos);
-      bounds.extend(pos);
-
-      const marker = new kakao.maps.Marker({
-        map,
-        position: pos,
-        image: new kakao.maps.MarkerImage(
-                "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png",
-                new kakao.maps.Size(24, 35)
-        )
-      });
-
-      markers.push(marker);
-    });
-
-    if (coords.length >= 2) {
-      const line = new kakao.maps.Polyline({
-        map,
-        path: coords,
-        strokeWeight: 4,
-        strokeColor: "#000",
-        strokeOpacity: 0.9
-      });
-      polylines.push(line);
-    }
-
-    if (!bounds.isEmpty()) map.setBounds(bounds);
-  }
-
-  function clearMap() {
-    markers.forEach(m => m.setMap(null));
-    polylines.forEach(p => p.setMap(null));
-    markers = [];
-    polylines = [];
-  }
-
-  /* ===============================
-      리뷰
-  =============================== */
-  function loadCourseReviews() {
-    fetch(`/reviews/target?type=COURSE&id=${courseId}&size=3`)
-            .then(res => res.json())
-            .then(result => {
-              const reviews = result.content;
-              const box = $("#courseReviewList").empty();
-
-              if (!reviews || reviews.length === 0) {
-                box.html(`<p style="color:#888;">등록된 리뷰가 없습니다.</p>`);
-                return;
-              }
-
-              reviews.forEach(r => {
-                box.append(`
-            <div class="review-card">
-              <h4>${r.writer || "익명"}</h4>
-              <p><strong>${r.title}</strong></p>
-              <p>${r.content}</p>
-              <div class="review-meta">⭐ ${r.rating}점 | ${r.createdAt}</div>
-            </div>
-          `);
-              });
-            })
-            .catch(err => {
-              console.error("리뷰 로드 실패:", err);
+                if (res.data) {
+                    item.title = res.data.title || res.data.name;
+                    item.mapx = res.data.mapx;
+                    item.mapy = res.data.mapy;
+                }
             });
-  }
 
-  /* ===============================
-      코스 → 계획에 추가
-  =============================== */
-  async function goAddToPlan(courseId, planId) {
-    await fetchWithRefresh(`/plans/${planId}/course?courseId=${courseId}`, {
-      method: "POST"
-    });
+            await Promise.all(tasks);
+        }
 
-    alert("코스가 계획에 추가되었습니다!");
-    location.href = `/plans/view/${planId}`;
-  }
+        function groupByDay() {
+            grouped = {};
+            for (let i = 1; i <= maxDay; i++) grouped[i] = [];
 
-</script>
+            course.items.forEach(i => grouped[i.dayNo].push(i));
+            for (const d in grouped) grouped[d].sort((a, b) => a.orderNo - b.orderNo);
+        }
+
+        function renderButtons() {
+            const box = $("#buttonArea").empty();
+
+            box.append(`<button class="btn-back" onclick="history.back()">뒤로가기</button>`);
+
+            if (isOwner) {
+                box.append(`<button class="btn-edit" onclick="location.href='/courses/view/edit?courseId=${courseId}'">수정하기</button>`);
+                box.append(`<button class="btn-delete" onclick="deleteCourse()">삭제하기</button>`);
+            } else if (planId) {
+                box.append(`<button class="btn-add" onclick="goAddToPlan(${courseId}, ${planId})">이 코스를 계획에 추가하기</button>`);
+            }
+
+            box.append(`<button class="btn-like" id="btnLike">♡ 추천</button>`);
+            document.getElementById("btnLike").onclick = toggleLike;
+        }
+
+        async function loadLikeStatus() {
+            try {
+                const response = await fetchWithRefresh(`/recommend/status?targetId=${courseId}&catCode=course`);
+                const res = await response.json();
+
+                const btn = document.getElementById("btnLike");
+
+                if (res.data?.status === "Y") {
+                    btn.classList.add("active");
+                    btn.innerHTML = "❤️ 추천 취소";
+                } else {
+                    btn.classList.remove("active");
+                    btn.innerHTML = "♡ 추천";
+                }
+            } catch (e) {
+                console.warn("추천 상태 불러오기 실패:", e);
+            }
+        }
+
+        async function toggleLike() {
+            try {
+                const response = await fetchWithRefresh(`/recommend/toggle?targetId=${courseId}&catCode=crs`);
+                const result = await response.json();
+
+                const btn = document.getElementById("btnLike");
+
+                if (result.data?.status === "Y") {
+                    btn.classList.add("active");
+                    btn.innerHTML = "❤️ 추천 취소";
+                    showToast("추천했습니다!");
+                } else {
+                    btn.classList.remove("active");
+                    btn.innerHTML = "♡ 추천";
+                    showToast("추천 취소되었습니다.");
+                }
+
+            } catch (e) {
+                console.error("추천 오류:", e);
+            }
+        }
+
+        async function deleteCourse() {
+            if (!confirm("삭제하시겠습니까?")) return;
+
+            const response = await fetchWithRefresh(`/courses/${courseId}`, {method: "DELETE"});
+            if (!response.ok) {
+                alert("삭제 중 문제가 발생했습니다.");
+                return;
+            }
+
+            alert("삭제되었습니다.");
+            location.href = "/courses/view/list";
+        }
+
+        function renderDayTabs() {
+            const tabs = $("#dayTabs").empty();
+
+            for (let d = 1; d <= maxDay; d++) {
+                const btn = $(`<button>${d}일차</button>`);
+                if (d === activeDay) btn.addClass("active");
+
+                btn.click(() => {
+                    activeDay = d;
+                    $(".tabs button").removeClass("active");
+                    btn.addClass("active");
+                    renderList();
+                    renderMap();
+                });
+
+                tabs.append(btn);
+            }
+        }
+
+        $("#tabLeft").click(() => {
+            document.getElementById("dayTabs").scrollBy({left: -150, behavior: "smooth"});
+        });
+
+        $("#tabRight").click(() => {
+            document.getElementById("dayTabs").scrollBy({left: 150, behavior: "smooth"});
+        });
+
+        function renderList() {
+            const box = $("#placeList").empty();
+            grouped[activeDay].forEach((i, idx) => {
+                box.append(`
+            <div class="place-item">
+                <div class="place-index">${idx + 1}</div>
+                <div>${i.title}</div>
+            </div>
+        `);
+            });
+        }
+
+        function initMap() {
+            map = new kakao.maps.Map(document.getElementById("map"), {
+                center: new kakao.maps.LatLng(37.4979, 127.0276),
+                level: 6
+            });
+        }
+
+        function renderMap() {
+            clearMap();
+
+            const items = grouped[activeDay];
+            const bounds = new kakao.maps.LatLngBounds();
+            const coords = [];
+
+            items.forEach(i => {
+                if (!i.mapx || !i.mapy) return;
+
+                const pos = new kakao.maps.LatLng(parseFloat(i.mapy), parseFloat(i.mapx));
+                coords.push(pos);
+                bounds.extend(pos);
+
+                const marker = new kakao.maps.Marker({
+                    map,
+                    position: pos,
+                    image: new kakao.maps.MarkerImage(
+                        "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png",
+                        new kakao.maps.Size(24, 35)
+                    )
+                });
+
+                markers.push(marker);
+            });
+
+            if (coords.length >= 2) {
+                const line = new kakao.maps.Polyline({
+                    map,
+                    path: coords,
+                    strokeWeight: 4,
+                    strokeColor: "#000",
+                    strokeOpacity: 0.9
+                });
+                polylines.push(line);
+            }
+
+            if (!bounds.isEmpty()) map.setBounds(bounds);
+        }
+
+        function clearMap() {
+            markers.forEach(m => m.setMap(null));
+            polylines.forEach(p => p.setMap(null));
+            markers = [];
+            polylines = [];
+        }
+
+        function loadCourseReviews() {
+            fetch(`/reviews/target?type=COURSE&id=${courseId}&size=3`)
+                .then(res => res.json())
+                .then(result => {
+                    const reviews = result.content;
+                    const box = $("#courseReviewList").empty();
+
+                    if (!reviews || reviews.length === 0) {
+                        box.html(`<p style="color:#888;">등록된 리뷰가 없습니다.</p>`);
+                        return;
+                    }
+
+                    reviews.forEach(r => {
+                        box.append(`
+                        <div class="review-card">
+                          <h4>${r.writer || "익명"}</h4>
+                          <p><strong>${r.title}</strong></p>
+                          <p>${r.content}</p>
+                          <div class="review-meta">⭐ ${r.rating}점 | ${r.createdAt}</div>
+                        </div>
+                    `);
+                    });
+                })
+                .catch(err => {
+                    console.error("리뷰 로드 실패:", err);
+                });
+        }
+
+        async function goAddToPlan(courseId, planId) {
+            await fetchWithRefresh(`/plans/${planId}/course?courseId=${courseId}`, {
+                method: "POST"
+            });
+
+            alert("코스가 계획에 추가되었습니다!");
+            location.href = `/plans/view/${planId}`;
+        }
+
+    </script>
+
+</th:block>
 
 </body>
 </html>
